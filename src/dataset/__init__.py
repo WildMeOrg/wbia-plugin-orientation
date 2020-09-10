@@ -4,4 +4,4 @@
 # ------------------------------------------------------------------------------
 
 from .animal import AnimalDataset as animal
-from .transformers import RandomCrop, Rotate, ToTensor, Normalize
+from .transformers import RandomCrop, RandomAffine, ToTensor, Normalize

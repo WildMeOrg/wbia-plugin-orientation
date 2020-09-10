@@ -1,28 +1,69 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Nov 21 11:51:51 2019
+# ------------------------------------------------------------------------------
+# Copyright (c) Microsoft
+# Licensed under the MIT License.
+# Written by Bin Xiao (Bin.Xiao@microsoft.com)
+# ------------------------------------------------------------------------------
+# Differnce from PyTorch Transformers (https://pytorch.org/docs/stable/_modules/torchvision/transforms/transforms.html)
+# 1. Image in a sample is numpy array (not PIL Image)
+# 2. Custom transformers augment image and corresponding coordinates the same way
+# ------------------------------------------------------------------------------
 
-@author: olga
-"""
 import torch
 from skimage import transform
 import random
 import math
 import numpy as np
 from torchvision.transforms import functional as F
+from torchvision.transforms import RandomAffine
+from utils.data_manipulation import get_object_aligned_box
 
 class RandomHorizontalFlip(object):
-    """Horizontally flip the given PIL Image randomly with a given probability.
+    """Horizontally flip numpy image randomly with a given probability.
 
     Args:
         p (float): probability of the image being flipped. Default value is 0.5
         left_right_pairs: list of pairs for left-right annotations, e.g. [(3, 5), (4, 6)]
     """
 
-    def __init__(self, p=0.5, left_right_pairs=[]):
+    def __init__(self, p=0.5):
         self.p = p
-        self.left_right_pairs = left_right_pairs
+
+    def __call__(self, sample):
+        """
+        Args:
+            img : numpy array, Image to be flipped.
+
+        Returns:
+            image: andomly flipped image.
+        """
+        image, xc, yc, xt, yt, w, theta = sample
+        if random.random() < self.p:
+            #Flip image
+            image = np.fliplr(image) # F.hflip(image)
+            
+            #Flip xc and xt coordinates
+            xc = int(image.shape[1]-xc)
+            xt = int(image.shape[1]-xt)
+            
+            #Y-coordinates does not change after horizontal flip
+            #W - width does not change after horizontal flip
+            
+            #Angle theta change sign
+            theta = -theta
+        
+            return image, xc, yc, xt, yt, w, theta
+        return sample
+    
+class RandomVerticalFlip(object):
+    """Vertically flip the given PIL Image randomly with a given probability.
+
+    Args:
+        p (float): probability of the image being flipped. Default value is 0.5
+        left_right_pairs: list of pairs for left-right annotations, e.g. [(3, 5), (4, 6)]
+    """
+
+    def __init__(self, p=0.5):
+        self.p = p
 
     def __call__(self, sample):
         """
@@ -32,27 +73,114 @@ class RandomHorizontalFlip(object):
         Returns:
             PIL Image: Randomly flipped image.
         """
-        image, coords, vis = sample
-        
+        image, xc, yc, xt, yt, w, theta = sample
         if random.random() < self.p:
             #Flip image
-            image = np.fliplr(image) # F.hflip(image)
-            #Flip simmetrical coordinates
-            for c, coord in enumerate(coords):
-                if vis[c][0] > 0:
-                    coords[c][:2] = [int(image.shape[1]-coord[0]), coord[1]]
-                    
-            #change left and right annotations for symmetrical parts
-            if len(self.left_right_pairs) > 0:
-                for (left_idx, right_idx) in self.left_right_pairs:
-                    temp_vis, temp_coord = vis[right_idx], coords[right_idx]
-                    vis[right_idx], coords[right_idx] = vis[left_idx], coords[left_idx]
-                    vis[left_idx], coords[left_idx] = temp_vis, temp_coord
-                
-            #print('after coords and vis', coords, vis)
+            image = np.flipud(image)
+            
+            #Flip xc and xt coordinates
+            yc = int(image.shape[0]-yc)
+            yt = int(image.shape[0]-yt)
+            
+            #X-coordinates does not change after vertical flip
+            #W - width does not change after vertical flip
+            
+            #Angle theta change sign
+            theta += math.radians(180)
         
-            return image, coords, vis
+            return image, xc, yc, xt, yt, w, theta
         return sample
+    
+class RandomRotate(RandomAffine):
+    """Rotate image and coorresponding coordinates the same way (extention of RandomAffine)
+    """
+    def __init__(self, degrees, mode = 'constant'):
+        super().__init__(degrees=degrees, translate=None, scale=None, shear=None, resample=False, fillcolor=0)
+        self.mode = mode
+        
+    def __call__(self, sample):
+        image, xc, yc, xt, yt, w, theta = sample
+        imsize_rc = image.shape[:2]
+        angle, _, _, _ = self.get_params(self.degrees, 
+                                        self.translate, 
+                                        self.scale, 
+                                        self.shear, 
+                                        image.shape)
+        
+        #Transform image: rotate and then scale and translate
+        #Use 'rotate' function as it has 'resize' parameter to resize image and avoid any cropping
+        #and it has center parameter for the center of rotation
+        rotation_centre = np.asarray([xc, yc])
+        image = transform.rotate(image, 
+                                 angle, 
+                                 center = rotation_centre,
+                                 mode=self.mode, 
+                                 resize=True)
+        
+        #Apply the same transformations to coordinates
+        coords = np.array([[xc, yc], [xt, yt]])
+        coords = rotate_coordinates(coords, angle, rotation_centre, imsize_rc, resize=True)
+        
+        xc, yc, xt, yt = coords.ravel().tolist()
+        
+        #Theta is affected by rotation
+        # Width is not affected by rotation
+        theta -= math.radians(angle)
+        
+        return image, xc, yc, xt, yt, w, theta
+    
+class RandomScale(RandomAffine):
+    """Scale image and coorresponding coordinates the same way (extention of RandomAffine)
+    """
+    def __init__(self, scale, mode = 'constant'):
+        super().__init__(degrees=0, translate=None, scale=scale, shear=None, resample=False, fillcolor=0)
+        self.mode = mode
+        
+    def __call__(self, sample):
+        image, xc, yc, xt, yt, w, theta = sample
+        _, _, scale, _ = self.get_params(self.degrees, 
+                                        self.translate, 
+                                        self.scale, 
+                                        self.shear, 
+                                        image.shape)
+        
+        image = transform.rescale(image, 
+                                 scale, 
+                                 mode=self.mode, 
+                                 multichannel=True)
+                
+        #Apply the same transformations to coordinates
+        coords = np.array([[xc, yc], [xt, yt]])
+        coords *= scale
+        
+        xc, yc, xt, yt = coords.ravel().tolist()
+        
+        #Theta is not affected by rotation       
+        #Width is only affected by scale
+        w *= scale
+        
+        return image, xc, yc, xt, yt, w, theta
+    
+def rotate_coordinates(coords, angle, rotation_centre, imsize, resize=False):
+    """Rotate coordinates in the image
+    """
+    rotation_centre = np.asanyarray(rotation_centre)
+    rot_matrix = np.array([[  math.cos(math.radians(angle)), math.sin(math.radians(angle)), 0],
+                           [ -math.sin(math.radians(angle)), math.cos(math.radians(angle)), 0],
+                           [  0,0,1]])
+    coords = transform.matrix_transform(coords - rotation_centre, rot_matrix) + rotation_centre
+                
+    if resize:
+        rows, cols = imsize[0], imsize[1]
+        corners = np.array([[0, 0], [0, rows - 1], [cols - 1, rows - 1], [cols - 1, 0]], dtype=np.float32)
+        if rotation_centre is not None:
+            corners = transform.matrix_transform(corners - rotation_centre, rot_matrix) + rotation_centre
+    
+        x_shift = min(corners[:,0])
+        y_shift = min(corners[:,1])       
+        coords -= np.array([x_shift, y_shift])
+        
+    return coords  
 
 class RandomCrop(object):
     """Crop randomly the image in a sample.
@@ -90,7 +218,69 @@ class RandomCrop(object):
                     vis[c] = 0.
 
         return image, coords, vis
-    
+
+
+class Resize(object):
+    """Resize only square image into square image of different size
+    Reason: cannot determine how width changes if resizing a rectangular image
+    """
+    def __init__(self, output_size):
+        assert isinstance(output_size, int)
+        self.output_size = output_size
+        
+    def __call__(self, sample):
+        image, xc, yc, xt, yt, w, theta = sample
+        
+        assert image.shape[0] == image.shape[1]
+        original_size = image.shape[0]
+        image = transform.resize(image, 
+                                 (self.output_size, self.output_size), 
+                                 order=3, 
+                                 anti_aliasing=True)
+        
+        #Update coordinates
+        xc = int((xc / original_size) * self.output_size)
+        yc = int((yc / original_size) * self.output_size)
+        xt = int((xt / original_size) * self.output_size)
+        yt = int((yt / original_size) * self.output_size)
+        w  = int((w / original_size) * self.output_size)
+        
+        return image, xc, yc, xt, yt, w, theta
+
+class CropObjectArea(object):
+    def __init__(self, noise):
+        self.noise = noise
+     
+    def __call__(self, sample):
+        image, xc, yc, xt, yt, w, theta = sample
+        
+        #Get object-aligned bounding box
+        corners = get_object_aligned_box(xc, yc, xt, yt, w)
+        
+        #Get bounding box around object-aligned box
+        corners = np.asarray(corners)
+        print('corners shape', corners.shape)
+        x_min = max(0, min(corners[:,0]))
+        y_min = max(0, min(corners[:,1]))
+        x_max = min(max(corners[:,0]), image.shape[1])
+        y_max = min(max(corners[:,1]), image.shape[0])
+                
+        #Make it square (add black border if does not fit)
+        #Manipulate coordinates of bounding box
+        #Add noise to randomize
+        
+        #TODO make coordinates int
+        #Crop image and coordinates
+        image = image[y_min:y_max, x_min:x_max]
+        xc -= x_min
+        yc -= y_min
+        xt -= x_min
+        yt -= y_min
+        #Width and theta do not change
+        
+        return image, xc, yc, xt, yt, w, theta
+        
+        
     
 class CenterCrop(object):
     """Crop in the center the image in a sample.
@@ -109,7 +299,7 @@ class CenterCrop(object):
             self.output_size = output_size
 
     def __call__(self, sample):
-        image, coords, vis = sample
+        image, xc, yc, xt, yt, w, theta = sample
 
         h, w = image.shape[:2]
         new_h, new_w = self.output_size
@@ -120,53 +310,9 @@ class CenterCrop(object):
     
             image = image[top: top + new_h, left: left + new_w]
             
-            coords = coords - np.array([left, top, 0])
-            for c, coord in enumerate(coords):
-                if coord[0] < 0 or coord[0] >= new_w:
-                    vis[c] = 0.
-                if coord[1] < 0 or coord[1] >= new_h:
-                    vis[c] = 0.
 
-        return image, coords, vis
-   
-
-class Rotate(object):
-    """Rotate the image in a sample and a corresponding heatmap by a random angle.
-    TODO: rotate coordinates
-
-    Args:
-        max_angle (int or float): Maximum rotation angle in degrees
-    
-    Returned images have dtype float in range (0,1) because of applied transform
-    """
-    def __init__(self, max_angle):
-        assert isinstance(max_angle, (int, float))
-        self.max_angle = max_angle
-
-    def __call__(self, sample):
-        image, coords, vis = sample
-        angle = random.randint(-self.max_angle, self.max_angle)
-        #print(angle)
-#        print(type(image), angle)
-        image = transform.rotate(image, angle, mode='edge')
-        
-        #Define transformations
-        rot_matrix = np.array([[ math.cos(math.radians(angle)), math.sin(math.radians(angle)), 0],
-                              [-math.sin(math.radians(angle)), math.cos(math.radians(angle)), 0],
-                              [0,0,1]])
-
-        #Apply transformations to coordinates
-        rotation_centre = (image.shape[1] // 2, image.shape[0] // 2) 
-        coords[:,:2] = transform.matrix_transform(coords[:,:2] - rotation_centre, rot_matrix) + rotation_centre
-        
-        for c, coord in enumerate(coords):
-            if coord[0] < 0 or coord[0] >= image.shape[1]:
-                vis[c] = 0.
-            if coord[1] < 0 or coord[1] >= image.shape[0]:
-                vis[c] = 0.
-
-        return image, coords, vis
-      
+        return image, xc, yc, xt, yt, w, theta
+         
         
 class ToTensor(object):
     """Convert a ``PIL Image`` or ``numpy.ndarray`` to tensor.
@@ -176,8 +322,10 @@ class ToTensor(object):
     [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
     if the PIL Image belongs to one of the modes (L, LA, P, I, F, RGB, YCbCr, RGBA, CMYK, 1)
     or if the numpy.ndarray has dtype = np.uint8
-
     In the other cases, tensors are returned without scaling.
+    
+    Input:
+        indices (list of integers): indices of images to convert in sample
     """
     def __init__(self, indices=[0]):
         self.indices = indices
@@ -201,7 +349,7 @@ class Normalize(object):
         mean (sequence): Sequence of means for each channel.
         std (sequence): Sequence of standard deviations for each channel.
         inplace(bool,optional): Bool to make this operation in-place.
-        indices (list of integers): indices of sample to normalize
+        indices (list of integers): indices of image to normalize in sample
     """
 
     def __init__(self, mean, std, inplace=False, indices=[0]):

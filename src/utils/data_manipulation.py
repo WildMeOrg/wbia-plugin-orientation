@@ -39,3 +39,17 @@ def rotate_point_by_angle(origin, point, angle):
     qx = ox + math.cos(angle) * (px - ox) - math.sin(angle) * (py - oy)
     qy = oy + math.sin(angle) * (px - ox) + math.cos(angle) * (py - oy)
     return qx, qy
+
+def get_object_aligned_box(xc, yc, xt, yt, w):
+    """Get object aligned bounding box given center point (xc, yc), side point (xt, yt) and half width w
+    Input:
+        xc, yc, xt, yt, w: float or int, coordinates
+    Returns:
+        corner_1, corner_2, corner_3, corner_4: four tuples - coordinates of four corners of bounding box (not in sequantial order)
+    """
+    corner_1, corner_2 = add_dict_perpendicular_vector([xc, yc], [xt, yt], w)
+    dist = np.linalg.norm([xc-xt, yc-yt])
+    xt_, yt_ = add_dist_along_vector([xt, yt], [xc, yc], 2*dist)
+    corner_3, corner_4 = add_dict_perpendicular_vector([xc, yc], [xt_, yt_], w)
+    
+    return corner_1, corner_2, corner_3, corner_4
