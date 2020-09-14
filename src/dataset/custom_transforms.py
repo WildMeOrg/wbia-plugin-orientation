@@ -1,4 +1,3 @@
-# ------------------------------------------------------------------------------
 # Copyright (c) Microsoft
 # Licensed under the MIT License.
 # Written by Bin Xiao (Bin.Xiao@microsoft.com)
@@ -16,6 +15,8 @@ import numpy as np
 from torchvision.transforms import functional as F
 from torchvision.transforms import RandomAffine
 from utils.data_manipulation import get_object_aligned_box
+from utils.data_manipulation import add_dict_perpendicular_vector
+from utils.data_manipulation import increase_bbox
 
 class RandomHorizontalFlip(object):
     """Horizontally flip numpy image randomly with a given probability.
@@ -182,137 +183,114 @@ def rotate_coordinates(coords, angle, rotation_centre, imsize, resize=False):
         
     return coords  
 
-class RandomCrop(object):
-    """Crop randomly the image in a sample.
+def resize_sample(sample, original_size, output_size):
+    image, xc, yc, xt, yt, w, theta = sample
+    
+    #Compute second end of segment w (first end of w is in xt, yt)
+    (xw_end, yw_end), _ = add_dict_perpendicular_vector([xc, yc], [xt, yt], w)
+    
+    image = transform.resize(image, 
+                             output_size, 
+                             order=3, 
+                             anti_aliasing=True)
+    
+    #Update coordinates
+    xc = int((xc / original_size[1]) * output_size[1])
+    yc = int((yc / original_size[0]) * output_size[0])
+    xt = int((xt / original_size[1]) * output_size[1])
+    yt = int((yt / original_size[0]) * output_size[0])
+    xw_end = int((xw_end / original_size[1]) * output_size[1])
+    yw_end = int((yw_end / original_size[0]) * output_size[0])
+    
+    #Recompute w
+    w  = np.linalg.norm([xw_end-xt, yw_end-yt])
+    
+    #TODO recompute theta (change as)
+    
+    return image, xc, yc, xt, yt, w, theta
 
-    Args:
-        output_size (tuple or int): Desired output size. If int, square crop
-            is made.
+class Resize(object):
+    """Resize image and corresponding coordinates
+    Input:
+        output_size: int, tuple or list, output shape of image
     """
-
     def __init__(self, output_size):
-        assert isinstance(output_size, (int, tuple))
+        assert isinstance(output_size, (int, tuple, list))
         if isinstance(output_size, int):
             self.output_size = (output_size, output_size)
         else:
             assert len(output_size) == 2
             self.output_size = output_size
-
-    def __call__(self, sample):
-        image, coords, vis = sample
-
-        h, w = image.shape[:2]
-        new_h, new_w = self.output_size
         
-        if h > new_h and w > new_w:
-            top = np.random.randint(0, h - new_h)
-            left = np.random.randint(0, w - new_w)
+    def __call__(self, sample): 
+        image, xc, yc, xt, yt, w, theta = sample        
+        resized_sample = resize_sample(sample, image.shape[:2], self.output_size)       
+        return resized_sample
     
-            image = image[top: top + new_h, left: left + new_w]
-            
-            coords = coords - np.array([left, top, 0])
-            for c, coord in enumerate(coords):
-                if coord[0] < 0 or coord[0] >= new_w:
-                    vis[c] = 0.
-                if coord[1] < 0 or coord[1] >= new_h:
-                    vis[c] = 0.
-
-        return image, coords, vis
-
-
-class Resize(object):
-    """Resize only square image into square image of different size
-    Reason: cannot determine how width changes if resizing a rectangular image
+    
+class ResizeKeepRatio(object):
+    """Resize image and corresponding coordinates
+    Input:
+        min_size: int, target length of the miminum side
     """
-    def __init__(self, output_size):
-        assert isinstance(output_size, int)
-        self.output_size = output_size
+    def __init__(self, min_size):
+        assert isinstance(min_size, int)
+        self.min_size = min_size
         
-    def __call__(self, sample):
+    def __call__(self, sample):            
         image, xc, yc, xt, yt, w, theta = sample
         
-        assert image.shape[0] == image.shape[1]
-        original_size = image.shape[0]
-        image = transform.resize(image, 
-                                 (self.output_size, self.output_size), 
-                                 order=3, 
-                                 anti_aliasing=True)
+        #Compute output size
+        if image.shape[0] <= image.shape[1]:
+            output_size = (self.min_size, int(image.shape[1] * self.min_size / image.shape[0]))
+        else:
+            output_size = (int(image.shape[0] * self.min_size / image.shape[1]), self.min_size)
         
-        #Update coordinates
-        xc = int((xc / original_size) * self.output_size)
-        yc = int((yc / original_size) * self.output_size)
-        xt = int((xt / original_size) * self.output_size)
-        yt = int((yt / original_size) * self.output_size)
-        w  = int((w / original_size) * self.output_size)
-        
-        return image, xc, yc, xt, yt, w, theta
+        resized_sample = resize_sample(sample, image.shape[:2], output_size)        
+        return resized_sample
 
-class CropObjectArea(object):
-    def __init__(self, noise):
+class CropObjectAlignedArea(object):
+    """Crop bounding rectange (axis-aligned) around object-aligned rectangle
+     with some noise to randomise
+     Input:
+         noise (float from 0 to 1, default 0.): amount of noise in percentage to the w
+         scale (float, default 1.): increase the size of bounding box by scale
+    """
+    def __init__(self, noise=0., scale=1.):
+        assert isinstance(noise, float)
+        assert noise >=0. and noise <=1.
+        assert isinstance(scale, float)
+        
         self.noise = noise
+        self.scale = scale
      
     def __call__(self, sample):
         image, xc, yc, xt, yt, w, theta = sample
         
         #Get object-aligned bounding box
         corners = get_object_aligned_box(xc, yc, xt, yt, w)
+        max_noise = int(self.noise * w)
         
         #Get bounding box around object-aligned box
         corners = np.asarray(corners)
-        print('corners shape', corners.shape)
-        x_min = max(0, min(corners[:,0]))
-        y_min = max(0, min(corners[:,1]))
-        x_max = min(max(corners[:,0]), image.shape[1])
-        y_max = min(max(corners[:,1]), image.shape[0])
+        x_min = int(max(0, min(corners[:,0]) + random.randint(-max_noise, max_noise))) 
+        y_min = int(max(0, min(corners[:,1]) + random.randint(-max_noise, max_noise)))
+        x_max = int(min(max(corners[:,0]) + random.randint(-max_noise, max_noise), image.shape[1])) 
+        y_max = int(min(max(corners[:,1]) + random.randint(-max_noise, max_noise), image.shape[0]))
                 
-        #Make it square (add black border if does not fit)
-        #Manipulate coordinates of bounding box
-        #Add noise to randomize
-        
-        #TODO make coordinates int
+        x_min, y_min, x_max, y_max = increase_bbox((x_min, y_min, x_max, y_max),
+                                                   self.scale,
+                                                   image.shape[:2])
+
         #Crop image and coordinates
         image = image[y_min:y_max, x_min:x_max]
         xc -= x_min
         yc -= y_min
         xt -= x_min
         yt -= y_min
-        #Width and theta do not change
         
         return image, xc, yc, xt, yt, w, theta
-        
-        
-    
-class CenterCrop(object):
-    """Crop in the center the image in a sample.
-
-    Args:
-        output_size (tuple or int): Desired output size. If int, square crop
-            is made.
-    """
-
-    def __init__(self, output_size):
-        assert isinstance(output_size, (int, tuple))
-        if isinstance(output_size, int):
-            self.output_size = (output_size, output_size)
-        else:
-            assert len(output_size) == 2
-            self.output_size = output_size
-
-    def __call__(self, sample):
-        image, xc, yc, xt, yt, w, theta = sample
-
-        h, w = image.shape[:2]
-        new_h, new_w = self.output_size
-        
-        if h > new_h and w > new_w:
-            top = int(round((h - new_h) / 2.))
-            left = int(round((w - new_w) / 2.))
-    
-            image = image[top: top + new_h, left: left + new_w]
-            
-
-        return image, xc, yc, xt, yt, w, theta
-         
+                 
         
 class ToTensor(object):
     """Convert a ``PIL Image`` or ``numpy.ndarray`` to tensor.
@@ -324,16 +302,13 @@ class ToTensor(object):
     or if the numpy.ndarray has dtype = np.uint8
     In the other cases, tensors are returned without scaling.
     
-    Input:
-        indices (list of integers): indices of images to convert in sample
     """
-    def __init__(self, indices=[0]):
-        self.indices = indices
         
     def __call__(self, sample):
-        for idx in self.indices:
-            sample[idx] = F.to_tensor(sample[idx].copy()).type(torch.FloatTensor)
-        return sample
+        image, xc, yc, xt, yt, w, theta = sample
+        
+        image = F.to_tensor(image.copy()).type(torch.FloatTensor)
+        return image, xc, yc, xt, yt, w, theta
 
         
 class Normalize(object):
@@ -349,24 +324,25 @@ class Normalize(object):
         mean (sequence): Sequence of means for each channel.
         std (sequence): Sequence of standard deviations for each channel.
         inplace(bool,optional): Bool to make this operation in-place.
-        indices (list of integers): indices of image to normalize in sample
     """
 
-    def __init__(self, mean, std, inplace=False, indices=[0]):
+    def __init__(self, mean, std, inplace=False, image_indices=[0]):
         self.mean = mean
         self.std = std
         self.inplace = inplace
-        self.indices = indices
+        self.image_indices = image_indices
 
     def __call__(self, sample):
-        """
-        Args:
-            tensor (Tensor): Tensor image of size (C, H, W) to be normalized.
-
-        Returns:
-            Tensor: Normalized Tensor image.
-        """
-        for idx in self.indices:
-            sample[idx] = F.normalize(sample[idx], self.mean, self.std, self.inplace)
-        return sample
+        image, xc, yc, xt, yt, w, theta = sample 
+        
+        image = F.normalize(image, self.mean, self.std, self.inplace)
+        
+        xc = torch.tensor(xc)
+        yc = torch.tensor(yc)
+        xt = torch.tensor(xt)
+        yt = torch.tensor(yt)
+        w  = torch.tensor(w)
+        theta = torch.tensor(theta)
+        
+        return image, xc, yc, xt, yt, w, theta
     

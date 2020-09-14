@@ -31,18 +31,17 @@ _C.CUDNN.ENABLED = True
 
 # common params for NETWORK
 _C.MODEL = CN()
-_C.MODEL.NAME = 'orientation_net_v1'
-_C.MODEL.INIT_WEIGHTS = True
-_C.MODEL.PRETRAINED = ''
+_C.MODEL.CORE_NAME = 'resnet50'
+_C.MODEL.OUTPUT_TYPE = 'coords'  # or 'angle'
 _C.MODEL.IMAGE_SIZE = [256, 256]  # width * height, ex: 192 * 256
 _C.MODEL.EXTRA = CN(new_allowed=True)
-_C.MODEL.BACKBONE = 'resnet'
+
 
 _C.LOSS = CN()
 
 # DATASET related params
 _C.DATASET = CN()
-_C.DATASET.ROOT = ''
+_C.DATASET.NAME = ''
 _C.DATASET.CLASS = 'animal'
 _C.DATASET.TRAIN_SET = 'train'
 _C.DATASET.TEST_SET = 'valid'
@@ -86,14 +85,6 @@ def update_config(cfg, args):
     cfg.defrost()
     cfg.merge_from_file(args.cfg)
     cfg.merge_from_list(args.opts)
-
-    cfg.DATASET.ROOT = os.path.join(
-        cfg.DATA_DIR, cfg.DATASET.ROOT
-    )
-
-    cfg.MODEL.PRETRAINED = os.path.join(
-        cfg.DATA_DIR, cfg.MODEL.PRETRAINED
-    )
 
     if cfg.TEST.MODEL_FILE:
         cfg.TEST.MODEL_FILE = os.path.join(

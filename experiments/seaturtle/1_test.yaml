@@ -2,10 +2,12 @@ DATA_DIR: '/home/olga/Documents/Datasets/WildMe'
 GPUS: (0,)
 WORKERS: 24
 PRINT_FREQ: 10
+USE_GPU: False
+LOCAL: True
 
 DATASET:
   CLASS: animal
-  ROOT: 'seaturtle'
+  NAME: 'seaturtle'
   ROT_FACTOR: 30
   SCALE_FACTOR: 0.25
   FLIP_PROB: 0.5
@@ -13,8 +15,7 @@ DATASET:
   TRAIN_SET: train2020
 
 MODEL:
-  NAME: orientation_net
-  PRETRAINED: 'models/pytorch/imagenet/hrnet_w32-36af842e.pth'
+  CORE_NAME: 'resnet50'
   IMAGE_SIZE:
   - 256
   - 256
@@ -22,13 +23,13 @@ MODEL:
 #LOSS:
   
 TRAIN:
-  BS: 32
+  BS: 4
   BEGIN_EPOCH: 0
   END_EPOCH: 100
   OPTIMIZER: adam
   LR: 0.005
 TEST:
-  BS: 32
+  BS: 4 
   MODEL_FILE: ''
 DEBUG:
   DEBUG: true

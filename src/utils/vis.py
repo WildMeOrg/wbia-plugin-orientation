@@ -16,7 +16,6 @@ import torchvision
 import cv2
 import matplotlib.pyplot as plt
 
-from core.inference import get_max_preds
 from utils.utils import unnormalize
 
 

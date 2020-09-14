@@ -40,36 +40,6 @@ def load_partial_weights(model, model_path, pretrained_state=None, cuda_avail=Tr
     print('Randomly initialised weights', no_init)
     return transfer_state.keys(), not_in_model_state, no_init
 
-def clip_coords(coords, w, h):
-    """Set coordinates as np.nan is below 0 or over image size
-
-    coords: numpy array (num, 2) or (bs, num, 2)
-    """
-    #print('coords {}, w {}, h {}'.format(coords, w, h))
-    if len(coords.shape) == 2:
-        for i, coord in enumerate(coords):
-            if coord[0] >= w or coord[0] < 0:
-                coords[i] = [-1, -1]
-            elif coord[1] >= h or coord[1] < 0:
-                coords[i] = [-1, -1]
-    if len(coords.shape) == 3:
-        for j, coords_elem in enumerate(coords):
-            for i, coord in enumerate(coords_elem):
-                if coord[0] >= w or coord[0] < 0:
-                    coords[j, i] = [-1, -1]
-                elif coord[1] >= h or coord[1] < 0:
-                    coords[j, i] = [-1, -1]
-    return coords
-
-def read_labelled_split(labels_file):
-    """Read text files with labelled and unlabelled indices
-    """
-    print('=> reading labelled split from {}'.format(labels_file))
-    labels_idx = np.genfromtxt(labels_file, dtype='str')
-    labelled_idx = np.where(labels_idx[:,1] == '1')[0]
-    unlabelled_idx = np.where(labels_idx[:,1] == '-1')[0]
-    return labelled_idx, unlabelled_idx
-
 def create_logger(cfg, cfg_path, phase='train', create_tb=True):
     root_output_dir = Path(cfg.OUTPUT_DIR)
     # set up logger
@@ -77,14 +47,9 @@ def create_logger(cfg, cfg_path, phase='train', create_tb=True):
         print('=> creating {}'.format(root_output_dir))
         root_output_dir.mkdir()
 
-    dataset = cfg.DATASET.DATASET + '_' + cfg.DATASET.HYBRID_JOINTS_TYPE \
-        if cfg.DATASET.HYBRID_JOINTS_TYPE else cfg.DATASET.DATASET
-    dataset = dataset.replace(':', '_')
-#    model = cfg.MODEL.NAME
     cfg_name = os.path.split(os.path.split(cfg_path)[0])[-1]
     cfg_name += '_' + os.path.basename(cfg_path).split('.')[0]
 
-    #final_output_dir = root_output_dir / dataset / model / cfg_name
     final_output_dir = root_output_dir / (cfg_name+'_'+cfg.VERSION)
 
     print('=> creating {}'.format(final_output_dir))
@@ -100,9 +65,6 @@ def create_logger(cfg, cfg_path, phase='train', create_tb=True):
     logger.setLevel(logging.INFO)
     console = logging.StreamHandler()
     logging.getLogger('').addHandler(console)
-
-#    tensorboard_log_dir = Path(cfg.LOG_DIR) / dataset / model / \
-#        (cfg_name + '_' + time_str)
     
     if create_tb:
         tensorboard_log_dir = Path(cfg.LOG_DIR) / \

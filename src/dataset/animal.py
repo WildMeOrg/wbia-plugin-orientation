@@ -64,7 +64,7 @@ class AnimalDataset(Dataset):
         """ Get name of file with annotations """
         split = self.cfg.DATASET.TRAIN_SET if self.is_train else self.cfg.DATASET.TEST_SET
         coc_ann_file = os.path.join(self.cfg.DATA_DIR, 
-                                'orientation.{}.coco'.format(self.cfg.DATASET.ROOT), 
+                                'orientation.{}.coco'.format(self.cfg.DATASET.NAME), 
                                 'annotations', 
                                 'instances_{}.json'.format(split))
         return coc_ann_file
@@ -73,7 +73,7 @@ class AnimalDataset(Dataset):
         """ example: images / train2017 / 000000119993.jpg """
         split = self.cfg.DATASET.TRAIN_SET if self.is_train else self.cfg.DATASET.TEST_SET
         image_path = os.path.join(self.cfg.DATA_DIR, 
-                                'orientation.{}.coco'.format(self.cfg.DATASET.ROOT), 
+                                'orientation.{}.coco'.format(self.cfg.DATASET.NAME), 
                                 'images', 
                                 split,
                                 filename)
@@ -107,8 +107,6 @@ class AnimalDataset(Dataset):
         :return: db entry
         """
         im_ann = self.coco.loadImgs(index)[0]
-        #width = im_ann['width']
-        #height = im_ann['height']
 
         annIds = self.coco.getAnnIds(imgIds=index, iscrowd=False)
         objs = self.coco.loadAnns(annIds)
@@ -139,43 +137,18 @@ class AnimalDataset(Dataset):
             raise ValueError('Fail to read {}'.format(db_rec['image_path']))
        
         #B. Get center point (xc,yc), orientation point (xt, yt), width (w) and theta (rotation angle)
-        #xc, yc = midpoint(db_rec['object_aligned_bbox'][:2], db_rec['object_aligned_bbox'][4:6])
         bbox_x, bbox_y, bbox_w, bbox_h = db_rec['axis_aligned_bbox']
         
         xc, yc = bbox_x + bbox_w/2, bbox_y + bbox_h/2
         theta = db_rec['theta']
         xt, yt = rotate_point_by_angle([xc, yc], [bbox_x + bbox_w/2, bbox_y], theta)
         w = bbox_w / 2
-        
-        #C. Crop area of interest from original image to avoid manupulations with large images
-        #TODO
     
-        #D. Augment image and corresponding parameters
+        #c. Transform image and corresponding parameters
         if self.transform:
             image, xc, yc, xt, yt, w, theta = self.transform((image, xc, yc, xt, yt, w, theta))
-            
-        #E. Crop by bounding box around oriented box (similar to detection box)
         
-        
-        #D. Resize to a model input size
-        
-        #Get minimum axis-aligned bounding box rectangle that contain object-oriented rectangle
-        #image_height = image.shape[0]
-        #image_width = image.shape[1]
-        #x_min = max(0, min(db_rec['object_aligned_bbox'][0::2]))
-        #y_min = max(0, min(db_rec['object_aligned_bbox'][1::2]))
-        #x_max = min(image_width, max(db_rec['object_aligned_bbox'][0::2]))
-        #y_max = min(image_height, max(db_rec['object_aligned_bbox'][1::2]))
-        #print('crop box', x_min, y_min, x_max, y_max)
-        
-        #Crop image and coordinates by bounding box
-        #image = image[y_min:y_max, x_min:x_max]
-        #xc -= x_min
-        #yc -= y_min
-        #xt -= x_min
-        #yt -= y_min
-        
-        return image, xc, yc, xt, yt, w, theta #, db_rec['axis_aligned_bbox'], db_rec['object_aligned_bbox']
+        return image, xc, yc, xt, yt, w, theta
 
 
     def evaluate(self, cfg, preds, output_dir, *args, **kwargs):

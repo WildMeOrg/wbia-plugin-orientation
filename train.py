@@ -22,12 +22,12 @@ from tensorboardX import SummaryWriter
 import tools._init_paths
 from config import cfg
 from config import update_config
-from core.loss import JointsMSELoss, TripletLoss, KeypointSimilarityLoss
 from core.function import train, validate
 from utils.utils import get_optimizer
 from utils.utils import save_checkpoint
 from utils.utils import create_logger
 from utils.utils import get_model_summary
+from dataset import custom_transforms
 
 import dataset
 import models
@@ -41,30 +41,32 @@ def parse_args():
                         required=True,
                         type=str)
     
+    parser.add_argument('opts',
+                        help="Modify config options using the command-line",
+                        default=None,
+                        nargs=argparse.REMAINDER)
+    
     args = parser.parse_args()
 
     return args
 
-def _make_model(cfg, exp_output_dir, is_train):
+def _make_model(cfg):
     """Initialise model from config
     Input:
         cfg: config object
     Returns:
         model: model object
     """
-    pass
+    model = models.orientation_net.OrientationNet(core_name=cfg.MODEL.CORE_NAME, 
+                                  output_type=cfg.MODEL.OUTPUT_TYPE)
+    return model
 
 def _model_to_gpu(model, cfg):
     if cfg.USE_GPU:
        model = torch.nn.DataParallel(model, device_ids=cfg.GPUS).cuda()
         
-    return models
+    return model
     
-
-def _make_loss(cfg, logger):
-    """Define loss function (criterion)
-    """
-    pass
 
 def _make_data(cfg, logger):
     """Initialise train and validation loaders as per config parameters
@@ -77,28 +79,32 @@ def _make_data(cfg, logger):
         valid_dataset:
     """
     train_transform = transforms.Compose([
-                        dataset.transformers.Rotate(cfg.DATASET.ROT_FACTOR),
-                        dataset.transformers.RandomHorizontalFlip(cfg.DATASET.FLIP_PROB, cfg.DATASET.SYMM_LDMARKS),
-                        dataset.transformers.RandomCrop(cfg.MODEL.IMAGE_SIZE[0]),
-                        dataset.transformers.ToTensor(),
-                        dataset.transformers.Normalize(mean=[0.485, 0.456, 0.406], 
-                                                       std =[0.229, 0.224, 0.225])
+                        custom_transforms.CropObjectAlignedArea(scale=2.),
+                        custom_transforms.ResizeKeepRatio(min_size=600),
+                        custom_transforms.RandomHorizontalFlip(p=0.5),
+                        custom_transforms.RandomVerticalFlip(p=0.5),        
+                        custom_transforms.RandomRotate(degrees=90, mode = 'edge'),
+                        custom_transforms.RandomScale(scale=(0.8,1.2)),
+                        custom_transforms.CropObjectAlignedArea(noise=0.1),
+                        custom_transforms.Resize(cfg.MODEL.IMAGE_SIZE),
+                        custom_transforms.ToTensor(),
+                        custom_transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                               std =[0.229, 0.224, 0.225])
                         ])
                         
     valid_transform = transforms.Compose([
-                        dataset.transformers.CenterCrop(cfg.MODEL.IMAGE_SIZE[0]),
-                        dataset.transformers.ToTensor(),
-                        dataset.transformers.Normalize(mean=[0.485, 0.456, 0.406], 
-                                                       std =[0.229, 0.224, 0.225])
+                        custom_transforms.CropObjectAlignedArea(noise=0.),
+                        custom_transforms.Resize(cfg.MODEL.IMAGE_SIZE),
+                        custom_transforms.ToTensor(),
+                        custom_transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                               std =[0.229, 0.224, 0.225])
                         ])
                         
-    train_dataset = eval('dataset.'+cfg.DATASET.DATASET)(
-        cfg, cfg.DATASET.ROOT, cfg.DATASET.TRAIN_SET, True, train_transform)
-    
-    valid_dataset = eval('dataset.'+cfg.DATASET.DATASET)(
-        cfg, cfg.DATASET.ROOT, cfg.DATASET.TEST_SET, False, valid_transform)
+    train_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, True, train_transform)
+    valid_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, False, valid_transform)
 
     train_loader = torch.utils.data.DataLoader(train_dataset,
+                                                batch_size=cfg.TRAIN.BS*len(cfg.GPUS),
                                                 shuffle=True,
                                                 num_workers=cfg.WORKERS,
                                                 pin_memory=cfg.PIN_MEMORY
@@ -112,15 +118,6 @@ def _make_data(cfg, logger):
                                             )
     
     return train_loader, valid_loader, valid_dataset
-
-def _make_optimizer(cfg, models_dict):
-    
-    optimizer = torch.optim.Adam(models_dict['spen'].parameters(), lr=cfg.TRAIN.LR)
-    
-    if cfg.LOSS.RECONSTRUCTION or cfg.LOSS.RECONSTRUCTION_CONS:
-        optimizer = torch.optim.Adam(list(models_dict['spen'].parameters())
-                                            + list(models_dict['srn'].parameters()), lr=cfg.TRAIN.LR)
-    return optimizer
 
 
 def main():
@@ -137,17 +134,11 @@ def main():
     torch.backends.cudnn.deterministic = cfg.CUDNN.DETERMINISTIC
     torch.backends.cudnn.enabled = cfg.CUDNN.ENABLED
 
-    writer_dict = {
-        'writer': SummaryWriter(log_dir=tb_log_dir),
-        'train_global_steps': 0,
-        'valid_global_steps': 0,
-    }
-
     # Initialise models
-    model = _make_model(cfg, final_output_dir, True)
+    model = _make_model(cfg)
     
     # Initialise losses
-    loss_dict = _make_loss(cfg, logger)    
+    loss_func = nn.MSELoss()
     
     # Initialise data loaders
     train_loader, valid_loader, valid_dataset = _make_data(cfg, logger)
@@ -156,6 +147,12 @@ def main():
     is_best_model = False
     last_epoch = -1
     
+    writer_dict = {
+        'writer': SummaryWriter(log_dir=tb_log_dir),
+        'train_global_steps': 0,
+        'valid_global_steps': 0,
+    }
+        
     begin_epoch = cfg.TRAIN.BEGIN_EPOCH
     checkpoint_file = os.path.join(
         final_output_dir, 'checkpoint.pth'
@@ -172,17 +169,18 @@ def main():
             checkpoint_file, checkpoint['epoch']))
         
     model = _model_to_gpu(model, cfg)
-    optimizer = _make_optimizer(cfg, model)
+    optimizer = get_optimizer(cfg, model)
     
     if cfg.AUTO_RESUME and os.path.exists(checkpoint_file):
         optimizer.load_state_dict(checkpoint['optimizer'])
+
 
    
     for epoch in range(begin_epoch, cfg.TRAIN.END_EPOCH):
 
         train(cfg, train_loader, 
               model, 
-              loss_dict, 
+              loss_func, 
               optimizer, epoch,
               final_output_dir, writer_dict)
 
@@ -190,7 +188,7 @@ def main():
         perf_indicator = validate(
             cfg, valid_loader, valid_dataset, 
             model, 
-            loss_dict,
+            loss_func,
             final_output_dir, writer_dict
         )
 

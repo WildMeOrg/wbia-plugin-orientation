@@ -1,3 +1,8 @@
+# ------------------------------------------------------------------------------
+# Licensed under the MIT License.
+# Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
+# ------------------------------------------------------------------------------
+
 import numpy as np
 
 import math
@@ -53,3 +58,35 @@ def get_object_aligned_box(xc, yc, xt, yt, w):
     corner_3, corner_4 = add_dict_perpendicular_vector([xc, yc], [xt_, yt_], w)
     
     return corner_1, corner_2, corner_3, corner_4
+
+def plot_image_coordinates(ax, image, xc, yc, xt, yt, w, theta):
+    predicted_oa_box = get_object_aligned_box(xc, yc, xt, yt, w)
+    predicted_oa_box = np.array(predicted_oa_box)
+
+    ax.imshow(image)
+    ax.plot(xc, yc, 'r*')
+    ax.plot(xt, yt, 'y*')
+    ax.plot(predicted_oa_box[:,0], predicted_oa_box[:,1], 'go')
+    
+def increase_bbox(bbox_xyx2y2, scale, image_size):
+    """Increase the size of the bounding box
+    Input:
+        bbox_xyx2y2:
+        scale:
+        image_size: tuple of int, (h, w)
+    """
+    x1, y1, x2, y2 = bbox_xyx2y2
+    h, w = image_size
+    bbox_h = y2 - y1
+    bbox_w = x2 - x1
+    
+    increase_w_by = (bbox_w * scale - bbox_w) // 2
+    increase_h_by = (bbox_h * scale - bbox_h) // 2
+    
+    new_x1 = int(max(0, x1 - increase_w_by))
+    new_x2 = int(min(w-1, x2 + increase_w_by))
+    
+    new_y1 = int(max(0, y1 - increase_h_by))
+    new_y2 = int(min(h-1, y2 + increase_h_by))
+    
+    return (new_x1, new_y1, new_x2, new_y2) 
