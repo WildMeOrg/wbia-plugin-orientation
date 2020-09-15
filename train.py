@@ -66,6 +66,10 @@ def _model_to_gpu(model, cfg):
        model = torch.nn.DataParallel(model, device_ids=cfg.GPUS).cuda()
         
     return model
+
+def _make_loss(cfg):
+    loss_func = nn.MSELoss()
+    return loss_func
     
 
 def _make_data(cfg, logger):
@@ -89,7 +93,8 @@ def _make_data(cfg, logger):
                         custom_transforms.Resize(cfg.MODEL.IMAGE_SIZE),
                         custom_transforms.ToTensor(),
                         custom_transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                                               std =[0.229, 0.224, 0.225])
+                                               std =[0.229, 0.224, 0.225],
+                                               input_size=cfg.MODEL.IMAGE_SIZE[0])
                         ])
                         
     valid_transform = transforms.Compose([
@@ -97,7 +102,8 @@ def _make_data(cfg, logger):
                         custom_transforms.Resize(cfg.MODEL.IMAGE_SIZE),
                         custom_transforms.ToTensor(),
                         custom_transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                                               std =[0.229, 0.224, 0.225])
+                                               std =[0.229, 0.224, 0.225],
+                                               input_size=cfg.MODEL.IMAGE_SIZE[0])
                         ])
                         
     train_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, True, train_transform)
@@ -138,7 +144,7 @@ def main():
     model = _make_model(cfg)
     
     # Initialise losses
-    loss_func = nn.MSELoss()
+    loss_func = _make_loss(cfg)
     
     # Initialise data loaders
     train_loader, valid_loader, valid_dataset = _make_data(cfg, logger)
@@ -201,7 +207,7 @@ def main():
         logger.info('=> saving checkpoint to {}'.format(final_output_dir))
         checkpoint_dict = {
             'epoch': epoch + 1,
-            'model': cfg.MODEL.NAME,
+            'model': cfg.MODEL.CORE_NAME,
             'perf': perf_indicator,
             'optimizer': optimizer.state_dict(),
         }

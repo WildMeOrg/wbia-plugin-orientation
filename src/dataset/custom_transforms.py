@@ -307,7 +307,13 @@ class ToTensor(object):
     def __call__(self, sample):
         image, xc, yc, xt, yt, w, theta = sample
         
-        image = F.to_tensor(image.copy()).type(torch.FloatTensor)
+        image = F.to_tensor(image.copy()).type(torch.float32)
+        xc = torch.tensor(xc, dtype=torch.float32)
+        yc = torch.tensor(yc, dtype=torch.float32)
+        xt = torch.tensor(xt, dtype=torch.float32)
+        yt = torch.tensor(yt, dtype=torch.float32)
+        w  = torch.tensor(w, dtype=torch.float32)
+        theta = torch.tensor(theta, dtype=torch.float32)
         return image, xc, yc, xt, yt, w, theta
 
         
@@ -324,25 +330,24 @@ class Normalize(object):
         mean (sequence): Sequence of means for each channel.
         std (sequence): Sequence of standard deviations for each channel.
         inplace(bool,optional): Bool to make this operation in-place.
+        input_size (int): size of input in pixels to scale coordinates
     """
 
-    def __init__(self, mean, std, inplace=False, image_indices=[0]):
+    def __init__(self, mean, std, inplace=False, input_size=256):
         self.mean = mean
         self.std = std
         self.inplace = inplace
-        self.image_indices = image_indices
+        self.input_size = input_size
 
     def __call__(self, sample):
         image, xc, yc, xt, yt, w, theta = sample 
         
         image = F.normalize(image, self.mean, self.std, self.inplace)
-        
-        xc = torch.tensor(xc)
-        yc = torch.tensor(yc)
-        xt = torch.tensor(xt)
-        yt = torch.tensor(yt)
-        w  = torch.tensor(w)
-        theta = torch.tensor(theta)
+        xc /= self.input_size
+        yc /= self.input_size
+        xt /= self.input_size
+        yt /= self.input_size
+        w /= self.input_size
         
         return image, xc, yc, xt, yt, w, theta
     

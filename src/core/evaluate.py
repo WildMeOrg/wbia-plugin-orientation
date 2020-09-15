@@ -4,15 +4,14 @@
 # ------------------------------------------------------------------------------
 import math
 import numpy as np
-from sklearn import metrics
 
 def evaluate_orientaion(output, target_coords, target_theta, theta_thr = 10, theta_source = 'annot'):    
     '''
     Evaluate errors and accuracy of orientation detection.
     Input:
-        output: numpy array of shape (bs, 5) where each line is [xc, yc, xt, yt, w]
+        output: numpy array of shape (bs, 5) where each row is [xc, yc, xt, yt, w]
         target: numpy array of shape (bs, 5), ground truth for [xc, yc, xt, yt, w]
-        target_theta: array of shape (bs), ground truth for angle of orientation theta (from annotations)
+        target_theta: array of shape (bs), ground truth for angle of orientation theta in radians (from annotations)
         theta_thr (int): threshold for error in degrees when theta detection is considered correct
         theta_source (string): 'annot' or 'calc', source of theta, get from ground truth annotations or calculate from gt coordinates
     Returns:
@@ -23,13 +22,12 @@ def evaluate_orientaion(output, target_coords, target_theta, theta_thr = 10, the
             'err_xtyt': mean distance in pixels between ground truth and predictions for (xt, yt)
             'err_w': mean distance in pixels between ground truth and predictions for w
     '''
-    #Compute predicted and ground truth theta (np.arctan2(yt-yc, xt-xc))
+    #Compute predicted truth theta (np.arctan2(yt-yc, xt-xc))
     theta_pred = np.arctan2(output[:,3]-output[:,1], output[:,2]-output[:,0])
     if theta_source == 'annot':
         theta_pred += math.radians(90)
     
     #Ground truth theta can be computed from ground truth (xc, yc) and (xt, yt) or taken directly from annotations
-    #Computations and ground truth sometimes differ up to 5 degrees
     if theta_source == 'annot':
         theta_gt = target_theta
     else:
@@ -58,21 +56,22 @@ def evaluate_orientaion(output, target_coords, target_theta, theta_thr = 10, the
     return eval_dict
 
 def normalize_theta(theta):
-    '''Normalize angle theta 
+    '''Normalize angle theta to be between -180 and 180 degrees
     Input:
         theta (float): angle in degrees
     '''
-    assert theta <= 360 and theta > -360
+    if theta >= 360. or theta <= -360.:
+        theta = theta % 360 
     
-    if theta <=180 and theta > -180:
+    if theta <=180. and theta > -180.:
         return theta
     
-    elif theta > 180:
-        theta -= 360
+    elif theta > 180.:
+        theta -= 360.
         return theta
     
     else:
-        theta += 360
+        theta += 360.
         return theta 
     
 

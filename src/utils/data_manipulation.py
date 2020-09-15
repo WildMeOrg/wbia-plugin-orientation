@@ -59,13 +59,13 @@ def get_object_aligned_box(xc, yc, xt, yt, w):
     
     return corner_1, corner_2, corner_3, corner_4
 
-def plot_image_coordinates(ax, image, xc, yc, xt, yt, w, theta):
+def plot_image_coordinates(ax, image, xc, yc, xt, yt, w):
     predicted_oa_box = get_object_aligned_box(xc, yc, xt, yt, w)
     predicted_oa_box = np.array(predicted_oa_box)
 
     ax.imshow(image)
-    ax.plot(xc, yc, 'r*')
-    ax.plot(xt, yt, 'y*')
+    ax.plot(xc, yc, 'ro')
+    ax.plot(xt, yt, 'yo')
     ax.plot(predicted_oa_box[:,0], predicted_oa_box[:,1], 'go')
     
 def increase_bbox(bbox_xyx2y2, scale, image_size):

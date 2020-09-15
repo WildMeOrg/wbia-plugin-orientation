@@ -43,11 +43,14 @@ class OrientationNet(nn.Module):
         else:
             logger.error('=> invalid core_name {}'.format(core_name))
             raise ValueError('Invalid core_name: {}'.format(core_name)) 
+            
+        #Additional layers
+        self.sigmoid = nn.Sigmoid()
         
         
-    def forward(self, x):
-        
+    def forward(self, x): 
         out = self.model(x)
+        out = self.sigmoid(out)
                 
         return out
 

@@ -66,6 +66,10 @@ def create_logger(cfg, cfg_path, phase='train', create_tb=True):
     console = logging.StreamHandler()
     logging.getLogger('').addHandler(console)
     
+    #create dir for debug images
+    debug_imgs_dir = os.path.join(final_output_dir, 'debug_images')
+    if not os.path.exists(debug_imgs_dir): os.makedirs(debug_imgs_dir)
+    
     if create_tb:
         tensorboard_log_dir = Path(cfg.LOG_DIR) / \
             (cfg_name + '_' + cfg.VERSION + ' ' + time_str)

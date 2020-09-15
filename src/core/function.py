@@ -26,11 +26,12 @@ def train(config, train_loader, model, loss_func, optimizer, epoch, output_dir, 
     # switch to train mode
     model.train()
         
+    #Iterate over data loader
     for i, (images, xc, yc, xt, yt, w, theta) in enumerate(train_loader):
         end = time.time()
         bs = images.size(0)
         target_output = torch.stack([xc, yc, xt, yt, w], dim=1)
-        print('target_output', target_output)
+        #print('target_output', target_output.dtype)
         
         if config.USE_GPU:
             images = images.cuda(non_blocking=True)
@@ -39,7 +40,7 @@ def train(config, train_loader, model, loss_func, optimizer, epoch, output_dir, 
         # Compute output of Orientation Network
         output = model(images)
         
-        print('output', output)
+        #print('output', output.dtype)
         
         #Compute loss and backpropagate
         loss = loss_func(output, target_output)
@@ -65,9 +66,8 @@ def train(config, train_loader, model, loss_func, optimizer, epoch, output_dir, 
         batch_time = time.time() - end
 
         if i % config.PRINT_FREQ == 0:
-            msg = 'Epoch: [{0}][{1}/{2}]\t'\
-                  'Batch time {batch_time:.3f}s\t'.format(epoch, i, len(train_loader), batch_time=batch_time)
-                  
+            msg = 'Epoch: [{0}][{1}/{2}]\tBatch time {batch_time:.3f}s\t'. \
+                            format(epoch, i, len(train_loader), batch_time=batch_time)
             for key, val in meters.meters.items():
                     msg += '{} {:.4f} ({:.4f})\t'.format(key, val.val, val.avg) 
             logger.info(msg)
@@ -77,19 +77,13 @@ def train(config, train_loader, model, loss_func, optimizer, epoch, output_dir, 
             #Add losses and accuracy to tensorboard
             for key, val in meters.values().items():
                 writer.add_scalar(key, val, global_steps)
-                
             writer_dict['train_global_steps'] = global_steps + 1           
             
-            #Save some image with localized keypoints
-            #Localization on labelled examples
-            debug_imgs_dir = os.path.join(output_dir, 'debug_images')
-            if not os.path.exists(debug_imgs_dir): os.makedirs(debug_imgs_dir)
-                    
-            prefix = '{}_{}'.format(os.path.join(debug_imgs_dir, 'train_'), i)
-            #TODO plot detected points
-#            save_debug_images(config, input_images, 
-#                              meta['joints'], meta['joints_vis'], 
-#                              target, pred[lab_start:], hm[lab_start:], prefix_lab)
+            #Save some image with detected points
+            save_debug_images(config, images, 
+                              target_output.cpu()*config.MODEL.IMAGE_SIZE[0], 
+                              output.detach().cpu()*config.MODEL.IMAGE_SIZE[0], 
+                              theta, None, 'train_{}'.format(i), output_dir)
             
         if config.LOCAL and i > 3:
             break

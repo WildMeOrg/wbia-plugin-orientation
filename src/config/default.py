@@ -73,6 +73,7 @@ _C.TEST = CN()
 _C.TEST.BS = 32
 _C.TEST.FLIP_TEST = False
 _C.TEST.MODEL_FILE = ''
+_C.TEST.THETA_THR = 10.
 
 # debug
 _C.DEBUG = CN()
