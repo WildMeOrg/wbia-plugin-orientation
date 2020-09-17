@@ -87,7 +87,7 @@ class RandomVerticalFlip(object):
             #W - width does not change after vertical flip
             
             #Angle theta change sign
-            theta += math.radians(180)
+            theta = math.radians(180) - theta
         
             return image, xc, yc, xt, yt, w, theta
         return sample
@@ -206,6 +206,7 @@ def resize_sample(sample, original_size, output_size):
     w  = np.linalg.norm([xw_end-xt, yw_end-yt])
     
     #TODO recompute theta (change as)
+    theta = np.arctan2(yt-yc, xt-xc) + math.radians(90)
     
     return image, xc, yc, xt, yt, w, theta
 

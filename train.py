@@ -181,29 +181,33 @@ def main():
         optimizer.load_state_dict(checkpoint['optimizer'])
 
 
-   
+    #Train epochs
     for epoch in range(begin_epoch, cfg.TRAIN.END_EPOCH):
 
-        train(cfg, train_loader, 
+        train(cfg, 
+              train_loader, 
               model, 
               loss_func, 
               optimizer, epoch,
-              final_output_dir, writer_dict)
+              final_output_dir, 
+              writer_dict)
 
         # evaluate on validation set
-        perf_indicator = validate(
-            cfg, valid_loader, valid_dataset, 
-            model, 
-            loss_func,
-            final_output_dir, writer_dict
-        )
+        perf_indicator = validate(cfg, 
+                                  valid_loader, 
+                                  valid_dataset, 
+                                  model, 
+                                  loss_func,
+                                  final_output_dir, 
+                                  writer_dict)
 
         if perf_indicator >= best_perf:
             best_perf = perf_indicator
             is_best_model = True
         else:
             is_best_model = False
-
+            
+        #Save checkpoint
         logger.info('=> saving checkpoint to {}'.format(final_output_dir))
         checkpoint_dict = {
             'epoch': epoch + 1,
@@ -212,12 +216,14 @@ def main():
             'optimizer': optimizer.state_dict(),
         }
         checkpoint_dict['state_dict'] = model.module.state_dict() if cfg.USE_GPU else model.state_dict()
-            
+         
+        #Save best model
         torch.save(checkpoint_dict, os.path.join(final_output_dir, 'checkpoint.pth'))
         if is_best_model:
             logger.info('=> saving best model state to {} at epoch {}'.format(final_output_dir, epoch))
             torch.save(checkpoint_dict['state_dict'], os.path.join(final_output_dir, 'best.pth'))
 
+    #Save final state
     logger.info('=> saving final model state to {}'.format(final_output_dir))
     torch.save(checkpoint_dict['state_dict'], os.path.join(final_output_dir, 'final.pth'))
     

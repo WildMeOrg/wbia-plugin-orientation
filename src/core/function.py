@@ -5,9 +5,6 @@
  
 import time
 import logging
-import os
-
-import numpy as np
 import torch
 
 from core.evaluate import evaluate_orientaion
@@ -15,7 +12,6 @@ from utils.vis import save_debug_images
 from utils.utils import AverageMeterSet
 
 torch.autograd.set_detect_anomaly(True)
-
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +27,6 @@ def train(config, train_loader, model, loss_func, optimizer, epoch, output_dir, 
         end = time.time()
         bs = images.size(0)
         target_output = torch.stack([xc, yc, xt, yt, w], dim=1)
-        #print('target_output', target_output.dtype)
         
         if config.USE_GPU:
             images = images.cuda(non_blocking=True)
@@ -40,8 +35,6 @@ def train(config, train_loader, model, loss_func, optimizer, epoch, output_dir, 
         # Compute output of Orientation Network
         output = model(images)
         
-        #print('output', output.dtype)
-        
         #Compute loss and backpropagate
         loss = loss_func(output, target_output)
         meters.update('train_loss', loss.item(), bs)
@@ -49,7 +42,7 @@ def train(config, train_loader, model, loss_func, optimizer, epoch, output_dir, 
         loss.backward()
         optimizer.step()
 
-        #Compute accuracy on all examples
+        #Compute performance: accuracy of theta and coords
         perf = evaluate_orientaion(output.detach().cpu().numpy(), 
                                          target_output.detach().cpu().numpy(),
                                          theta,
@@ -69,12 +62,13 @@ def train(config, train_loader, model, loss_func, optimizer, epoch, output_dir, 
             msg = 'Epoch: [{0}][{1}/{2}]\tBatch time {batch_time:.3f}s\t'. \
                             format(epoch, i, len(train_loader), batch_time=batch_time)
             for key, val in meters.meters.items():
-                    msg += '{} {:.4f} ({:.4f})\t'.format(key, val.val, val.avg) 
+                msg += '{} {:.4f} ({:.4f})\t'.format(key, val.val, val.avg) 
             logger.info(msg)
 
+            #Update tensorboard logs
             writer = writer_dict['writer']
             global_steps = writer_dict['train_global_steps']
-            #Add losses and accuracy to tensorboard
+
             for key, val in meters.values().items():
                 writer.add_scalar(key, val, global_steps)
             writer_dict['train_global_steps'] = global_steps + 1           
@@ -96,7 +90,6 @@ def validate(config, val_loader, val_dataset, model, loss_func, output_dir, writ
     model.eval()
     
     with torch.no_grad():
-        #end = time.time()
         for i, (images, xc, yc, xt, yt, w, theta) in enumerate(val_loader):
             bs = images.size(0)
             target_output = torch.stack([xc, yc, xt, yt, w], dim=1)
@@ -125,7 +118,6 @@ def validate(config, val_loader, val_dataset, model, loss_func, output_dir, writ
 #                    output_flipped = output_flipped.cuda()
 #                output = (output + output_flipped) * 0.5
 
-            loss = 0.
             loss = loss_func(output, target_output)
             meters.update('valid_loss', loss.item(), bs)
                 
@@ -143,29 +135,23 @@ def validate(config, val_loader, val_dataset, model, loss_func, output_dir, writ
             meters.update('valid_err_w', perf['err_w'], bs)
             
             #TODO Export annotations
-#            for j in range(bs):
-#                annot = {"joints_vis": maxvals[j].squeeze().tolist(),
-#                         "joints": (pred[j]*4).tolist(),
-#                         "image": meta['image'][j]
-#                        }
-#                export_annots.append(annot)
 
             if i % config.PRINT_FREQ == 0:
-                msg = 'Test: [{0}/{1}]\t'.format(
-                          i, len(val_loader))
+                msg = 'Test: [{0}/{1}]\t'.format(i, len(val_loader))
                 for key, val in meters.meters.items():
                     msg += '{} {:.4f} ({:.4f})\t'.format(key, val.val, val.avg)     
-                
                 logger.info(msg)
 
-                #TODO visualize
-#                prefix = '{}_{}'.format(os.path.join(output_dir, 'debug_images', 'val'), i)
-#                save_debug_images(config, input_images, meta['joints'], meta['joints_vis'], target, pred*4, output,
-#                                  prefix)
+            #Save some image with detected points
+            save_debug_images(config, images, 
+                              target_output.cpu()*config.MODEL.IMAGE_SIZE[0], 
+                              output.detach().cpu()*config.MODEL.IMAGE_SIZE[0], 
+                              theta, None, 'valid_{}'.format(i), output_dir)
                                 
             if config.LOCAL and i>3:
                 break
 
+        #Update tensorboard
         if writer_dict:
             writer = writer_dict['writer']
             global_steps = writer_dict['valid_global_steps']

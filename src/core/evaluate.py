@@ -55,23 +55,29 @@ def evaluate_orientaion(output, target_coords, target_theta, theta_thr = 10, the
         
     return eval_dict
 
-def normalize_theta(theta):
+def normalize_theta(theta, degrees=True):
     '''Normalize angle theta to be between -180 and 180 degrees
     Input:
         theta (float): angle in degrees
+        degrees (bool, default True): if True then theta in degrees else theta in radians
     '''
-    if theta >= 360. or theta <= -360.:
-        theta = theta % 360 
+    if degrees:
+        pi = 180.
+    else:
+        pi = math.pi
+        
+    if theta >= 2*pi or theta <= -2*pi:
+        theta = theta % 2*pi 
     
-    if theta <=180. and theta > -180.:
+    if theta <= pi and theta > -pi:
         return theta
     
-    elif theta > 180.:
-        theta -= 360.
+    elif theta > pi:
+        theta -= 2*pi
         return theta
     
     else:
-        theta += 360.
+        theta += 2*pi
         return theta 
     
 
