@@ -74,7 +74,7 @@ def train(config, train_loader, model, loss_func, optimizer, epoch, output_dir, 
             writer_dict['train_global_steps'] = global_steps + 1           
             
             #Save some image with detected points
-            save_debug_images(config, images, 
+            save_debug_images(config, images.cpu(), 
                               target_output.cpu()*config.MODEL.IMAGE_SIZE[0], 
                               output.detach().cpu()*config.MODEL.IMAGE_SIZE[0], 
                               theta, None, 'train_{}'.format(i), output_dir)
