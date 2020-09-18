@@ -2,8 +2,8 @@ DATA_DIR: '/home/olga/Documents/Datasets/WildMe'
 GPUS: (0,)
 WORKERS: 24
 PRINT_FREQ: 10
-USE_GPU: False
-LOCAL: True
+USE_GPU: True
+LOCAL: False
 
 DATASET:
   CLASS: animal
@@ -23,13 +23,13 @@ MODEL:
 #LOSS:
   
 TRAIN:
-  BS: 4
+  BS: 32
   BEGIN_EPOCH: 0
   END_EPOCH: 100
   OPTIMIZER: adam
-  LR: 0.005
+  LR: 0.0001
 TEST:
-  BS: 4 
+  BS: 32 
   MODEL_FILE: ''
 DEBUG:
   DEBUG: true
