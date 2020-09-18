@@ -84,11 +84,11 @@ def _make_data(cfg, logger):
     """
     train_transform = transforms.Compose([
                         custom_transforms.CropObjectAlignedArea(scale=2.),
-                        custom_transforms.ResizeKeepRatio(min_size=600),
-                        custom_transforms.RandomHorizontalFlip(p=0.5),
-                        custom_transforms.RandomVerticalFlip(p=0.5),        
-                        custom_transforms.RandomRotate(degrees=90, mode = 'edge'),
-                        custom_transforms.RandomScale(scale=(0.8,1.2)),
+                        custom_transforms.ResizeKeepRatio(min_size=2*cfg.MODEL.IMAGE_SIZE[0]),
+                        custom_transforms.RandomHorizontalFlip(p=cfg.DATASET.HOR_FLIP_PROB),
+                        custom_transforms.RandomVerticalFlip(p=cfg.DATASET.VERT_FLIP_PROB),        
+                        custom_transforms.RandomRotate(degrees=cfg.DATASET.MAX_ROT, mode = 'edge'),
+                        custom_transforms.RandomScale(scale=cfg.DATASET.SCALE_FACTOR),
                         custom_transforms.CropObjectAlignedArea(noise=0.1),
                         custom_transforms.Resize(cfg.MODEL.IMAGE_SIZE),
                         custom_transforms.ToTensor(),

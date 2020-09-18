@@ -143,7 +143,7 @@ def validate(config, val_loader, val_dataset, model, loss_func, output_dir, writ
                 logger.info(msg)
 
             #Save some image with detected points
-            save_debug_images(config, images, 
+            save_debug_images(config, images.cpu(), 
                               target_output.cpu()*config.MODEL.IMAGE_SIZE[0], 
                               output.detach().cpu()*config.MODEL.IMAGE_SIZE[0], 
                               theta, None, 'valid_{}'.format(i), output_dir)
