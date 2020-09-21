@@ -32,8 +32,8 @@ _C.CUDNN.ENABLED = True
 # common params for NETWORK
 _C.MODEL = CN()
 _C.MODEL.CORE_NAME = 'resnet50'
-_C.MODEL.OUTPUT_TYPE = 'coords'  # or 'angle'
 _C.MODEL.IMAGE_SIZE = [256, 256]  # width * height, ex: 192 * 256
+_C.MODEL.PREDICT_THETA = False
 _C.MODEL.EXTRA = CN(new_allowed=True)
 
 

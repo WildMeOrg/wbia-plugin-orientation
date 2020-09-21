@@ -20,9 +20,9 @@ def compute_theta(coords):
     return theta_pred    
     
 
-def evaluate_orientaion(output, target_coords, target_theta, theta_thr = 10, theta_source = 'annot'):    
+def evaluate_orientaion_coords(output, target_coords, target_theta, theta_thr = 10, theta_source = 'annot'):    
     '''
-    Evaluate errors and accuracy of orientation detection.
+    Evaluate errors and accuracy of orientation detection from predicted coordinates.
     Input:
         output: numpy array of shape (bs, 5) where each row is [xc, yc, xt, yt, w]
         target: numpy array of shape (bs, 5), ground truth for [xc, yc, xt, yt, w]
@@ -68,6 +68,32 @@ def evaluate_orientaion(output, target_coords, target_theta, theta_thr = 10, the
             'err_xcyc': np.mean(err_xcyc),
             'err_xtyt': np.mean(err_xtyt),
             'err_w': np.mean(err_w),
+            }
+        
+    return eval_dict
+
+def evaluate_orientaion_theta(theta_pred, theta_gt, theta_thr = 10):    
+    '''
+    Evaluate errors and accuracy of orientation detection that predicts theta directly.
+    Input:
+        theta_pred: 
+        theta_gt: array of shape (bs), ground truth for cosine of angle of orientation theta in radians (from annotations)
+        theta_thr (int): threshold for error in degrees when theta detection is considered correct
+    Returns:
+        eval_dict (dictionary):
+            'err_theta': mean error in degrees for angle theta
+            'acc_theta': accuracy of theta prediction, prediction is correct if error is below threshold
+    '''
+    #Comvert to angles
+    theta_pred = np.rad2deg(np.arccos(theta_pred))
+    theta_gt = np.rad2deg(np.arccos(theta_gt))
+   
+    err_theta = np.abs(theta_pred - theta_gt)    
+    acc_theta = (err_theta < theta_thr).sum() / len(theta_gt)
+    
+    eval_dict = {
+            'err_theta': np.mean(err_theta),
+            'acc_theta': acc_theta
             }
         
     return eval_dict

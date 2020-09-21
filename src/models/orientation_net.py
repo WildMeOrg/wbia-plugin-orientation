@@ -16,19 +16,19 @@ class OrientationNet(nn.Module):
     """ CNN that normalizes orientation of the object in the image
     Input:
         core_name (string): name of core feature extractor, class from torchvision.models
-        output_type (string): 'coords' or 'angle'
-            if 'coords' then output is 5 floats: xc, yc, xt, yt, x
-            if 'angle' then output is theta, angle of rotation in 
+        predict_angle (bool, default False):
+            if False then output is 5 floats: xc, yc, xt, yt, x
+            if True then output is cos(theta), angle of rotation in 
                 clockwise direction of the image from vertical orientation
     """
-    def __init__(self, core_name='resnet18', output_type='coords'):
+    def __init__(self, core_name='resnet18', predict_angle=False):
         super(OrientationNet, self).__init__()
+        self.predict_angle = predict_angle
         
-        assert output_type in ['coords', 'angle']
-        if output_type == 'coords':
-            output_num = 5
-        else:
+        if predict_angle:
             output_num = 1
+        else:
+            output_num = 5
         
         self.model = eval('models.'+core_name)(pretrained=False, progress=True)
         #set_parameter_requires_grad(self.model, feature_extract)
@@ -46,11 +46,18 @@ class OrientationNet(nn.Module):
             
         #Additional layers
         self.sigmoid = nn.Sigmoid()
+        self.tanh = nn.Tanh()
         
         
     def forward(self, x): 
         out = self.model(x)
-        out = self.sigmoid(out)
+        
+        if self.predict_angle:
+            #For angle use Tahn activation function (output from -1 to 1)
+            out = self.tanh(out)
+        else:
+            #For coords use Sigmoid activation function (output from 0 to 1)
+            out = self.sigmoid(out)
                 
         return out
 

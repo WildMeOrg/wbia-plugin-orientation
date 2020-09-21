@@ -58,7 +58,7 @@ def _make_model(cfg):
         model: model object
     """
     model = models.orientation_net.OrientationNet(core_name=cfg.MODEL.CORE_NAME, 
-                                  output_type=cfg.MODEL.OUTPUT_TYPE)
+                                  predict_angle=cfg.MODEL.PREDICT_THETA)
     return model
 
 def _model_to_gpu(model, cfg):
