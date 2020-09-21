@@ -47,12 +47,11 @@ def create_logger(cfg, cfg_path, phase='train', create_tb=True):
         print('=> creating {}'.format(root_output_dir))
         root_output_dir.mkdir()
 
-    cfg_name = os.path.split(os.path.split(cfg_path)[0])[-1]
-    cfg_name += '_' + os.path.basename(cfg_path).split('.')[0]
+    cfg_name = os.path.split(cfg_path)[-1].split('.')[0]
     
     dataset_name = cfg.DATASET.NAME
 
-    final_output_dir = root_output_dir / (dataset_name+cfg_name+'_'+cfg.VERSION)
+    final_output_dir = root_output_dir / (dataset_name+'_'+cfg_name+'_'+cfg.VERSION)
 
     print('=> creating {}'.format(final_output_dir))
     final_output_dir.mkdir(parents=True, exist_ok=True)

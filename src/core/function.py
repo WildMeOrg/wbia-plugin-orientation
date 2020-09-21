@@ -7,8 +7,8 @@ import time
 import logging
 import torch
 
-from core.evaluate import evaluate_orientaion
-from utils.vis import save_debug_images
+from core.evaluate import evaluate_orientaion, compute_theta
+from utils.vis import plot_batch_images
 from utils.utils import AverageMeterSet
 
 torch.autograd.set_detect_anomaly(True)
@@ -74,10 +74,12 @@ def train(config, train_loader, model, loss_func, optimizer, epoch, output_dir, 
             writer_dict['train_global_steps'] = global_steps + 1           
             
             #Save some image with detected points
-            save_debug_images(config, images.cpu(), 
+            plot_batch_images(images.cpu(), 
                               target_output.cpu()*config.MODEL.IMAGE_SIZE[0], 
                               output.detach().cpu()*config.MODEL.IMAGE_SIZE[0], 
-                              theta, None, 'train_{}'.format(i), output_dir)
+                              theta, 
+                              compute_theta(output.detach().cpu().numpy()), 
+                              'train_{}'.format(i), output_dir)
             
         if config.LOCAL and i > 3:
             break
@@ -143,10 +145,12 @@ def validate(config, val_loader, val_dataset, model, loss_func, output_dir, writ
                 logger.info(msg)
 
             #Save some image with detected points
-            save_debug_images(config, images.cpu(), 
+            plot_batch_images(images.cpu(), 
                               target_output.cpu()*config.MODEL.IMAGE_SIZE[0], 
                               output.detach().cpu()*config.MODEL.IMAGE_SIZE[0], 
-                              theta, None, 'valid_{}'.format(i), output_dir)
+                              theta, 
+                              compute_theta(output.detach().cpu().numpy()), 
+                              'valid_{}'.format(i), output_dir)
                                 
             if config.LOCAL and i>3:
                 break

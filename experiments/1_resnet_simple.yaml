@@ -7,8 +7,8 @@ LOCAL: False
 
 DATASET:
   CLASS: animal
-  NAME: 'seaturtle'
-  MAX_ROT: 90
+  NAME: 'mantaray'
+  MAX_ROT: 180
   SCALE_FACTOR: [0.8, 1.2]
   HOR_FLIP_PROB: 0.5
   VERT_FLIP_PROB: 0.5

@@ -87,12 +87,6 @@ def update_config(cfg, args):
     cfg.defrost()
     cfg.merge_from_file(args.cfg)
     cfg.merge_from_list(args.opts)
-
-    if cfg.TEST.MODEL_FILE:
-        cfg.TEST.MODEL_FILE = os.path.join(
-            cfg.DATA_DIR, cfg.TEST.MODEL_FILE
-        )
-
     cfg.freeze()
 
 

@@ -5,6 +5,21 @@
 import math
 import numpy as np
 
+def compute_theta(coords):
+    """
+    Compute angle of orientation theta based on output coordinates.
+    Input:
+        coords: numpy array of shape (bs, 5) where each row is [xc, yc, xt, yt, w]
+    Returns:
+        theta_pred: numpy array of angle theta in radians
+    """   
+    theta_pred = np.arctan2(coords[:,3]-coords[:,1], coords[:,2]-coords[:,0])
+    #Add 90 degrees to align arctan2 notation with annotations
+    theta_pred += math.radians(90)
+    
+    return theta_pred    
+    
+
 def evaluate_orientaion(output, target_coords, target_theta, theta_thr = 10, theta_source = 'annot'):    
     '''
     Evaluate errors and accuracy of orientation detection.
@@ -13,7 +28,9 @@ def evaluate_orientaion(output, target_coords, target_theta, theta_thr = 10, the
         target: numpy array of shape (bs, 5), ground truth for [xc, yc, xt, yt, w]
         target_theta: array of shape (bs), ground truth for angle of orientation theta in radians (from annotations)
         theta_thr (int): threshold for error in degrees when theta detection is considered correct
-        theta_source (string): 'annot' or 'calc', source of theta, get from ground truth annotations or calculate from gt coordinates
+        theta_source (string): 'annot' or 'calc', source of theta, get from ground truth annotations or calculate from gt coordinates.
+            Arctan compute angle between provided vector and vector (1, 0).
+            Theta in annotations is a different angle so we add 90 degrees to align to values.
     Returns:
         eval_dict (dictionary):
             'err_theta': mean error in degrees for angle theta

@@ -2,15 +2,12 @@
 # Licensed under the MIT License.
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
 # ------------------------------------------------------------------------------
-import torch
 import logging
 import os
-from collections import OrderedDict
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 import copy
 import imageio
-
 import numpy as np
 
 from torch.utils.data import Dataset
@@ -34,20 +31,6 @@ class AnimalDataset(Dataset):
         coc_ann_file = self._get_annot_file()
         self.coco = COCO(coc_ann_file)
             
-        # deal with class names
-        #cats = [cat['name'] for cat in self.coco.loadCats(self.coco.getCatIds())]
-        #self.classes = cats
-        #logger.info('=> classes: {}'.format(self.classes))
-        #self.num_classes = len(self.classes)
-        #self._class_to_ind = dict(zip(self.classes, range(self.num_classes)))
-        #self._class_to_coco_ind = dict(zip(cats, self.coco.getCatIds()))
-        #self._coco_ind_to_class_ind = dict(
-        #    [
-        #        (self._class_to_coco_ind[cls], self._class_to_ind[cls])
-        #        for cls in self.classes[1:]
-        #    ]
-        #)
-
         # load image file names
         self.image_set_index = self.coco.getImgIds()
         self.num_images = len(self.image_set_index)
