@@ -84,7 +84,7 @@ def normalize_theta(theta, degrees=True):
         pi = math.pi
         
     if theta >= 2*pi or theta <= -2*pi:
-        theta = theta % 2*pi 
+        theta = theta % (2*pi) 
     
     if theta <= pi and theta > -pi:
         return theta
