@@ -19,11 +19,8 @@ from core.function import validate
 from utils.utils import create_logger
 from dataset import custom_transforms
 
-#import dataset
-#import models
-
 from train import parse_args, _make_model, _model_to_gpu, _make_loss
-  
+
 def _make_test_data(cfg, logger):
     """Initialise train and validation loaders as per config parameters
     Input:
@@ -33,25 +30,24 @@ def _make_test_data(cfg, logger):
         test_loader: Data Loader over test dataset
         test_dataset: test dataset object
     """
-                        
     test_transform = transforms.Compose([
                         custom_transforms.CropObjectAlignedArea(noise=0.),
                         custom_transforms.Resize(cfg.MODEL.IMSIZE),
                         custom_transforms.ToTensor(),
-                        custom_transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                        custom_transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                                std =[0.229, 0.224, 0.225],
                                                input_size=cfg.MODEL.IMSIZE[0])
                         ])
-                        
+
     test_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, False, test_transform)
-    
+
     test_loader = torch.utils.data.DataLoader(test_dataset,
                                                 batch_size=cfg.TEST.BS*len(cfg.GPUS),
                                                 shuffle=False,
                                                 num_workers=cfg.WORKERS,
                                                 pin_memory=cfg.PIN_MEMORY
                                             )
-    
+
     return test_loader, test_dataset
 
 
@@ -71,31 +67,31 @@ def main():
 
     # Initialise models
     model = _make_model(cfg, is_train=False)
-    
-    #Load model weights
+
+    # Load model weights
     if cfg.TEST.MODEL_FILE:
         model_state_file = cfg.TEST.MODEL_FILE
     else:
         model_state_file = os.path.join(final_output_dir, 'best.pth')
-        
-    logger.info('=> loading model from {}'.format(model_state_file))     
+
+    logger.info('=> loading model from {}'.format(model_state_file))
     if cfg.USE_GPU:
         model.load_state_dict(torch.load(model_state_file))
     else:
         model.load_state_dict(torch.load(model_state_file, map_location=torch.device('cpu')))
-    
+
     model = _model_to_gpu(model, cfg)
     # Initialise losses
     loss_func = _make_loss(cfg)
-    
+
     # Initialise data loaders
     test_loader, test_dataset = _make_test_data(cfg, logger)
 
-    # evaluate on validation set
-    perf_indicator = validate(cfg, 
-                              test_loader, 
-                              test_dataset, 
-                              model, 
+    # Evaluate on validation set
+    perf_indicator = validate(cfg,
+                              test_loader,
+                              test_dataset,
+                              model,
                               loss_func,
                               final_output_dir)
 

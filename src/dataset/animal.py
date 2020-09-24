@@ -29,7 +29,7 @@ class AnimalDataset(Dataset):
         self.is_train = is_train
         self.transform = transform
         self.split = self.cfg.DATASET.TRAIN_SET if self.is_train else self.cfg.DATASET.TEST_SET
-        
+
         self.crop = crop
         self.resize = resize
 
@@ -40,18 +40,15 @@ class AnimalDataset(Dataset):
         else:
             # Load COCO annots and preproc
             db_coco = self._get_coco_db()
-            #print(db_coco)
-            self.db = self._preproc_db(db_coco=db_coco, 
-                                       expand=2., 
+            self.db = self._preproc_db(db_coco=db_coco,
+                                       expand=2.,
                                        min_size=2*max(self.cfg.MODEL.IMSIZE))
 
-        logger.info('=> load {} samples from {} / {} dataset'. \
+        logger.info('=> load {} samples from {} / {} dataset'.
                     format(len(self.db), self.cfg.DATASET.NAME, self.split))
-
 
     def __len__(self,):
         return len(self.db)
-
 
     def _get_preproc_db(self):
         """ Load preprocessed database """
@@ -59,33 +56,30 @@ class AnimalDataset(Dataset):
             db = json.load(file)
         return db
 
-
     def _preproc_db_exists(self):
         """ Check if preprocessed dataset exists """
         self.prep_dir = os.path.join(self.cfg.DATA_DIR, self.cfg.DATASET.NAME)
         self.prep_images = os.path.join(self.prep_dir, 'images', self.split)
         self.prep_annots = os.path.join(self.prep_dir,
-                                      'annots',
-                                      '{}.json'.format(self.split))
+                                        'annots',
+                                        '{}.json'.format(self.split))
 
         if os.path.exists(self.prep_images) and os.path.exists(self.prep_annots):
             return True
         else:
-            if not os.path.exists(self.prep_images): 
+            if not os.path.exists(self.prep_images):
                 os.makedirs(self.prep_images)
-            if not os.path.exists(os.path.split(self.prep_annots)[0]): 
+            if not os.path.exists(os.path.split(self.prep_annots)[0]):
                 os.makedirs(os.path.split(self.prep_annots)[0])
             return False
-
 
     def _get_coco_annot_file(self):
         """ Get name of file with annotations """
         coc_ann_file = os.path.join(self.cfg.COCO_ANNOT_DIR,
-                                'orientation.{}.coco'.format(self.cfg.DATASET.NAME),
-                                'annotations',
-                                'instances_{}.json'.format(self.split))
+                                    'orientation.{}.coco'.format(self.cfg.DATASET.NAME),
+                                    'annotations',
+                                    'instances_{}.json'.format(self.split))
         return coc_ann_file
-
 
     def _get_coco_db(self):
         """ Get database from COCO anntations """
@@ -99,7 +93,6 @@ class AnimalDataset(Dataset):
             gt_db.extend(self._load_coco_orientation_annotation(coco, index))
         return gt_db
 
-
     def _preproc_db(self, db_coco, expand, min_size):
         """Preprocess images by cropping area twice the size of bounding box
         and resizing to a smaller size for faster augmentation and loading
@@ -112,7 +105,7 @@ class AnimalDataset(Dataset):
             if image is None:
                 logger.error('=> fail to read {}'.format(db_rec['image_path']))
                 raise ValueError('Fail to read {}'.format(db_rec['image_path']))
-                
+
             aa_big_box = db_rec['aa_big_box']
             aa_bbox = db_rec['aa_bbox']
 
@@ -122,7 +115,7 @@ class AnimalDataset(Dataset):
                                                expand,
                                                image.shape[:2],
                                                type='xyhw')
-    
+
                 # Crop image and coordinates
                 image_cropped = image[y1:y1+bh, x1:x1+bw]
                 if min(image.shape) == 0:
@@ -130,7 +123,7 @@ class AnimalDataset(Dataset):
                     continue
                 else:
                     image = image_cropped
-                    
+
                 # Shift coordinates to new origin
                 aa_big_box = to_origin(aa_big_box, (x1, y1))
                 aa_bbox = to_origin(aa_bbox, (x1, y1))
@@ -138,17 +131,19 @@ class AnimalDataset(Dataset):
             if self.resize:
                 # Compute output size
                 if image.shape[0] <= image.shape[1]:
-                    output_size = (min_size, int(image.shape[1] * min_size / image.shape[0]))
+                    out_size = (min_size,
+                                int(image.shape[1] * min_size / image.shape[0]))
                 else:
-                    output_size = (int(image.shape[0] * min_size / image.shape[1]), min_size)
-                
+                    out_size = (int(image.shape[0] * min_size / image.shape[1]),
+                                min_size)
+
                 # Resize coordinates
-                aa_big_box = resize_coords(aa_big_box, image.shape[:2], output_size)
-                aa_bbox = resize_coords(aa_bbox, image.shape[:2], output_size)
-                
+                aa_big_box = resize_coords(aa_big_box, image.shape[:2], out_size)
+                aa_bbox = resize_coords(aa_bbox, image.shape[:2], out_size)
+
                 # Resize image
                 image = skimage_transform.resize(image,
-                                                 output_size,
+                                                 out_size,
                                                  order=3,
                                                  anti_aliasing=True)
 
@@ -170,7 +165,6 @@ class AnimalDataset(Dataset):
 
         return prep_gt_db
 
-
     def _load_coco_orientation_annotation(self, coco, index):
         """ Get COCO annotations for an image by index """
         im_ann = coco.loadImgs(index)[0]
@@ -189,7 +183,6 @@ class AnimalDataset(Dataset):
             })
         return rec
 
-
     def _get_image_path_from_filename(self, filename):
         """ Get full path to image in COCO annotations by image filename """
         image_path = os.path.join(self.cfg.COCO_ANNOT_DIR,
@@ -199,11 +192,10 @@ class AnimalDataset(Dataset):
                                   filename)
         return image_path
 
-
     def __getitem__(self, idx):
         """ Get record from database and return image with ground truth annotations """
         db_rec = copy.deepcopy(self.db[idx])
-       
+
         # A. Load original image
         image = imageio.imread(db_rec['image_path'])
         if image is None:
@@ -217,7 +209,7 @@ class AnimalDataset(Dataset):
         theta = db_rec['theta']
         xt, yt = rotate_point_by_angle([xc, yc], [bbox_x + bbox_w/2, bbox_y], theta)
         w = bbox_w / 2
-    
+
         # C. Transform image and corresponding parameters
         if self.transform:
             image, xc, yc, xt, yt, w, theta = self.transform((image, xc, yc, xt, yt, w, theta))

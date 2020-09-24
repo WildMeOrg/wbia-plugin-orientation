@@ -15,6 +15,7 @@ Session.vim
 ### IPythonNotebook template
 # Temporary data
 .ipynb_checkpoints/
+.ipynb
 
 ### Python template
 # Byte-compiled / optimized / DLL files
