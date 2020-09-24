@@ -2,35 +2,25 @@
 # Licensed under the MIT License.
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
 # ------------------------------------------------------------------------------
-
-import argparse
 import os
 import pprint
-import shutil
-import numpy as np
-
 import torch
-import torch.nn as nn
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
 import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
-from tensorboardX import SummaryWriter
 
 import tools._init_paths
 from config import cfg
 from config import update_config
-from core.function import train, validate
-from utils.utils import get_optimizer
-from utils.utils import save_checkpoint
+from core.function import validate
 from utils.utils import create_logger
-from utils.utils import get_model_summary
 from dataset import custom_transforms
 
-import dataset
-import models
+#import dataset
+#import models
 
 from train import parse_args, _make_model, _model_to_gpu, _make_loss
   
@@ -46,11 +36,11 @@ def _make_test_data(cfg, logger):
                         
     test_transform = transforms.Compose([
                         custom_transforms.CropObjectAlignedArea(noise=0.),
-                        custom_transforms.Resize(cfg.MODEL.IMAGE_SIZE),
+                        custom_transforms.Resize(cfg.MODEL.IMSIZE),
                         custom_transforms.ToTensor(),
                         custom_transforms.Normalize(mean=[0.485, 0.456, 0.406], 
                                                std =[0.229, 0.224, 0.225],
-                                               input_size=cfg.MODEL.IMAGE_SIZE[0])
+                                               input_size=cfg.MODEL.IMSIZE[0])
                         ])
                         
     test_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, False, test_transform)
@@ -80,7 +70,7 @@ def main():
     torch.backends.cudnn.enabled = cfg.CUDNN.ENABLED
 
     # Initialise models
-    model = _make_model(cfg)
+    model = _make_model(cfg, is_train=False)
     
     #Load model weights
     if cfg.TEST.MODEL_FILE:

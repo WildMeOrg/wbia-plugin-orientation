@@ -6,7 +6,6 @@
 import argparse
 import os
 import pprint
-import shutil
 import numpy as np
 
 import torch
@@ -24,9 +23,7 @@ from config import cfg
 from config import update_config
 from core.function import train, validate
 from utils.utils import get_optimizer
-from utils.utils import save_checkpoint
 from utils.utils import create_logger
-from utils.utils import get_model_summary
 from dataset import custom_transforms
 
 import dataset
@@ -50,15 +47,14 @@ def parse_args():
 
     return args
 
-def _make_model(cfg):
+def _make_model(cfg, is_train):
     """Initialise model from config
     Input:
         cfg: config object
     Returns:
         model: model object
     """
-    model = models.orientation_net.OrientationNet(core_name=cfg.MODEL.CORE_NAME, 
-                                  predict_angle=cfg.MODEL.PREDICT_THETA)
+    model = models.orientation_net.OrientationNet(cfg, is_train)
     return model
 
 def _model_to_gpu(model, cfg):
@@ -81,29 +77,29 @@ def _make_data(cfg, logger):
         train_loader:
         valid_loader:
         valid_dataset:
-    """
+    """       
     train_transform = transforms.Compose([
-                        custom_transforms.CropObjectAlignedArea(scale=2.),
-                        custom_transforms.ResizeKeepRatio(min_size=2*cfg.MODEL.IMAGE_SIZE[0]),
+                        #custom_transforms.CropObjectAlignedArea(scale=2.),
+                        #custom_transforms.ResizeKeepRatio(min_size=2*cfg.MODEL.IMSIZE[0]),
                         custom_transforms.RandomHorizontalFlip(p=cfg.DATASET.HOR_FLIP_PROB),
                         custom_transforms.RandomVerticalFlip(p=cfg.DATASET.VERT_FLIP_PROB),        
                         custom_transforms.RandomRotate(degrees=cfg.DATASET.MAX_ROT, mode = 'edge'),
                         custom_transforms.RandomScale(scale=cfg.DATASET.SCALE_FACTOR),
                         custom_transforms.CropObjectAlignedArea(noise=0.1),
-                        custom_transforms.Resize(cfg.MODEL.IMAGE_SIZE),
+                        custom_transforms.Resize(cfg.MODEL.IMSIZE),
                         custom_transforms.ToTensor(),
                         custom_transforms.Normalize(mean=[0.485, 0.456, 0.406], 
                                                std =[0.229, 0.224, 0.225],
-                                               input_size=cfg.MODEL.IMAGE_SIZE[0])
+                                               input_size=cfg.MODEL.IMSIZE[0])
                         ])
                         
     valid_transform = transforms.Compose([
                         custom_transforms.CropObjectAlignedArea(noise=0.),
-                        custom_transforms.Resize(cfg.MODEL.IMAGE_SIZE),
+                        custom_transforms.Resize(cfg.MODEL.IMSIZE),
                         custom_transforms.ToTensor(),
                         custom_transforms.Normalize(mean=[0.485, 0.456, 0.406], 
                                                std =[0.229, 0.224, 0.225],
-                                               input_size=cfg.MODEL.IMAGE_SIZE[0])
+                                               input_size=cfg.MODEL.IMSIZE[0])
                         ])
                         
     train_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, True, train_transform)
@@ -141,7 +137,7 @@ def main():
     torch.backends.cudnn.enabled = cfg.CUDNN.ENABLED
 
     # Initialise models
-    model = _make_model(cfg)
+    model = _make_model(cfg, is_train=True)
     
     # Initialise losses
     loss_func = _make_loss(cfg)

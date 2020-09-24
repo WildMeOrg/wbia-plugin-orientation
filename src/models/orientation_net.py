@@ -2,12 +2,11 @@
 # Licensed under the MIT License.
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
 # ------------------------------------------------------------------------------
-
 import logging
-import torch
 import torch.nn as nn
-from torchvision import models
+from torchvision import models as torchmodels
 
+import models
 
 logger = logging.getLogger(__name__)
 
@@ -21,17 +20,21 @@ class OrientationNet(nn.Module):
             if True then output is cos(theta), angle of rotation in 
                 clockwise direction of the image from vertical orientation
     """
-    def __init__(self, core_name='resnet18', predict_angle=False):
+    def __init__(self, cfg, is_train):
         super(OrientationNet, self).__init__()
-        self.predict_angle = predict_angle
+        self.predict_angle = cfg.MODEL.PREDICT_THETA
+        core_name = cfg.MODEL.CORE_NAME
         
-        if predict_angle:
+        if self.predict_angle:
             output_num = 1
         else:
             output_num = 5
         
-        self.model = eval('models.'+core_name)(pretrained=False, progress=True)
-        #set_parameter_requires_grad(self.model, feature_extract)
+        if 'hrnet' in core_name.lower():
+            self.model = models.hrnet.get_pose_net(cfg, is_train)
+        else:
+            #if training, load pretrained model
+            self.model = eval('torchmodels.'+core_name)(pretrained=is_train, progress=True)
         
         if 'resnet' in core_name.lower():
             num_ftrs = self.model.fc.in_features

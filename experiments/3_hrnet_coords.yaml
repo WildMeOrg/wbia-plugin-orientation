@@ -1,0 +1,92 @@
+DATA_DIR: '/home/olga/Documents/Datasets/WildMe'
+GPUS: (0,)
+WORKERS: 24
+PRINT_FREQ: 10
+USE_GPU: True
+LOCAL: False
+
+DATASET:
+  CLASS: animal
+  NAME: 'mantaray'
+  MAX_ROT: 180
+  SCALE_FACTOR: [0.8, 1.2]
+  HOR_FLIP_PROB: 0.5
+  VERT_FLIP_PROB: 0.5
+  TEST_SET: val2020
+  TRAIN_SET: train2020
+
+MODEL:
+  CORE_NAME: 'hrnet'
+  PRETRAINED: 'models/hrnet_w32-36af842e.pth'
+  IMSIZE:
+  - 256
+  - 256
+  EXTRA:
+    PRETRAINED_LAYERS:
+    - 'conv1'
+    - 'bn1'
+    - 'conv2'
+    - 'bn2'
+    - 'layer1'
+    - 'transition1'
+    - 'stage2'
+    - 'transition2'
+    - 'stage3'
+    - 'transition3'
+    - 'stage4'
+    FINAL_CONV_KERNEL: 1
+    STAGE2:
+      NUM_MODULES: 1
+      NUM_BRANCHES: 2
+      BLOCK: BASIC
+      NUM_BLOCKS:
+      - 4
+      - 4
+      NUM_CHANNELS:
+      - 32
+      - 64
+      FUSE_METHOD: SUM
+    STAGE3:
+      NUM_MODULES: 4
+      NUM_BRANCHES: 3
+      BLOCK: BASIC
+      NUM_BLOCKS:
+      - 4
+      - 4
+      - 4
+      NUM_CHANNELS:
+      - 32
+      - 64
+      - 128
+      FUSE_METHOD: SUM
+    STAGE4:
+      NUM_MODULES: 3
+      NUM_BRANCHES: 4
+      BLOCK: BASIC
+      NUM_BLOCKS:
+      - 4
+      - 4
+      - 4
+      - 4
+      NUM_CHANNELS:
+      - 32
+      - 64
+      - 128
+      - 256
+      FUSE_METHOD: SUM
+
+#LOSS:
+  
+TRAIN:
+  BS: 32
+  BEGIN_EPOCH: 0
+  END_EPOCH: 100
+  OPTIMIZER: adam
+  LR: 0.0001
+TEST:
+  BS: 32
+  MODEL_FILE: ''
+DEBUG:
+  DEBUG: true
+  SAVE_BATCH_IMAGES_GT: true
+  SAVE_BATCH_IMAGES_PRED: true

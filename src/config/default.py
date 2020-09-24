@@ -2,9 +2,6 @@
 # Licensed under the MIT License.
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
 # ------------------------------------------------------------------------------
-
-import os
-
 from yacs.config import CfgNode as CN
 
 
@@ -12,6 +9,7 @@ _C = CN()
 
 _C.OUTPUT_DIR = 'output'
 _C.LOG_DIR = 'log'
+_C.COCO_ANNOT_DIR = 'data'
 _C.DATA_DIR = 'data'
 _C.USE_GPU = True
 _C.GPUS = (0,)
@@ -32,9 +30,11 @@ _C.CUDNN.ENABLED = True
 # common params for NETWORK
 _C.MODEL = CN()
 _C.MODEL.CORE_NAME = 'resnet50'
-_C.MODEL.IMAGE_SIZE = [256, 256]  # width * height, ex: 192 * 256
+_C.MODEL.PRETRAINED = ''
+_C.MODEL.IMSIZE = [256, 256]  # width * height, ex: 192 * 256
 _C.MODEL.PREDICT_THETA = False
 _C.MODEL.EXTRA = CN(new_allowed=True)
+
 
 
 _C.LOSS = CN()

@@ -18,7 +18,7 @@ DATASET:
 MODEL:
   CORE_NAME: 'resnet50'
   PREDICT_THETA: True
-  IMAGE_SIZE:
+  IMSIZE:
   - 256
   - 256
 

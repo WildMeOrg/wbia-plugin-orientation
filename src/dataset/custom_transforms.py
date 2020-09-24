@@ -15,8 +15,10 @@ import numpy as np
 from torchvision.transforms import functional as F
 from torchvision.transforms import RandomAffine
 from utils.data_manipulation import get_object_aligned_box
-from utils.data_manipulation import add_dict_perpendicular_vector
 from utils.data_manipulation import increase_bbox
+from utils.data_manipulation import resize_sample
+from utils.data_manipulation import rotate_coordinates
+
 
 class RandomHorizontalFlip(object):
     """Horizontally flip numpy image randomly with a given probability.
@@ -161,54 +163,6 @@ class RandomScale(RandomAffine):
         w *= scale
         
         return image, xc, yc, xt, yt, w, theta
-    
-def rotate_coordinates(coords, angle, rotation_centre, imsize, resize=False):
-    """Rotate coordinates in the image
-    """
-    rotation_centre = np.asanyarray(rotation_centre)
-    rot_matrix = np.array([[  math.cos(math.radians(angle)), math.sin(math.radians(angle)), 0],
-                           [ -math.sin(math.radians(angle)), math.cos(math.radians(angle)), 0],
-                           [  0,0,1]])
-    coords = transform.matrix_transform(coords - rotation_centre, rot_matrix) + rotation_centre
-                
-    if resize:
-        rows, cols = imsize[0], imsize[1]
-        corners = np.array([[0, 0], [0, rows - 1], [cols - 1, rows - 1], [cols - 1, 0]], dtype=np.float32)
-        if rotation_centre is not None:
-            corners = transform.matrix_transform(corners - rotation_centre, rot_matrix) + rotation_centre
-    
-        x_shift = min(corners[:,0])
-        y_shift = min(corners[:,1])       
-        coords -= np.array([x_shift, y_shift])
-        
-    return coords  
-
-def resize_sample(sample, original_size, output_size):
-    image, xc, yc, xt, yt, w, theta = sample
-    
-    #Compute second end of segment w (first end of w is in xt, yt)
-    (xw_end, yw_end), _ = add_dict_perpendicular_vector([xc, yc], [xt, yt], w)
-    
-    image = transform.resize(image, 
-                             output_size, 
-                             order=3, 
-                             anti_aliasing=True)
-    
-    #Update coordinates
-    xc = int((xc / original_size[1]) * output_size[1])
-    yc = int((yc / original_size[0]) * output_size[0])
-    xt = int((xt / original_size[1]) * output_size[1])
-    yt = int((yt / original_size[0]) * output_size[0])
-    xw_end = int((xw_end / original_size[1]) * output_size[1])
-    yw_end = int((yw_end / original_size[0]) * output_size[0])
-    
-    #Recompute w
-    w  = np.linalg.norm([xw_end-xt, yw_end-yt])
-    
-    #TODO recompute theta (change as)
-    theta = np.arctan2(yt-yc, xt-xc) + math.radians(90)
-    
-    return image, xc, yc, xt, yt, w, theta
 
 class Resize(object):
     """Resize image and corresponding coordinates
@@ -281,7 +235,8 @@ class CropObjectAlignedArea(object):
                 
         x_min, y_min, x_max, y_max = increase_bbox((x_min, y_min, x_max, y_max),
                                                    self.scale,
-                                                   image.shape[:2])
+                                                   image.shape[:2],
+                                                   type='xyx2y2')
 
         #Crop image and coordinates
         image = image[y_min:y_max, x_min:x_max]
