@@ -27,7 +27,7 @@ def load_partial_weights(model, model_path, pretrained_state=None, cuda_avail=Tr
             pretrained_state = torch.load(model_path)
         else:
             pretrained_state = torch.load(model_path, map_location=torch.device('cpu'))
-            
+
     model_state = model.state_dict()
     #print(model_state.keys())
     transfer_state = {k:v for k,v in pretrained_state.items() if k in model_state and v.size() == model_state[k].size()}
@@ -35,7 +35,7 @@ def load_partial_weights(model, model_path, pretrained_state=None, cuda_avail=Tr
     not_in_model_state = [k for k,v in pretrained_state.items() if k not in model_state or v.size() != model_state[k].size()]
     print('Not loaded weights:', not_in_model_state)
     model_state.update(transfer_state)
-    print(model.load_state_dict(model_state))  
+    print(model.load_state_dict(model_state))
     no_init = [k for k,v in model_state.items() if ('num_batches_tracked' not in k) and (k not in pretrained_state or v.size() != pretrained_state[k].size())]
     print('Randomly initialised weights', no_init)
     return transfer_state.keys(), not_in_model_state, no_init
@@ -48,7 +48,7 @@ def create_logger(cfg, cfg_path, phase='train', create_tb=True):
         root_output_dir.mkdir()
 
     cfg_name = os.path.split(cfg_path)[-1].split('.')[0]
-    
+
     dataset_name = cfg.DATASET.NAME
 
     final_output_dir = root_output_dir / (dataset_name+'_'+cfg_name+'_'+cfg.VERSION)
@@ -66,18 +66,18 @@ def create_logger(cfg, cfg_path, phase='train', create_tb=True):
     logger.setLevel(logging.INFO)
     console = logging.StreamHandler()
     logging.getLogger('').addHandler(console)
-    
+
     #create dir for debug images
     debug_imgs_dir = os.path.join(final_output_dir, 'debug_images')
     if not os.path.exists(debug_imgs_dir): os.makedirs(debug_imgs_dir)
-    
+
     if create_tb:
         tensorboard_log_dir = Path(cfg.LOG_DIR) / \
-            (cfg_name + '_' + cfg.VERSION + ' ' + time_str)
-    
+            (dataset_name + '_' + cfg_name + '_' + cfg.VERSION + ' ' + time_str)
+
         print('=> creating {}'.format(tensorboard_log_dir))
         tensorboard_log_dir.mkdir(parents=True, exist_ok=True)
-    
+
         return logger, str(final_output_dir), str(tensorboard_log_dir)
     else:
         return logger, str(final_output_dir)
@@ -102,7 +102,7 @@ def get_optimizer(cfg, model):
     return optimizer
 
 
-def num_trainable_params(model, print_list = False):  
+def num_trainable_params(model, print_list = False):
     """Count number of trainable parameters
     """
     n_trainable = 0
@@ -128,8 +128,8 @@ def save_object(obj, filename):
     print('Saving the data to {}'.format(filename))
     with open(filename, 'wb') as output:  # Overwrites any existing file.
         pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
-        
-        
+
+
 def unnormalize(batch_image, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], use_gpu=False):
     """Reverse normalization applied to image by transformations
     """
@@ -164,7 +164,7 @@ def save_res_csv(results, filename):
     with open(filename, "a") as output:
             writer = csv.writer(output, lineterminator='\n')
             writer.writerow(exp_data)
-        
+
 class AverageMeterSet:
     def __init__(self):
         self.meters = {}
