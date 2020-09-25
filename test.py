@@ -18,8 +18,8 @@ from config import update_config
 from core.function import validate
 from utils.utils import create_logger
 from dataset import custom_transforms
-
 from train import parse_args, _make_model, _model_to_gpu, _make_loss
+import dataset
 
 def _make_test_data(cfg, logger):
     """Initialise train and validation loaders as per config parameters
