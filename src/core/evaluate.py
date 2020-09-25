@@ -56,7 +56,7 @@ def evaluate_orientaion_coords(output, target_coords, target_theta,
         target_coords = target_coords.numpy()
     if type(target_theta) == torch.Tensor:
         target_theta = target_theta.numpy()
- 
+
     # Compute predicted truth theta (np.arctan2(yt-yc, xt-xc))
     theta_pred = np.arctan2(output[:, 3] - output[:, 1],
                             output[:, 2] - output[:, 0])
@@ -90,7 +90,6 @@ def evaluate_orientaion_coords(output, target_coords, target_theta,
             'err_xtyt': np.mean(err_xtyt),
             'err_w': np.mean(err_w),
             }
-
     return eval_dict
 
 
@@ -126,7 +125,6 @@ def evaluate_orientaion_theta(theta_pred, theta_gt, theta_thr=10):
             'err_theta': np.mean(err_theta),
             'acc_theta': acc_theta
             }
-
     return eval_dict
 
 

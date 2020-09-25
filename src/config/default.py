@@ -27,15 +27,13 @@ _C.CUDNN.BENCHMARK = True
 _C.CUDNN.DETERMINISTIC = False
 _C.CUDNN.ENABLED = True
 
-# common params for NETWORK
+# Common params for models
 _C.MODEL = CN()
 _C.MODEL.CORE_NAME = 'resnet50'
 _C.MODEL.PRETRAINED = ''
 _C.MODEL.IMSIZE = [256, 256]  # width * height, ex: 192 * 256
 _C.MODEL.PREDICT_THETA = False
 _C.MODEL.EXTRA = CN(new_allowed=True)
-
-
 
 _C.LOSS = CN()
 
@@ -50,7 +48,7 @@ _C.DATASET.DATA_FORMAT = 'jpg'
 # training data augmentation
 _C.DATASET.HOR_FLIP_PROB = 0.
 _C.DATASET.VERT_FLIP_PROB = 0.
-_C.DATASET.SCALE_FACTOR = [1.,1.]
+_C.DATASET.SCALE_FACTOR = [1., 1.]
 _C.DATASET.MAX_ROT = 30
 
 # train
@@ -67,7 +65,6 @@ _C.TRAIN.BEGIN_EPOCH = 0
 _C.TRAIN.END_EPOCH = 140
 _C.TRAIN.RESUME = False
 _C.TRAIN.CHECKPOINT = ''
-
 
 # testing
 _C.TEST = CN()
@@ -94,4 +91,3 @@ if __name__ == '__main__':
     import sys
     with open(sys.argv[1], 'w') as f:
         print(_C, file=f)
-
