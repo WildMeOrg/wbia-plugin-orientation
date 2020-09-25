@@ -172,4 +172,4 @@ def validate(cfg, val_loader, val_dataset, model, loss_func, output_dir,
                 writer.add_scalar(key, val, global_steps)
             writer_dict['valid_global_steps'] = global_steps + 1
 
-    return perf['acc_theta']
+    return meters.meters['valid_acc_theta'].avg
