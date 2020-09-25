@@ -97,8 +97,11 @@ def main():
                               loss_func,
                               final_output_dir)
 
-    logger.info('Final results. Model performance on test data is {:.2%}'.
-                format(perf_indicator))
+    logger.info('Final results. Accuracy@{} on {} {}  is {:.2%}'.
+                format(cfg.TEST.THETA_THR,
+                       cfg.DATASET.NAME,
+                       cfg.DATASET.TEST_SET,
+                       perf_indicator))
 
 
 if __name__ == '__main__':
