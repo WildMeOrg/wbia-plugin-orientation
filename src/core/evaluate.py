@@ -22,25 +22,23 @@ def compute_theta(coords):
     return theta_pred
 
 
-def evaluate_orientaion_coords(output, target_coords, target_theta,
+def evaluate_orientaion_coords(pred_coords, target_coords, target_theta,
                                theta_thr=10, theta_source='annot'):
     '''
-    Evaluate errors and accuracy of orientation from predicted coordinates.
+    Evaluate errors and accuracy of orientation using predicted coordinates.
     Predicted theta is correct if error is below threshold.
     Input:
-        output: numpy array or tensor of shape (bs, 5)
+        pred_coords: numpy array or tensor of shape (bs, 5)
                 predicted values [xc, yc, xt, yt, w]
-        target: numpy array or tensor of shape (bs, 5)
+        target_coords: numpy array or tensor of shape (bs, 5)
                 ground truth values [xc, yc, xt, yt, w]
-        target_theta: array of shape (bs),
+        target_theta: numpy array or tensor of shape (bs),
                 ground truth for angle of orientation theta in radians
-        theta_thr (int): threshold in degrees
-                         when theta detection is considered correct
+        theta_thr: int, threshold in degrees when theta detection
+                is considered correct
         theta_source (string): 'annot' or 'calc', source of theta,
-            get from ground truth annotations or calculate from gt coordinates.
-            Arctan compute angle between provided vector and vector (1, 0).
-            To align arctan output with annotations,
-            we add 90 degrees to arctan output
+            'annot' - get theta from gt theta annotations
+            'calc' - calculate from gt coordinates.
     Returns:
         eval_dict (dictionary):
             'err_theta': mean error in degrees for angle theta
@@ -50,17 +48,20 @@ def evaluate_orientaion_coords(output, target_coords, target_theta,
             'err_w': mean distance in pixels between gt and predictions for w
     '''
     # Convert to numpy arrays if tensors
-    if type(output) == torch.Tensor:
-        output = output.numpy()
+    if type(pred_coords) == torch.Tensor:
+        pred_coords = pred_coords.numpy()
     if type(target_coords) == torch.Tensor:
         target_coords = target_coords.numpy()
     if type(target_theta) == torch.Tensor:
         target_theta = target_theta.numpy()
 
-    # Compute predicted truth theta (np.arctan2(yt-yc, xt-xc))
-    theta_pred = np.arctan2(output[:, 3] - output[:, 1],
-                            output[:, 2] - output[:, 0])
+    # Compute predicted theta (np.arctan2(yt-yc, xt-xc))
+    theta_pred = np.arctan2(pred_coords[:, 3] - pred_coords[:, 1],
+                            pred_coords[:, 2] - pred_coords[:, 0])
     if theta_source == 'annot':
+        # Arctan compute angle between provided vector and vector (1, 0).
+        # To align arctan output with annotations,
+        # we add 90 degrees to arctan output
         theta_pred += math.radians(90)
 
     # True theta is computed either from ground truth (xc, yc) and (xt, yt)
@@ -71,17 +72,18 @@ def evaluate_orientaion_coords(output, target_coords, target_theta,
         theta_gt = np.arctan2(target_coords[:, 3] - target_coords[:, 1],
                               target_coords[:, 2] - target_coords[:, 0])
 
-    # Comvert to angles
+    # Comvert to degrees
     theta_pred = np.rad2deg(theta_pred)
     theta_gt = np.rad2deg(theta_gt)
 
+    # Normalize angles to range between -180 and 180 degrees
     np_norm_theta = np.vectorize(normalize_theta)
     err_theta = np.abs(np_norm_theta(theta_pred) - np_norm_theta(theta_gt))
-    acc_theta = (err_theta < theta_thr).sum() / len(theta_gt)
+    acc_theta = (err_theta <= theta_thr).sum() / len(theta_gt)
 
-    err_xcyc = np.linalg.norm(target_coords[:, :2] - output[:, :2])
-    err_xtyt = np.linalg.norm(target_coords[:, 2:4] - output[:, 2:4])
-    err_w = np.abs(target_coords[:, 4] - output[:, 4])
+    err_xcyc = np.linalg.norm(target_coords[:, :2] - pred_coords[:, :2])
+    err_xtyt = np.linalg.norm(target_coords[:, 2:4] - pred_coords[:, 2:4])
+    err_w = np.abs(target_coords[:, 4] - pred_coords[:, 4])
 
     eval_dict = {
             'err_theta': np.mean(err_theta),
@@ -129,9 +131,9 @@ def evaluate_orientaion_theta(theta_pred, theta_gt, theta_thr=10):
 
 
 def normalize_theta(theta, degrees=True):
-    '''Normalize angle theta to be between -180 and 180 degrees
+    '''Normalize angle theta to -180 and 180 degrees
     Input:
-        theta (float): angle in degrees
+        theta (float): angle in degrees or radians
         degrees (bool, default True): if True theta in degrees else in radians
     '''
     if degrees:
