@@ -21,6 +21,7 @@ from dataset import custom_transforms
 from train import parse_args, _make_model, _model_to_gpu, _make_loss
 import dataset
 
+
 def _make_test_data(cfg, logger):
     """Initialise train and validation loaders as per config parameters
     Input:
@@ -35,18 +36,18 @@ def _make_test_data(cfg, logger):
                         custom_transforms.Resize(cfg.MODEL.IMSIZE),
                         custom_transforms.ToTensor(),
                         custom_transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                               std =[0.229, 0.224, 0.225],
-                                               input_size=cfg.MODEL.IMSIZE[0])
-                        ])
+                                                    std =[0.229, 0.224, 0.225],
+                                                    input_size=cfg.MODEL.IMSIZE[0])
+                                         ])
 
     test_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, False, test_transform)
 
     test_loader = torch.utils.data.DataLoader(test_dataset,
-                                                batch_size=cfg.TEST.BS*len(cfg.GPUS),
-                                                shuffle=False,
-                                                num_workers=cfg.WORKERS,
-                                                pin_memory=cfg.PIN_MEMORY
-                                            )
+                                              batch_size=cfg.TEST.BS*len(cfg.GPUS),
+                                              shuffle=False,
+                                              num_workers=cfg.WORKERS,
+                                              pin_memory=cfg.PIN_MEMORY
+                                              )
 
     return test_loader, test_dataset
 
@@ -78,7 +79,8 @@ def main():
     if cfg.USE_GPU:
         model.load_state_dict(torch.load(model_state_file))
     else:
-        model.load_state_dict(torch.load(model_state_file, map_location=torch.device('cpu')))
+        model.load_state_dict(torch.load(model_state_file,
+                                         map_location=torch.device('cpu')))
 
     model = _model_to_gpu(model, cfg)
     # Initialise losses
@@ -95,7 +97,9 @@ def main():
                               loss_func,
                               final_output_dir)
 
-    logger.info('Final results. Model performance on test data is {%.2f}'.format(perf_indicator))
+    logger.info('Final results. Model performance on test data is {:.2%}'.
+                format(perf_indicator))
+
 
 if __name__ == '__main__':
     main()
