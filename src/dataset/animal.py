@@ -118,7 +118,7 @@ class AnimalDataset(Dataset):
 
                 # Crop image and coordinates
                 image_cropped = image[y1:y1+bh, x1:x1+bw]
-                if min(image.shape) == 0:
+                if min(image.shape) < 1:
                     print('Error while cropping image {}'.format(db_rec['image_path']))
                     continue
                 else:
@@ -165,16 +165,49 @@ class AnimalDataset(Dataset):
 
         return prep_gt_db
 
+    def _annot_sanity_check(self, obj, image_path):
+        """ Check annotations for consistency """
+        consistency_flag = True
+        aa_bbox = obj['bbox']
+        # Top left corner of the bounding box cannot be negative
+#        if aa_bbox[0] < 0 or aa_bbox[1] < 0:
+#            consistency_flag = False
+
+        # Width and height of bounding box cannot be less or equal to 0
+        if aa_bbox[2] <= 0 or aa_bbox[3] <= 0:
+            consistency_flag = False
+
+        aa_big_box = obj['segmentation_bbox']
+#        if aa_big_box[0] < 0 or aa_big_box[1] < 0:
+#            consistency_flag = False
+
+        # Width and height of bounding box cannot be less or equal to 0
+        if aa_big_box[2] <= 0 or aa_big_box[3] <= 0:
+            consistency_flag = False
+
+        if not consistency_flag:
+            logger.info('Skipping image {}'.format(image_path))
+            logger.info('Check bounding box annotations: {}, {}'.
+                        format(aa_bbox, aa_big_box))
+
+        return consistency_flag
+
     def _load_coco_orientation_annotation(self, coco, index):
         """ Get COCO annotations for an image by index """
         im_ann = coco.loadImgs(index)[0]
         annIds = coco.getAnnIds(imgIds=index, iscrowd=False)
         objs = coco.loadAnns(annIds)
+        image_path = self._get_image_path(im_ann['file_name'])
 
         rec = []
         for i, obj in enumerate(objs):
+
+            # Skip annotations that do not pass sanity check
+            if not self._annot_sanity_check(obj, image_path):
+                continue
+
             rec.append({
-                'image_path': self._get_image_path_from_filename(im_ann['file_name']),
+                'image_path': image_path,
                 'aa_bbox': obj['bbox'],
                 'theta': obj['theta'],
                 'aa_big_box': obj['segmentation_bbox'],
@@ -183,7 +216,7 @@ class AnimalDataset(Dataset):
             })
         return rec
 
-    def _get_image_path_from_filename(self, filename):
+    def _get_image_path(self, filename):
         """ Get full path to image in COCO annotations by image filename """
         image_path = os.path.join(self.cfg.COCO_ANNOT_DIR,
                                   'orientation.{}.coco'.format(self.cfg.DATASET.NAME),
@@ -193,7 +226,7 @@ class AnimalDataset(Dataset):
         return image_path
 
     def __getitem__(self, idx):
-        """ Get record from database and return image with ground truth annotations """
+        """ Get record from database and return sample for training"""
         db_rec = copy.deepcopy(self.db[idx])
 
         # A. Load original image
