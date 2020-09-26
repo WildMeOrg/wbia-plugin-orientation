@@ -8,7 +8,7 @@ import torch
 
 from core.evaluate import evaluate_orientaion_coords, compute_theta
 from core.evaluate import evaluate_orientaion_theta
-from utils.vis import plot_batch_images, plot_batch_images_theta
+from utils.vis import plot_images, plot_images_theta
 from utils.utils import AverageMeterSet
 
 torch.autograd.set_detect_anomaly(True)
@@ -84,17 +84,19 @@ def train(cfg, train_loader, model, loss_func, optimizer, epoch, output_dir,
 
             # Save some image with detected points
             if cfg.MODEL.PREDICT_THETA:
-                plot_batch_images_theta(images.cpu(),
-                                        target_output.cpu(),
-                                        output.detach().cpu(),
-                                        'train_{}'.format(i), output_dir)
+                plot_images_theta(images.cpu(),
+                                  target_output.cpu(),
+                                  output.detach().cpu(),
+                                  '{}_{}'.format(cfg.DATASET.TRAIN_SET, i),
+                                  output_dir)
             else:
-                plot_batch_images(images.cpu(),
-                                  target_output.cpu()*cfg.MODEL.IMSIZE[0],
-                                  output.detach().cpu()*cfg.MODEL.IMSIZE[0],
-                                  theta,
-                                  compute_theta(output.detach().cpu().numpy()),
-                                  'train_{}'.format(i), output_dir)
+                plot_images(images.cpu(),
+                            target_output.cpu()*cfg.MODEL.IMSIZE[0],
+                            output.detach().cpu()*cfg.MODEL.IMSIZE[0],
+                            theta,
+                            compute_theta(output.detach().cpu().numpy()),
+                            '{}_{}'.format(cfg.DATASET.TRAIN_SET, i),
+                            output_dir)
 
         if cfg.LOCAL and i > 3:
             break
@@ -150,17 +152,19 @@ def validate(cfg, val_loader, val_dataset, model, loss_func, output_dir,
 
             # Save some image with detected points
             if cfg.MODEL.PREDICT_THETA:
-                plot_batch_images_theta(images.cpu(),
-                                        target_output.cpu(),
-                                        output.detach().cpu(),
-                                        'train_{}'.format(i), output_dir)
+                plot_images_theta(images.cpu(),
+                                  target_output.cpu(),
+                                  output.detach().cpu(),
+                                  '{}_{}'.format(cfg.DATASET.TEST_SET, i),
+                                  output_dir)
             else:
-                plot_batch_images(images.cpu(),
-                                  target_output.cpu()*cfg.MODEL.IMSIZE[0],
-                                  output.detach().cpu()*cfg.MODEL.IMSIZE[0],
-                                  theta,
-                                  compute_theta(output.detach().cpu().numpy()),
-                                  'valid_{}'.format(i), output_dir)
+                plot_images(images.cpu(),
+                            target_output.cpu()*cfg.MODEL.IMSIZE[0],
+                            output.detach().cpu()*cfg.MODEL.IMSIZE[0],
+                            theta,
+                            compute_theta(output.detach().cpu().numpy()),
+                            '{}_{}'.format(cfg.DATASET.TEST_SET, i),
+                            output_dir)
             if cfg.LOCAL and i > 3:
                 break
 

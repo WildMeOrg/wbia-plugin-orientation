@@ -49,11 +49,13 @@ def rotate_point_by_angle(origin, point, angle):
 
 
 def get_object_aligned_box(xc, yc, xt, yt, w):
-    """Get object aligned bounding box given center point (xc, yc), side point (xt, yt) and half width w
+    """Get object aligned bounding box given
+    the center point (xc, yc), the side point (xt, yt) and half width w
     Input:
         xc, yc, xt, yt, w: float or int, coordinates
     Returns:
-        corner_1, corner_2, corner_3, corner_4: four tuples - coordinates of four corners of bounding box (not in sequantial order)
+        corner_1, corner_2, corner_3, corner_4: four tuples - coordinates
+        of four corners of bounding box (not in sequantial order)
     """
     corner_1, corner_2 = add_dict_perpendicular_vector([xc, yc], [xt, yt], w)
     dist = np.linalg.norm([xc-xt, yc-yt])
@@ -70,7 +72,7 @@ def plot_image_coordinates(ax, image, xc, yc, xt, yt, w):
     ax.imshow(image)
     ax.plot(xc, yc, 'ro')
     ax.plot(xt, yt, 'yo')
-    ax.plot(predicted_oa_box[:,0], predicted_oa_box[:,1], 'go')
+    ax.plot(predicted_oa_box[:, 0], predicted_oa_box[:, 1], 'go')
 
 
 def increase_bbox(bbox, scale, image_size, type='xyhw'):
@@ -122,20 +124,24 @@ def to_origin(bbox_xywh, new_origin):
 def rotate_coordinates(coords, angle, rotation_centre, imsize, resize=False):
     """Rotate coordinates in the image
     """
-    rotation_centre = np.asanyarray(rotation_centre)
-    rot_matrix = np.array([[  math.cos(math.radians(angle)), math.sin(math.radians(angle)), 0],
-                           [ -math.sin(math.radians(angle)), math.cos(math.radians(angle)), 0],
-                           [  0,0,1]])
-    coords = transform.matrix_transform(coords - rotation_centre, rot_matrix) + rotation_centre
+    rot_centre = np.asanyarray(rotation_centre)
+    angle = math.radians(angle)
+    rot_matrix = np.array([[math.cos(angle), math.sin(angle), 0],
+                           [-math.sin(angle), math.cos(angle), 0],
+                           [0, 0, 1]])
+    coords = transform.matrix_transform(coords - rot_centre, rot_matrix) + rot_centre
 
     if resize:
         rows, cols = imsize[0], imsize[1]
-        corners = np.array([[0, 0], [0, rows - 1], [cols - 1, rows - 1], [cols - 1, 0]], dtype=np.float32)
+        corners = np.array([[0, 0],
+                            [0, rows - 1],
+                            [cols - 1, rows - 1],
+                            [cols - 1, 0]], dtype=np.float32)
         if rotation_centre is not None:
-            corners = transform.matrix_transform(corners - rotation_centre, rot_matrix) + rotation_centre
+            corners = transform.matrix_transform(corners - rot_centre, rot_matrix) + rot_centre
 
-        x_shift = min(corners[:,0])
-        y_shift = min(corners[:,1])
+        x_shift = min(corners[:, 0])
+        y_shift = min(corners[:, 1])
         coords -= np.array([x_shift, y_shift])
 
     return coords
@@ -165,7 +171,7 @@ def resize_coords(coords, original_size, target_size):
 def resize_sample(sample, original_size, target_size):
     image, xc, yc, xt, yt, w, theta = sample
 
-    #Compute second end of segment w (first end of w is in xt, yt)
+    # Compute second end of segment w (first end of w is in xt, yt)
     (xw_end, yw_end), _ = add_dict_perpendicular_vector([xc, yc], [xt, yt], w)
 
     image = transform.resize(image,
@@ -173,13 +179,15 @@ def resize_sample(sample, original_size, target_size):
                              order=3,
                              anti_aliasing=True)
 
-    #Update coordinates
+    # Update coordinates
     xc, yc = resize_coords((xc, yc), original_size, target_size)
     xt, yt = resize_coords((xt, yt), original_size, target_size)
-    xw_end, yw_end = resize_coords((xw_end, yw_end), original_size, target_size)
+    xw_end, yw_end = resize_coords((xw_end, yw_end),
+                                   original_size,
+                                   target_size)
 
     # Recompute w
-    w  = np.linalg.norm([xw_end-xt, yw_end-yt])
+    w = np.linalg.norm([xw_end-xt, yw_end-yt])
 
     # Recompute theta
     theta = np.arctan2(yt-yc, xt-xc) + math.radians(90)

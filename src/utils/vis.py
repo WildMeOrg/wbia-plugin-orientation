@@ -12,10 +12,8 @@ from utils.utils import unnormalize
 from utils.data_manipulation import plot_image_coordinates
 
 
-def plot_batch_images(input_images,
-                      coords_gt, coords_pred,
-                      theta_gt, theta_pred,
-                      prefix, output_dir, min_rows=2, max_cols=4, max_rows=4):
+def plot_images(input_images, coords_gt, coords_pred, theta_gt, theta_pred,
+                prefix, output_dir, min_rows=2, max_cols=4, max_rows=4):
     '''
     input_images: torch tensor of shape (bs, c, h, w)
     coords: torch tensor shape (bs, 5) where each row is [xc, yc, xt, yt, w]
@@ -70,8 +68,8 @@ def plot_batch_images(input_images,
     plt.close(fig)
 
 
-def plot_batch_images_theta(input_images, theta_gt, theta_pred, prefix,
-                            output_dir, min_rows=2, max_cols=4, max_rows=4):
+def plot_images_theta(input_images, theta_gt, theta_pred, prefix,
+                      output_dir, min_rows=2, max_cols=4, max_rows=4):
     '''
     input_images: torch tensor of shape (bs, c, h, w)
     theta_gt: torch tensor shape (bs, 1) with ground truth cosine values theta
