@@ -93,11 +93,15 @@ def plot_images_theta(input_images, theta_gt, theta_pred, prefix,
                            figsize=(ncols*4, nrows*4))
     for r in range(nrows):
         for c in range(ncols):
-            ax[r, c].imshow(images_un[r*ncols+c].numpy().transpose((1,2,0)))
-            ax[r, c].set_title('Gt {:.0f} Pred {:.0f} deg'.format(math.degrees(theta_gt[r*ncols+c]),
-                                                                 math.degrees(theta_pred[r*ncols+c])))
+            ax[r, c].imshow(images_un[r*ncols+c].numpy().transpose((1, 2, 0)))
+            ax[r, c].set_title('Gt {:.0f} Pred {:.0f} deg'.
+                               format(math.degrees(theta_gt[r*ncols+c]),
+                                      math.degrees(theta_pred[r*ncols+c])))
 
     # Save plot
-    file_name = os.path.join(output_dir, 'debug_images', '{}.png'.format(prefix))
-    fig.savefig(file_name, format='png', dpi=100, bbox_inches='tight', facecolor='w')
+    file_name = os.path.join(output_dir,
+                             'debug_images',
+                             '{}.png'.format(prefix))
+    fig.savefig(file_name, format='png', dpi=100, bbox_inches='tight',
+                facecolor='w')
     plt.close(fig)
