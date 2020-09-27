@@ -4,4 +4,4 @@
 # ------------------------------------------------------------------------------
 
 import models.orientation_net
-import models.hrnet
+import models.cls_hrnet
