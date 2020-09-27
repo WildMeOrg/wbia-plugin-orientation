@@ -10,7 +10,7 @@ import numpy as np
 
 from core.evaluate import evaluate_orientaion_coords, compute_theta
 from core.evaluate import evaluate_orientaion_theta
-from utils.vis import plot_images, plot_images_theta
+from utils.vis import plot_images, plot_images_theta, plot_rotated
 from utils.utils import AverageMeterSet
 from utils.utils import save_object
 
@@ -173,6 +173,15 @@ def validate(cfg, val_loader, val_dataset, model, loss_func, output_dir,
                             compute_theta(output.detach().cpu().numpy()),
                             '{}_{}'.format(cfg.DATASET.TEST_SET, i),
                             output_dir)
+                # Plot rotated images
+                if cfg.TEST.PLOT_ROTATED:
+                    plot_rotated(images.cpu(),
+                                 target_output.cpu()*cfg.MODEL.IMSIZE[0],
+                                 output.detach().cpu()*cfg.MODEL.IMSIZE[0],
+                                 theta,
+                                 compute_theta(output.detach().cpu().numpy()),
+                                 '{}_{}_rot'.format(cfg.DATASET.TEST_SET, i),
+                                 output_dir)
             if cfg.LOCAL and i > 3:
                 break
 

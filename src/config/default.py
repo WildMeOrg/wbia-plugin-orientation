@@ -72,6 +72,7 @@ _C.TEST.BS = 32
 _C.TEST.FLIP_TEST = False
 _C.TEST.MODEL_FILE = ''
 _C.TEST.THETA_THR = 10.
+_C.TEST.PLOT_ROTATED = True
 
 # debug
 _C.DEBUG = CN()
