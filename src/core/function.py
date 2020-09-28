@@ -199,4 +199,10 @@ def validate(cfg, val_loader, val_dataset, model, loss_func, output_dir,
         save_object(theta_gt_all, os.path.join(output_dir, 'theta_gt.pkl'))
         save_object(theta_preds_all, os.path.join(output_dir, 'theta_preds.pkl'))
 
+        logger.info('==> Accuracy@{} on {} {}  is {:.2%}'.
+                    format(cfg.TEST.THETA_THR,
+                           cfg.DATASET.NAME,
+                           cfg.DATASET.TEST_SET,
+                           meters.meters['valid_acc_theta'].avg))
+
     return meters.meters['valid_acc_theta'].avg
