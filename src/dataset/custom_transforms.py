@@ -1,6 +1,5 @@
-# Copyright (c) Microsoft
 # Licensed under the MIT License.
-# Written by Bin Xiao (Bin.Xiao@microsoft.com)
+# Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
 # ------------------------------------------------------------------------------
 # Differnce from PyTorch Transformers (https://pytorch.org/docs/stable/_modules/torchvision/transforms/transforms.html)
 # 1. Image in a sample is numpy array (not PIL Image)
@@ -8,12 +7,13 @@
 # ------------------------------------------------------------------------------
 import torch
 from skimage import transform
+from skimage import img_as_ubyte
 import random
 import math
 import numpy as np
 from random import randint
 from torchvision.transforms import functional as F
-from torchvision.transforms import RandomAffine
+from torchvision.transforms import RandomAffine, ColorJitter
 from utils.data_manipulation import get_object_aligned_box
 from utils.data_manipulation import increase_bbox
 from utils.data_manipulation import resize_sample
@@ -253,11 +253,13 @@ class CropObjectAlignedArea(object):
 
 class ToTensor(object):
     """Convert a ``PIL Image`` or ``numpy.ndarray`` to tensor.
-    Source: https://pytorch.org/docs/stable/_modules/torchvision/transforms/transforms.html#ToTensor
-
+    Source: https://pytorch.org/docs/stable/_modules/torchvision/transforms
+    /transforms.html#ToTensor
     Converts a PIL Image or numpy.ndarray (H x W x C) in the range
-    [0, 255] to a torch.FloatTensor of shape (C x H x W) in the range [0.0, 1.0]
-    if the PIL Image belongs to one of the modes (L, LA, P, I, F, RGB, YCbCr, RGBA, CMYK, 1)
+    [0, 255] to a torch.FloatTensor of shape (C x H x W)
+    in the range [0.0, 1.0]
+    if the PIL Image belongs to one of the modes
+    (L, LA, P, I, F, RGB, YCbCr, RGBA, CMYK, 1)
     or if the numpy.ndarray has dtype = np.uint8
     In the other cases, tensors are returned without scaling.
 
@@ -301,4 +303,37 @@ class Normalize(object):
         yt /= self.input_size
         w /= self.input_size
 
+        return image, xc, yc, xt, yt, w, theta
+
+
+class ColorJitterSample(object):
+    """Randomly change the brightness, contrast and saturation of an image
+    Input:
+        brightness (float or tuple of float (min, max)):
+            How much to jitter brightness.
+            brightness_factor is chosen uniformly from
+            [max(0, 1 - brightness), 1 + brightness]
+            or the given [min, max]. Should be non negative numbers.
+        contrast (float or tuple of float (min, max)):
+            How much to jitter contrast.
+            contrast_factor is chosen uniformly from
+            [max(0, 1 - contrast), 1 + contrast]
+            or the given [min, max]. Should be non negative numbers.
+        saturation (float or tuple of float (min, max)):
+            How much to jitter saturation.
+            saturation_factor is chosen uniformly from
+            [max(0, 1 - saturation), 1 + saturation]
+            or the given [min, max]. Should be non negative numbers.
+        hue (float or tuple of float (min, max)):
+            How much to jitter hue. hue_factor is chosen uniformly from
+            [-hue, hue] or the given [min, max].
+            Should have 0<= hue <= 0.5 or -0.5 <= min <= max <= 0.5.
+    """
+    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
+        self.image_tf = ColorJitter(brightness, contrast, saturation, hue)
+
+    def __call__(self, sample):
+        image, xc, yc, xt, yt, w, theta = sample
+        # Apply transform only to image
+        image = self.image_tf(F.to_pil_image(img_as_ubyte(image.clip(0., 1.))))
         return image, xc, yc, xt, yt, w, theta
