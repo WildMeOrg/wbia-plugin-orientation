@@ -58,7 +58,14 @@ class AnimalDataset(Dataset):
 
     def _preproc_db_exists(self):
         """ Check if preprocessed dataset exists """
-        self.prep_dir = os.path.join(self.cfg.DATA_DIR, self.cfg.DATASET.NAME)
+        if len(self.cfg.DATASET.SUFFIX) == 0:
+            self.prep_dir = os.path.join(self.cfg.DATA_DIR,
+                                         self.cfg.DATASET.NAME)
+        else:
+            self.prep_dir = os.path.join(self.cfg.DATA_DIR,
+                                         '{}_{}'.format(self.cfg.DATASET.NAME,
+                                                        self.cfg.DATASET.SUFFIX
+                                                        ))
         self.prep_images = os.path.join(self.prep_dir, 'images', self.split)
         self.prep_annots = os.path.join(self.prep_dir,
                                         'annots',
@@ -90,7 +97,7 @@ class AnimalDataset(Dataset):
         logger.info('=> Found {} images in {}'.format(num_images, coc_ann_file))
         gt_db = []
         for index in image_set_index:
-            gt_db.extend(self._load_coco_orientation_annotation(coco, index))
+            gt_db.extend(self._load_image_annots(coco, index))
         return gt_db
 
     def _preproc_db(self, db_coco, expand, min_size):
@@ -118,8 +125,9 @@ class AnimalDataset(Dataset):
 
                 # Crop image and coordinates
                 image_cropped = image[y1:y1+bh, x1:x1+bw]
-                if min(image.shape) < 1:
-                    print('Error while cropping image {}'.format(db_rec['image_path']))
+                if min(image_cropped.shape) < 1:
+                    print('Skipped image {} Cropped to zero size.'.
+                          format(db_rec['image_path']))
                     continue
                 else:
                     image = image_cropped
@@ -148,8 +156,12 @@ class AnimalDataset(Dataset):
                                                  anti_aliasing=True)
 
             # Save image to processed folder
+            im_filename = os.path.basename(db_rec['image_path'])
             new_filename = os.path.join(self.prep_images,
-                                        '{}_{}'.format(db_rec['obj_id'], os.path.basename(db_rec['image_path'])))
+                                        '{}_{}{}'.format(os.path.splitext(im_filename)[0],
+                                                         db_rec['obj_id'],
+                                                         os.path.splitext(im_filename)[1])
+                                        )
             imageio.imwrite(new_filename, img_as_ubyte(image))
 
             prep_gt_db.append({'image_path': new_filename,
@@ -169,17 +181,11 @@ class AnimalDataset(Dataset):
         """ Check annotations for consistency """
         consistency_flag = True
         aa_bbox = obj['bbox']
-        # Top left corner of the bounding box cannot be negative
-#        if aa_bbox[0] < 0 or aa_bbox[1] < 0:
-#            consistency_flag = False
+        aa_big_box = obj['segmentation_bbox']
 
         # Width and height of bounding box cannot be less or equal to 0
         if aa_bbox[2] <= 0 or aa_bbox[3] <= 0:
             consistency_flag = False
-
-        aa_big_box = obj['segmentation_bbox']
-#        if aa_big_box[0] < 0 or aa_big_box[1] < 0:
-#            consistency_flag = False
 
         # Width and height of bounding box cannot be less or equal to 0
         if aa_big_box[2] <= 0 or aa_big_box[3] <= 0:
@@ -192,28 +198,39 @@ class AnimalDataset(Dataset):
 
         return consistency_flag
 
-    def _load_coco_orientation_annotation(self, coco, index):
+    def _select_annot(self, obj_cat):
+        """ Select annotation to add to the dataset.
+        The annotation is included:
+            a. there is no list of selected categories in config
+            b. object category in the list of selected categories in config"""
+        if len(self.cfg.DATASET.SELECT_CATS_LIST) == 0 or \
+           (len(self.cfg.DATASET.SELECT_CATS_LIST) > 0 and
+           obj_cat in self.cfg.DATASET.SELECT_CATS_LIST):
+            return True
+        else:
+            return False
+
+    def _load_image_annots(self, coco, index):
         """ Get COCO annotations for an image by index """
-        im_ann = coco.loadImgs(index)[0]
-        annIds = coco.getAnnIds(imgIds=index, iscrowd=False)
-        objs = coco.loadAnns(annIds)
-        image_path = self._get_image_path(im_ann['file_name'])
+        im_anns = coco.imgToAnns[index]
+        image_path = self._get_image_path(coco.imgs[index]['file_name'])
 
         rec = []
-        for i, obj in enumerate(objs):
+        for i, obj in enumerate(im_anns):
 
             # Skip annotations that do not pass sanity check
             if not self._annot_sanity_check(obj, image_path):
                 continue
 
-            rec.append({
-                'image_path': image_path,
-                'aa_bbox': obj['bbox'],
-                'theta': obj['theta'],
-                'aa_big_box': obj['segmentation_bbox'],
-                'category_id': obj['category_id'],
-                'obj_id': i
-            })
+            if self._select_annot(obj['category_id']):
+                rec.append({
+                    'image_path': image_path,
+                    'aa_bbox': obj['bbox'],
+                    'theta': obj['theta'],
+                    'aa_big_box': obj['segmentation_bbox'],
+                    'category_id': obj['category_id'],
+                    'obj_id': i
+                })
         return rec
 
     def _get_image_path(self, filename):
@@ -235,12 +252,14 @@ class AnimalDataset(Dataset):
             logger.error('=> fail to read {}'.format(db_rec['image_path']))
             raise ValueError('Fail to read {}'.format(db_rec['image_path']))
 
-        # B. Get center point (xc,yc), orientation point (xt, yt), width (w) and theta (rotation angle)
+        # B. Get center point (xc,yc), orientation point (xt, yt),
+        # width (w) and theta (rotation angle)
         bbox_x, bbox_y, bbox_w, bbox_h = db_rec['aa_bbox']
 
         xc, yc = bbox_x + bbox_w/2, bbox_y + bbox_h/2
         theta = db_rec['theta']
-        xt, yt = rotate_point_by_angle([xc, yc], [bbox_x + bbox_w/2, bbox_y], theta)
+        xt, yt = rotate_point_by_angle([xc, yc], [bbox_x + bbox_w/2, bbox_y],
+                                       theta)
         w = bbox_w / 2
 
         # C. Transform image and corresponding parameters
