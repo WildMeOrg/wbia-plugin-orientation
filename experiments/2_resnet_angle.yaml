@@ -24,13 +24,10 @@ MODEL:
   - 256
 
 TRAIN:
-  BS: 32
-  BEGIN_EPOCH: 0
   END_EPOCH: 100
-  OPTIMIZER: adam
-  LR: 0.0001
+  LR: 0.00005
+
 TEST:
-  BS: 32
   MODEL_FILE: ''
 
 DEBUG:
