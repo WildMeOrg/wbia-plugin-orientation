@@ -4,12 +4,12 @@
 # ------------------------------------------------------------------------------
 import logging
 import os
-from pycocotools.coco import COCO
 import copy
 import imageio
 from skimage import transform as skimage_transform
 import json
 from skimage import img_as_ubyte
+from collections import defaultdict
 
 from torch.utils.data import Dataset
 from utils.data_manipulation import rotate_point_by_angle
@@ -80,7 +80,7 @@ class AnimalDataset(Dataset):
                 os.makedirs(os.path.split(self.prep_annots)[0])
             return False
 
-    def _get_coco_annot_file(self):
+    def _get_annot_file(self):
         """ Get name of file with annotations """
         coc_ann_file = os.path.join(self.cfg.COCO_ANNOT_DIR,
                                     'orientation.{}.coco'.format(self.cfg.DATASET.NAME),
@@ -90,15 +90,54 @@ class AnimalDataset(Dataset):
 
     def _get_coco_db(self):
         """ Get database from COCO anntations """
-        coc_ann_file = self._get_coco_annot_file()
-        coco = COCO(coc_ann_file)
-        image_set_index = coco.getImgIds()
-        num_images = len(image_set_index)
-        logger.info('=> Found {} images in {}'.format(num_images, coc_ann_file))
+        ann_file = self._get_annot_file()
+        dataset = json.load(open(ann_file, 'r'))
+
+        # Get image metadata
+        imgs = {}
+        if 'images' in dataset:
+            for img in dataset['images']:
+                imgs[img['id']] = img
+
+        # Get annots for images from annotations and parts
+        imgToAnns = defaultdict(list)
+        if 'annotations' in dataset:
+            for ann in dataset['annotations']:
+                imgToAnns[ann['image_id']].append(ann)
+
+        if 'parts' in dataset:
+            for ann in dataset['parts']:
+                imgToAnns[ann['image_id']].append(ann)
+
+        image_set_index = list(imgs.keys())
+        logger.info('=> Found {} images in {}'.format(len(image_set_index),
+                                                      ann_file))
         gt_db = []
         for index in image_set_index:
-            gt_db.extend(self._load_image_annots(coco, index))
+            img_anns = imgToAnns[index]
+            image_path = self._get_image_path(imgs[index]['file_name'])
+            gt_db.extend(self._load_image_annots(index, img_anns, image_path))
         return gt_db
+
+    def _load_image_annots(self, index, img_anns, image_path):
+        """ Get COCO annotations for an image by index """
+        rec = []
+        for i, obj in enumerate(img_anns):
+
+            # Skip annotations that do not pass sanity check
+            if not self._annot_sanity_check(obj, image_path):
+                continue
+
+            if self._select_annot(obj['category_id']):
+                rec.append({
+                    'image_path': image_path,
+                    'aa_bbox': obj['bbox'],
+                    'theta': obj['theta'],
+                    'aa_big_box': obj['segmentation_bbox'],
+                    'category_id': obj['category_id'],
+                    'obj_id': i
+                })
+        return rec
 
     def _preproc_db(self, db_coco, expand, min_size):
         """Preprocess images by cropping area twice the size of bounding box
@@ -209,29 +248,6 @@ class AnimalDataset(Dataset):
             return True
         else:
             return False
-
-    def _load_image_annots(self, coco, index):
-        """ Get COCO annotations for an image by index """
-        im_anns = coco.imgToAnns[index]
-        image_path = self._get_image_path(coco.imgs[index]['file_name'])
-
-        rec = []
-        for i, obj in enumerate(im_anns):
-
-            # Skip annotations that do not pass sanity check
-            if not self._annot_sanity_check(obj, image_path):
-                continue
-
-            if self._select_annot(obj['category_id']):
-                rec.append({
-                    'image_path': image_path,
-                    'aa_bbox': obj['bbox'],
-                    'theta': obj['theta'],
-                    'aa_big_box': obj['segmentation_bbox'],
-                    'category_id': obj['category_id'],
-                    'obj_id': i
-                })
-        return rec
 
     def _get_image_path(self, filename):
         """ Get full path to image in COCO annotations by image filename """
