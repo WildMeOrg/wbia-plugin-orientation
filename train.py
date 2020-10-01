@@ -6,12 +6,11 @@
 import argparse
 import os
 import pprint
-import numpy as np
-
 import torch
 import torch.nn as nn
 import torch.nn.parallel
 import torch.backends.cudnn as cudnn
+from torch.utils.data import DataLoader
 import torch.optim
 import torch.utils.data
 import torch.utils.data.distributed
@@ -24,10 +23,11 @@ from config import update_config
 from core.function import train, validate
 from utils.utils import get_optimizer
 from utils.utils import create_logger
-from dataset import custom_transforms
+from dataset import custom_transforms as ctf
 
 import dataset
 import models
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train keypoints network')
@@ -60,7 +60,7 @@ def _make_model(cfg, is_train):
 
 def _model_to_gpu(model, cfg):
     if cfg.USE_GPU:
-       model = torch.nn.DataParallel(model, device_ids=cfg.GPUS).cuda()
+        model = torch.nn.DataParallel(model, device_ids=cfg.GPUS).cuda()
     return model
 
 
@@ -79,50 +79,49 @@ def _make_data(cfg, logger):
         valid_loader:
         valid_dataset:
     """
-    train_transform = transforms.Compose([
-                        #custom_transforms.CropObjectAlignedArea(scale=2.),
-                        #custom_transforms.ResizeKeepRatio(min_size=2*cfg.MODEL.IMSIZE[0]),
-                        custom_transforms.RandomHorizontalFlip(p=cfg.DATASET.HOR_FLIP_PROB),
-                        custom_transforms.RandomVerticalFlip(p=cfg.DATASET.VERT_FLIP_PROB),
-                        custom_transforms.RandomRotate(degrees=cfg.DATASET.MAX_ROT, mode = 'edge'),
-                        custom_transforms.RandomScale(scale=cfg.DATASET.SCALE_FACTOR),
-                        custom_transforms.CropObjectAlignedArea(noise=0.1),
-                        custom_transforms.Resize(cfg.MODEL.IMSIZE),
-                        custom_transforms.ColorJitterSample(brightness=0.5,
-                                                            contrast=0.5,
-                                                            saturation=0.5,
-                                                            hue=0.1),
-                        custom_transforms.ToTensor(),
-                        custom_transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                               std =[0.229, 0.224, 0.225],
-                                               input_size=cfg.MODEL.IMSIZE[0])
+    train_tform = transforms.Compose([
+                    ctf.RandomHorizontalFlip(p=cfg.DATASET.HOR_FLIP_PROB),
+                    ctf.RandomVerticalFlip(p=cfg.DATASET.VERT_FLIP_PROB),
+                    ctf.RandomRotate(degrees=cfg.DATASET.MAX_ROT,
+                                     mode='edge'),
+                    ctf.RandomScale(scale=cfg.DATASET.SCALE_FACTOR),
+                    ctf.CropObjectAlignedArea(noise=0.1),
+                    ctf.Resize(cfg.MODEL.IMSIZE),
+                    ctf.ColorJitterSample(brightness=0.5,
+                                          contrast=0.5,
+                                          saturation=0.5,
+                                          hue=0.1),
+                    ctf.ToTensor(),
+                    ctf.Normalize(mean=[0.485, 0.456, 0.406],
+                                  std=[0.229, 0.224, 0.225],
+                                  input_size=cfg.MODEL.IMSIZE[0])
+                    ])
+
+    valid_tform = transforms.Compose([
+                        ctf.CropObjectAlignedArea(noise=0.),
+                        ctf.Resize(cfg.MODEL.IMSIZE),
+                        ctf.ToTensor(),
+                        ctf.Normalize(mean=[0.485, 0.456, 0.406],
+                                      std=[0.229, 0.224, 0.225],
+                                      input_size=cfg.MODEL.IMSIZE[0])
                         ])
 
-    valid_transform = transforms.Compose([
-                        custom_transforms.CropObjectAlignedArea(noise=0.),
-                        custom_transforms.Resize(cfg.MODEL.IMSIZE),
-                        custom_transforms.ToTensor(),
-                        custom_transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                               std =[0.229, 0.224, 0.225],
-                                               input_size=cfg.MODEL.IMSIZE[0])
-                        ])
+    train_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, True, train_tform)
+    valid_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, False, valid_tform)
 
-    train_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, True, train_transform)
-    valid_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, False, valid_transform)
+    train_loader = DataLoader(train_dataset,
+                              batch_size=cfg.TRAIN.BS*len(cfg.GPUS),
+                              shuffle=True,
+                              num_workers=cfg.WORKERS,
+                              pin_memory=cfg.PIN_MEMORY
+                              )
 
-    train_loader = torch.utils.data.DataLoader(train_dataset,
-                                                batch_size=cfg.TRAIN.BS*len(cfg.GPUS),
-                                                shuffle=True,
-                                                num_workers=cfg.WORKERS,
-                                                pin_memory=cfg.PIN_MEMORY
-                                            )
-
-    valid_loader = torch.utils.data.DataLoader(valid_dataset,
-                                                batch_size=cfg.TEST.BS*len(cfg.GPUS),
-                                                shuffle=False,
-                                                num_workers=cfg.WORKERS,
-                                                pin_memory=cfg.PIN_MEMORY
-                                            )
+    valid_loader = DataLoader(valid_dataset,
+                              batch_size=cfg.TEST.BS*len(cfg.GPUS),
+                              shuffle=False,
+                              num_workers=cfg.WORKERS,
+                              pin_memory=cfg.PIN_MEMORY
+                              )
 
     return train_loader, valid_loader, valid_dataset
 
@@ -131,7 +130,7 @@ def main():
     args = parse_args()
     update_config(cfg, args)
 
-    logger, final_output_dir, tb_log_dir = create_logger(cfg, args.cfg, 'train')
+    logger, output_dir, tb_log_dir = create_logger(cfg, args.cfg, 'train')
 
     logger.info(pprint.pformat(args))
     logger.info(cfg)
@@ -152,7 +151,6 @@ def main():
 
     best_perf = 0.0
     is_best_model = False
-    last_epoch = -1
 
     writer_dict = {
         'writer': SummaryWriter(log_dir=tb_log_dir),
@@ -162,7 +160,7 @@ def main():
 
     begin_epoch = cfg.TRAIN.BEGIN_EPOCH
     checkpoint_file = os.path.join(
-        final_output_dir, 'checkpoint.pth'
+        output_dir, 'checkpoint.pth'
     )
 
     if cfg.AUTO_RESUME and os.path.exists(checkpoint_file):
@@ -170,7 +168,6 @@ def main():
         checkpoint = torch.load(checkpoint_file)
         begin_epoch = checkpoint['epoch']
         best_perf = checkpoint['perf']
-        last_epoch = checkpoint['epoch']
         model.load_state_dict(checkpoint['state_dict'])
         logger.info("=> loaded checkpoint '{}' (epoch {})".format(
             checkpoint_file, checkpoint['epoch']))
@@ -181,8 +178,7 @@ def main():
     if cfg.AUTO_RESUME and os.path.exists(checkpoint_file):
         optimizer.load_state_dict(checkpoint['optimizer'])
 
-
-    #Train epochs
+    # Train epochs
     for epoch in range(begin_epoch, cfg.TRAIN.END_EPOCH):
 
         train(cfg,
@@ -190,16 +186,16 @@ def main():
               model,
               loss_func,
               optimizer, epoch,
-              final_output_dir,
+              output_dir,
               writer_dict)
 
-        # evaluate on validation set
+        # Evaluate on validation set
         perf_indicator = validate(cfg,
                                   valid_loader,
                                   valid_dataset,
                                   model,
                                   loss_func,
-                                  final_output_dir,
+                                  output_dir,
                                   writer_dict)
 
         if perf_indicator >= best_perf:
@@ -208,25 +204,29 @@ def main():
         else:
             is_best_model = False
 
-        #Save checkpoint
-        logger.info('=> saving checkpoint to {}'.format(final_output_dir))
+        # Save checkpoint
+        logger.info('=> saving checkpoint to {}'.format(output_dir))
         checkpoint_dict = {
             'epoch': epoch + 1,
             'model': cfg.MODEL.CORE_NAME,
             'perf': perf_indicator,
             'optimizer': optimizer.state_dict(),
         }
-        checkpoint_dict['state_dict'] = model.module.state_dict() if cfg.USE_GPU else model.state_dict()
+        checkpoint_dict['state_dict'] = model.module.state_dict() \
+            if cfg.USE_GPU else model.state_dict()
 
-        #Save best model
-        torch.save(checkpoint_dict, os.path.join(final_output_dir, 'checkpoint.pth'))
+        # Save best model
+        torch.save(checkpoint_dict, os.path.join(output_dir, 'checkpoint.pth'))
         if is_best_model:
-            logger.info('=> saving best model state to {} at epoch {}'.format(final_output_dir, epoch))
-            torch.save(checkpoint_dict['state_dict'], os.path.join(final_output_dir, 'best.pth'))
+            logger.info('=> saving best model state to {} at epoch {}'.
+                        format(output_dir, epoch))
+            torch.save(checkpoint_dict['state_dict'], os.path.join(output_dir,
+                                                                   'best.pth'))
 
-    #Save final state
-    logger.info('=> saving final model state to {}'.format(final_output_dir))
-    torch.save(checkpoint_dict['state_dict'], os.path.join(final_output_dir, 'final.pth'))
+    # Save final state
+    logger.info('=> saving final model state to {}'.format(output_dir))
+    torch.save(checkpoint_dict['state_dict'], os.path.join(output_dir,
+                                                           'final.pth'))
 
     writer_dict['writer'].close()
 
