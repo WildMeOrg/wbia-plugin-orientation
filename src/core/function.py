@@ -132,7 +132,7 @@ def validate(cfg, val_loader, val_dataset, model, loss_func, output_dir,
 
             # Predict on flipped images and aggregate results
             if cfg.TEST.HFLIP:
-                images_hflipped = torch.fliplr(images)
+                images_hflipped = torch.flip(images, [3])
                 output_hflipped = model(images_hflipped)
 
                 output_hflipped = hflip_back(output_hflipped.cpu().numpy(),
@@ -143,7 +143,7 @@ def validate(cfg, val_loader, val_dataset, model, loss_func, output_dir,
                     output_hflipped = output_hflipped.cuda()
 
             if cfg.TEST.VFLIP:
-                images_vflipped = torch.flipud(images)
+                images_vflipped = torch.flip(images, [2])
                 output_vflipped = model(images_vflipped)
 
                 output_vflipped = vflip_back(output_vflipped.cpu().numpy(),
