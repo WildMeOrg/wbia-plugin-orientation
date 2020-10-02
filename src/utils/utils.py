@@ -90,6 +90,33 @@ def save_object(obj, filename):
         pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
 
+def hflip_back(output_flipped, predict_angle, image_h_w):
+    '''
+    ouput_flipped: numpy.ndarray either (batch_size, 5) or (batch_size, 1)
+    '''
+    if predict_angle:
+        assert output_flipped.ndim == 2 and output_flipped.shape[1] == 1,\
+            'output_flipped should be [batch_size, 1]'
+    else:
+        assert output_flipped.ndim == 2 and output_flipped.shape[1] == 5,\
+            'output_flipped should be [batch_size, 5]'
+
+    h, w = image_h_w
+
+    if predict_angle:
+        # Flip theta
+        output_flipped[:, 0] = -output_flipped[:, 0]
+    else:
+        # Flip x-coordinates
+        output_flipped[:, 0] = w - output_flipped[:, 0]
+        output_flipped[:, 2] = w - output_flipped[:, 2]
+
+        # Flip theta
+        output_flipped[:, 4] = -output_flipped[:, 4]
+
+    return output_flipped
+
+
 def unnormalize(batch_image,
                 mean=[0.485, 0.456, 0.406],
                 std=[0.229, 0.224, 0.225],

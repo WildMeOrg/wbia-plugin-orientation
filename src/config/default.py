@@ -71,7 +71,8 @@ _C.TRAIN.CHECKPOINT = ''
 # testing
 _C.TEST = CN()
 _C.TEST.BS = 48
-_C.TEST.FLIP_TEST = False
+_C.TEST.HFLIP = False
+_C.TEST.VFLIP = False
 _C.TEST.MODEL_FILE = ''
 _C.TEST.THETA_THR = 10.
 _C.TEST.PLOT_ROTATED = False

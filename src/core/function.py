@@ -13,6 +13,7 @@ from core.evaluate import evaluate_orientaion_theta
 from utils.vis import plot_images, plot_images_theta, plot_rotated
 from utils.utils import AverageMeterSet
 from utils.utils import save_object
+from utils.utils import hflip_back
 
 torch.autograd.set_detect_anomaly(True)
 logger = logging.getLogger(__name__)
@@ -128,6 +129,19 @@ def validate(cfg, val_loader, val_dataset, model, loss_func, output_dir,
 
             # Compute output of Orientation Network
             output = model(images)
+
+            # Predict on flipped images and aggregate results
+            if cfg.TEST.HFLIP:
+                images_flipped = images.flip(3)
+                output_flipped = model(images_flipped)
+
+                output_flipped = hflip_back(output_flipped.cpu().numpy(),
+                                            cfg.MODEL.PREDICT_THETA,
+                                            cfg.MODEL.IMSIZE)
+                output_flipped = torch.from_numpy(output_flipped.copy())
+                if cfg.USE_GPU:
+                    output_flipped = output_flipped.cuda()
+                output = (output + output_flipped) * 0.5
 
             loss = loss_func(output, target_output)
             meters.update('valid_loss', loss.item(), bs)
