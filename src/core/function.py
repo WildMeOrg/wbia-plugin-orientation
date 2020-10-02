@@ -13,7 +13,7 @@ from core.evaluate import evaluate_orientaion_theta
 from utils.vis import plot_images, plot_images_theta, plot_rotated
 from utils.utils import AverageMeterSet
 from utils.utils import save_object
-from utils.utils import hflip_back
+from utils.utils import hflip_back, vflip_back
 
 torch.autograd.set_detect_anomaly(True)
 logger = logging.getLogger(__name__)
@@ -132,16 +132,33 @@ def validate(cfg, val_loader, val_dataset, model, loss_func, output_dir,
 
             # Predict on flipped images and aggregate results
             if cfg.TEST.HFLIP:
-                images_flipped = images.flip(3)
-                output_flipped = model(images_flipped)
+                images_hflipped = torch.fliplr(images)
+                output_hflipped = model(images_hflipped)
 
-                output_flipped = hflip_back(output_flipped.cpu().numpy(),
-                                            cfg.MODEL.PREDICT_THETA,
-                                            cfg.MODEL.IMSIZE)
-                output_flipped = torch.from_numpy(output_flipped.copy())
+                output_hflipped = hflip_back(output_hflipped.cpu().numpy(),
+                                             cfg.MODEL.PREDICT_THETA,
+                                             cfg.MODEL.IMSIZE)
+                output_hflipped = torch.from_numpy(output_hflipped.copy())
                 if cfg.USE_GPU:
-                    output_flipped = output_flipped.cuda()
-                output = (output + output_flipped) * 0.5
+                    output_hflipped = output_hflipped.cuda()
+
+            if cfg.TEST.VFLIP:
+                images_vflipped = torch.flipud(images)
+                output_vflipped = model(images_vflipped)
+
+                output_vflipped = vflip_back(output_vflipped.cpu().numpy(),
+                                             cfg.MODEL.PREDICT_THETA,
+                                             cfg.MODEL.IMSIZE)
+                output_vflipped = torch.from_numpy(output_vflipped.copy())
+                if cfg.USE_GPU:
+                    output_vflipped = output_vflipped.cuda()
+
+            if cfg.TEST.HFLIP and cfg.TEST.VFLIP:
+                output = (output + output_hflipped + output_vflipped) * 0.3
+            elif not cfg.TEST.HFLIP and cfg.TEST.VFLIP:
+                output = (output + output_vflipped) * 0.5
+            elif cfg.TEST.HFLIP and not cfg.TEST.VFLIP:
+                output = (output + output_hflipped) * 0.5
 
             loss = loss_func(output, target_output)
             meters.update('valid_loss', loss.item(), bs)
