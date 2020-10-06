@@ -5,6 +5,7 @@
 import logging
 import torch.nn as nn
 from torchvision import models as torchmodels
+from efficientnet_pytorch import EfficientNet
 import models
 
 logger = logging.getLogger(__name__)
@@ -36,6 +37,8 @@ class OrientationNet(nn.Module):
         # Load core model
         if 'hrnet' in core_name.lower():
             self.model = models.cls_hrnet.get_cls_net(cfg)
+        elif 'efficientnet' in core_name.lower():
+            self.model = EfficientNet.from_pretrained(core_name)
         else:
             # Load pretrained model if training
             self.model = eval('torchmodels.'+core_name)(pretrained=is_train)
@@ -45,12 +48,18 @@ class OrientationNet(nn.Module):
             num_ftrs = self.model.fc.in_features
             self.model.fc = nn.Linear(num_ftrs, output_num)
 
+        elif 'efficientnet' in core_name.lower():
+            num_ftrs = self.model._fc.in_features
+            self.model._fc = nn.Linear(num_ftrs, output_num)
+
         elif 'densenet' in core_name.lower():
             num_ftrs = self.model.classifier.in_features
             self.model.classifier = nn.Linear(num_ftrs, output_num)
+
         elif 'hrnet' in core_name.lower():
             num_ftrs = self.model.classifier.in_features
             self.model.classifier = nn.Linear(num_ftrs, output_num)
+
         else:
             logger.error('=> invalid core_name {}'.format(core_name))
             raise ValueError('Invalid core_name: {}'.format(core_name))

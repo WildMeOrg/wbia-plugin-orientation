@@ -220,7 +220,7 @@ def validate(cfg, val_loader, val_dataset, model, loss_func, output_dir,
         if writer_dict:
             writer = writer_dict['writer']
             global_steps = writer_dict['valid_global_steps']
-            for key, val in meters.values().items():
+            for key, val in meters.averages(postfix='').items():
                 writer.add_scalar(key, val, global_steps)
             writer_dict['valid_global_steps'] = global_steps + 1
 
