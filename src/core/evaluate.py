@@ -79,7 +79,8 @@ def evaluate_orientaion_coords(pred_coords, target_coords, target_theta,
     # Normalize angles to range between -180 and 180 degrees
     np_norm_theta = np.vectorize(normalize_theta)
     err_theta = np.abs(np_norm_theta(theta_pred) - np_norm_theta(theta_gt))
-    acc_theta = (err_theta <= theta_thr).sum() / len(theta_gt)
+    correct_idx = (err_theta <= theta_thr)
+    acc_theta = correct_idx.sum() / len(theta_gt)
 
     err_xcyc = np.linalg.norm(target_coords[:, :2] - pred_coords[:, :2])
     err_xtyt = np.linalg.norm(target_coords[:, 2:4] - pred_coords[:, 2:4])
@@ -91,6 +92,7 @@ def evaluate_orientaion_coords(pred_coords, target_coords, target_theta,
             'err_xcyc': np.mean(err_xcyc),
             'err_xtyt': np.mean(err_xtyt),
             'err_w': np.mean(err_w),
+            'err_idx': ~correct_idx
             }
     return eval_dict
 
@@ -121,11 +123,13 @@ def evaluate_orientaion_theta(theta_pred, theta_gt, theta_thr=10):
     theta_gt = np.rad2deg(np.arccos(theta_gt))
 
     err_theta = np.abs(theta_pred - theta_gt)
-    acc_theta = (err_theta < theta_thr).sum() / len(theta_gt)
+    correct_idx = (err_theta <= theta_thr)
+    acc_theta = correct_idx.sum() / len(theta_gt)
 
     eval_dict = {
             'err_theta': np.mean(err_theta),
-            'acc_theta': acc_theta
+            'acc_theta': acc_theta,
+            'err_idx': ~correct_idx
             }
     return eval_dict
 

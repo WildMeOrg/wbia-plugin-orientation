@@ -213,6 +213,19 @@ def validate(cfg, val_loader, val_dataset, model, loss_func, output_dir,
                                  compute_theta(output.detach().cpu().numpy()),
                                  '{}_{}_rot'.format(cfg.DATASET.TEST_SET, i),
                                  output_dir)
+
+            # Plot only errors
+            if cfg.TEST.PLOT_ERRORS:
+                # Collect images, gt and preds for errors
+                err_idx = torch.BoolTensor(perf['err_idx'])
+                plot_rotated(images[err_idx].cpu(),
+                             target_output[err_idx].cpu()*cfg.MODEL.IMSIZE[0],
+                             output[err_idx].detach().cpu()*cfg.MODEL.IMSIZE[0],
+                             theta[err_idx],
+                             compute_theta(output[err_idx].detach().cpu().numpy()),
+                             '{}_{}_err'.format(cfg.DATASET.TEST_SET, i),
+                             output_dir)
+
             if cfg.LOCAL and i > 3:
                 break
 

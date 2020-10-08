@@ -76,6 +76,7 @@ _C.TEST.VFLIP = False
 _C.TEST.MODEL_FILE = ''
 _C.TEST.THETA_THR = 10.
 _C.TEST.PLOT_ROTATED = False
+_C.TEST.PLOT_ERRORS = False
 
 # debug
 _C.DEBUG = CN()
