@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class OrientationNet(nn.Module):
-    """ CNN that normalizes orientation of the object in the image
+    """CNN that normalizes orientation of the object in the image
     Input:
         core_name (string): name of core model, class from torchvision.models
         predict_angle (bool, default False):
@@ -20,6 +20,7 @@ class OrientationNet(nn.Module):
             if True then output is cos(theta), angle of rotation in
                 clockwise direction of the image from vertical orientation
     """
+
     def __init__(self, cfg, is_train):
         super(OrientationNet, self).__init__()
         self.predict_angle = cfg.MODEL.PREDICT_THETA
@@ -41,7 +42,7 @@ class OrientationNet(nn.Module):
             self.model = EfficientNet.from_pretrained(core_name)
         else:
             # Load pretrained model if training
-            self.model = eval('torchmodels.'+core_name)(pretrained=is_train)
+            self.model = eval('torchmodels.' + core_name)(pretrained=is_train)
 
         # Modify the last layer
         if 'resnet' in core_name.lower():

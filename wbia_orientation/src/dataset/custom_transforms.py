@@ -36,8 +36,8 @@ class RandomHorizontalFlip(object):
             image = np.fliplr(image)  # F.hflip(image)
 
             # Flip xc and xt coordinates
-            xc = int(image.shape[1]-xc)
-            xt = int(image.shape[1]-xt)
+            xc = int(image.shape[1] - xc)
+            xt = int(image.shape[1] - xt)
 
             # Y-coordinates does not change after horizontal flip
             # W - width does not change after horizontal flip
@@ -65,8 +65,8 @@ class RandomVerticalFlip(object):
             image = np.flipud(image)
 
             # Flip xc and xt coordinates
-            yc = int(image.shape[0]-yc)
-            yt = int(image.shape[0]-yt)
+            yc = int(image.shape[0] - yc)
+            yt = int(image.shape[0] - yt)
 
             # X-coordinates does not change after vertical flip
             # W - width does not change after vertical flip
@@ -80,40 +80,41 @@ class RandomVerticalFlip(object):
 
 class RandomRotate(RandomAffine):
     """Rotate image and coorresponding coordinates the same way
-        (extention of RandomAffine)
+    (extention of RandomAffine)
     """
+
     def __init__(self, degrees, mode='constant'):
-        super().__init__(degrees=degrees, translate=None, scale=None,
-                         shear=None, resample=False, fillcolor=0)
+        super().__init__(
+            degrees=degrees,
+            translate=None,
+            scale=None,
+            shear=None,
+            resample=False,
+            fillcolor=0,
+        )
         self.mode = mode
 
     def __call__(self, sample):
         image, xc, yc, xt, yt, w, theta = sample
         imsize_rc = image.shape[:2]
-        angle, _, _, _ = self.get_params(self.degrees,
-                                         self.translate,
-                                         self.scale,
-                                         self.shear,
-                                         image.shape)
+        angle, _, _, _ = self.get_params(
+            self.degrees, self.translate, self.scale, self.shear, image.shape
+        )
 
         # Transform image: rotate and then scale and translate
         # Use 'rotate' function as it has 'resize' parameter to resize image
         # and avoid any cropping
         # and it has center parameter for the center of rotation
         rotation_centre = np.asarray([xc, yc])
-        image = transform.rotate(image,
-                                 angle,
-                                 center=rotation_centre,
-                                 mode=self.mode,
-                                 resize=True)
+        image = transform.rotate(
+            image, angle, center=rotation_centre, mode=self.mode, resize=True
+        )
 
         # Apply the same transformations to coordinates
         coords = np.array([[xc, yc], [xt, yt]])
-        coords = rotate_coordinates(coords,
-                                    angle,
-                                    rotation_centre,
-                                    imsize_rc,
-                                    resize=True)
+        coords = rotate_coordinates(
+            coords, angle, rotation_centre, imsize_rc, resize=True
+        )
 
         xc, yc, xt, yt = coords.ravel().tolist()
 
@@ -126,26 +127,27 @@ class RandomRotate(RandomAffine):
 
 class RandomScale(RandomAffine):
     """Scale image and coorresponding coordinates the same way
-       (extention of RandomAffine)
+    (extention of RandomAffine)
     """
 
     def __init__(self, scale, mode='constant'):
-        super().__init__(degrees=0, translate=None, scale=scale, shear=None,
-                         resample=False, fillcolor=0)
+        super().__init__(
+            degrees=0,
+            translate=None,
+            scale=scale,
+            shear=None,
+            resample=False,
+            fillcolor=0,
+        )
         self.mode = mode
 
     def __call__(self, sample):
         image, xc, yc, xt, yt, w, theta = sample
-        _, _, scale, _ = self.get_params(self.degrees,
-                                         self.translate,
-                                         self.scale,
-                                         self.shear,
-                                         image.shape)
+        _, _, scale, _ = self.get_params(
+            self.degrees, self.translate, self.scale, self.shear, image.shape
+        )
 
-        image = transform.rescale(image,
-                                  scale,
-                                  mode=self.mode,
-                                  multichannel=True)
+        image = transform.rescale(image, scale, mode=self.mode, multichannel=True)
 
         # Apply the same transformations to coordinates
         coords = np.array([[xc, yc], [xt, yt]])
@@ -165,6 +167,7 @@ class Resize(object):
     Input:
         output_size: int, tuple or list, output shape of image
     """
+
     def __init__(self, output_size):
         assert isinstance(output_size, (int, tuple, list))
         if isinstance(output_size, int):
@@ -175,9 +178,7 @@ class Resize(object):
 
     def __call__(self, sample):
         image, xc, yc, xt, yt, w, theta = sample
-        resized_sample = resize_sample(sample,
-                                       image.shape[:2],
-                                       self.output_size)
+        resized_sample = resize_sample(sample, image.shape[:2], self.output_size)
         return resized_sample
 
 
@@ -186,6 +187,7 @@ class ResizeKeepRatio(object):
     Input:
         min_size: int, target length of the miminum side
     """
+
     def __init__(self, min_size):
         assert isinstance(min_size, int)
         self.min_size = min_size
@@ -195,11 +197,15 @@ class ResizeKeepRatio(object):
 
         # Compute output size
         if image.shape[0] <= image.shape[1]:
-            output_size = (self.min_size,
-                           int(image.shape[1] * self.min_size / image.shape[0]))
+            output_size = (
+                self.min_size,
+                int(image.shape[1] * self.min_size / image.shape[0]),
+            )
         else:
-            output_size = (int(image.shape[0] * self.min_size / image.shape[1]),
-                           self.min_size)
+            output_size = (
+                int(image.shape[0] * self.min_size / image.shape[1]),
+                self.min_size,
+            )
 
         resized_sample = resize_sample(sample, image.shape[:2], output_size)
         return resized_sample
@@ -207,14 +213,15 @@ class ResizeKeepRatio(object):
 
 class CropObjectAlignedArea(object):
     """Crop bounding rectange (axis-aligned) around object-aligned rectangle
-     with some noise to randomise
-     Input:
-         noise (float (0, 1), default 0.): noise in percentage to the w
-         scale (float, default 1.): increase the size of bounding box by scale
+    with some noise to randomise
+    Input:
+        noise (float (0, 1), default 0.): noise in percentage to the w
+        scale (float, default 1.): increase the size of bounding box by scale
     """
-    def __init__(self, noise=0., scale=1.):
+
+    def __init__(self, noise=0.0, scale=1.0):
         assert isinstance(noise, float)
-        assert noise >= 0. and noise <= 1.
+        assert noise >= 0.0 and noise <= 1.0
         assert isinstance(scale, float)
 
         self.noise = noise
@@ -231,15 +238,12 @@ class CropObjectAlignedArea(object):
         corners = np.asarray(corners)
         x_min = int(max(0, min(corners[:, 0]) + randint(-max_ns, max_ns)))
         y_min = int(max(0, min(corners[:, 1]) + randint(-max_ns, max_ns)))
-        x_max = int(min(max(corners[:, 0]) + randint(-max_ns, max_ns),
-                        image.shape[1]))
-        y_max = int(min(max(corners[:, 1]) + randint(-max_ns, max_ns),
-                        image.shape[0]))
+        x_max = int(min(max(corners[:, 0]) + randint(-max_ns, max_ns), image.shape[1]))
+        y_max = int(min(max(corners[:, 1]) + randint(-max_ns, max_ns), image.shape[0]))
 
-        x_min, y_min, x_max, y_max = increase_bbox((x_min, y_min, x_max, y_max),
-                                                   self.scale,
-                                                   image.shape[:2],
-                                                   type='xyx2y2')
+        x_min, y_min, x_max, y_max = increase_bbox(
+            (x_min, y_min, x_max, y_max), self.scale, image.shape[:2], type='xyx2y2'
+        )
 
         # Crop image and coordinates
         image = image[y_min:y_max, x_min:x_max]
@@ -329,11 +333,12 @@ class ColorJitterSample(object):
             [-hue, hue] or the given [min, max].
             Should have 0<= hue <= 0.5 or -0.5 <= min <= max <= 0.5.
     """
+
     def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
         self.image_tf = ColorJitter(brightness, contrast, saturation, hue)
 
     def __call__(self, sample):
         image, xc, yc, xt, yt, w, theta = sample
         # Apply transform only to image
-        image = self.image_tf(F.to_pil_image(img_as_ubyte(image.clip(0., 1.))))
+        image = self.image_tf(F.to_pil_image(img_as_ubyte(image.clip(0.0, 1.0))))
         return image, xc, yc, xt, yt, w, theta

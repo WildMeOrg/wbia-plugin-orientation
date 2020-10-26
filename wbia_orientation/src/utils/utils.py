@@ -21,8 +21,9 @@ def create_logger(cfg, cfg_path, phase='train', create_tb=True):
 
     dataset_name = cfg.DATASET.NAME
 
-    final_output_dir = os.path.join(root_output_dir,
-                                    dataset_name+'_'+cfg_name+'_'+cfg.VERSION)
+    final_output_dir = os.path.join(
+        root_output_dir, dataset_name + '_' + cfg_name + '_' + cfg.VERSION
+    )
 
     if not os.path.exists(final_output_dir):
         print('=> creating {}'.format(final_output_dir))
@@ -32,8 +33,7 @@ def create_logger(cfg, cfg_path, phase='train', create_tb=True):
     log_file = '{}_{}_{}.log'.format(cfg_name, time_str, phase)
     final_log_file = os.path.join(final_output_dir, log_file)
     head = '%(asctime)-15s %(message)s'
-    logging.basicConfig(filename=str(final_log_file),
-                        format=head)
+    logging.basicConfig(filename=str(final_log_file), format=head)
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
     console = logging.StreamHandler()
@@ -45,11 +45,10 @@ def create_logger(cfg, cfg_path, phase='train', create_tb=True):
         os.makedirs(debug_imgs_dir)
 
     if create_tb:
-        tensorboard_log_dir = os.path.join(cfg.LOG_DIR,
-                                           dataset_name + '_' +
-                                           cfg_name + '_' +
-                                           cfg.VERSION + ' ' +
-                                           time_str)
+        tensorboard_log_dir = os.path.join(
+            cfg.LOG_DIR,
+            dataset_name + '_' + cfg_name + '_' + cfg.VERSION + ' ' + time_str,
+        )
 
         if not os.path.exists(tensorboard_log_dir):
             print('=> creating {}'.format(tensorboard_log_dir))
@@ -69,13 +68,10 @@ def get_optimizer(cfg, model):
             lr=cfg.TRAIN.LR,
             momentum=cfg.TRAIN.MOMENTUM,
             weight_decay=cfg.TRAIN.WD,
-            nesterov=cfg.TRAIN.NESTEROV
+            nesterov=cfg.TRAIN.NESTEROV,
         )
     elif cfg.TRAIN.OPTIMIZER == 'adam':
-        optimizer = optim.Adam(
-            model.parameters(),
-            lr=cfg.TRAIN.LR
-        )
+        optimizer = optim.Adam(model.parameters(), lr=cfg.TRAIN.LR)
 
     return optimizer
 
@@ -91,15 +87,17 @@ def save_object(obj, filename):
 
 
 def hflip_back(output_flipped, predict_angle, image_h_w):
-    ''' Flip predicted values back after horizontal flip
+    """Flip predicted values back after horizontal flip
     ouput_flipped: numpy.ndarray either (batch_size, 5) or (batch_size, 1)
-    '''
+    """
     if predict_angle:
-        assert output_flipped.ndim == 2 and output_flipped.shape[1] == 1,\
-            'output_flipped should be [batch_size, 1]'
+        assert (
+            output_flipped.ndim == 2 and output_flipped.shape[1] == 1
+        ), 'output_flipped should be [batch_size, 1]'
     else:
-        assert output_flipped.ndim == 2 and output_flipped.shape[1] == 5,\
-            'output_flipped should be [batch_size, 5]'
+        assert (
+            output_flipped.ndim == 2 and output_flipped.shape[1] == 5
+        ), 'output_flipped should be [batch_size, 5]'
 
     h, w = image_h_w
     if predict_angle:
@@ -114,15 +112,17 @@ def hflip_back(output_flipped, predict_angle, image_h_w):
 
 
 def vflip_back(output_flipped, predict_angle, image_h_w):
-    ''' Flip predicted values back after vertical flip
+    """Flip predicted values back after vertical flip
     ouput_flipped: numpy.ndarray either (batch_size, 5) or (batch_size, 1)
-    '''
+    """
     if predict_angle:
-        assert output_flipped.ndim == 2 and output_flipped.shape[1] == 1,\
-            'output_flipped should be [batch_size, 1]'
+        assert (
+            output_flipped.ndim == 2 and output_flipped.shape[1] == 1
+        ), 'output_flipped should be [batch_size, 1]'
     else:
-        assert output_flipped.ndim == 2 and output_flipped.shape[1] == 5,\
-            'output_flipped should be [batch_size, 5]'
+        assert (
+            output_flipped.ndim == 2 and output_flipped.shape[1] == 5
+        ), 'output_flipped should be [batch_size, 5]'
 
     h, w = image_h_w
     if predict_angle:
@@ -136,53 +136,63 @@ def vflip_back(output_flipped, predict_angle, image_h_w):
     return output_flipped
 
 
-def unnormalize(batch_image,
-                mean=[0.485, 0.456, 0.406],
-                std=[0.229, 0.224, 0.225],
-                use_gpu=False):
+def unnormalize(
+    batch_image, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], use_gpu=False
+):
     """Reverse normalization applied to batch of images """
     B = batch_image.shape[0]
     H = batch_image.shape[2]
     W = batch_image.shape[3]
-    t_mean = torch.FloatTensor(mean).view(3, 1, 1).expand(3, H, W) \
-                  .contiguous().view(1, 3, H, W)
-    t_std = torch.FloatTensor(std).view(3, 1, 1).expand(3, H, W) \
-                 .contiguous().view(1, 3, H, W)
+    t_mean = (
+        torch.FloatTensor(mean)
+        .view(3, 1, 1)
+        .expand(3, H, W)
+        .contiguous()
+        .view(1, 3, H, W)
+    )
+    t_std = (
+        torch.FloatTensor(std).view(3, 1, 1).expand(3, H, W).contiguous().view(1, 3, H, W)
+    )
     if use_gpu:
         t_mean = t_mean.cuda()
         t_std = t_std.cuda()
-    batch_image_unnorm = batch_image * t_std.expand(B, 3, H, W) + \
-        t_mean.expand(B, 3, H, W)
+    batch_image_unnorm = batch_image * t_std.expand(B, 3, H, W) + t_mean.expand(
+        B, 3, H, W
+    )
     return batch_image_unnorm
 
 
-def load_partial_weights(model, model_path, pretrained_state=None,
-                         cuda_avail=True):
+def load_partial_weights(model, model_path, pretrained_state=None, cuda_avail=True):
     """ Load partial weights for model """
     if pretrained_state is None:
         if cuda_avail:
             pretrained_state = torch.load(model_path)
         else:
-            pretrained_state = torch.load(model_path,
-                                          map_location=torch.device('cpu'))
+            pretrained_state = torch.load(model_path, map_location=torch.device('cpu'))
 
     model_state = model.state_dict()
-    transfer_state = {k: v for k, v in pretrained_state.items()
-                      if k in model_state
-                      and v.size() == model_state[k].size()}
+    transfer_state = {
+        k: v
+        for k, v in pretrained_state.items()
+        if k in model_state and v.size() == model_state[k].size()
+    }
 
-    not_in_model_state = [k for k, v in pretrained_state.items()
-                          if k not in model_state
-                          or v.size() != model_state[k].size()]
+    not_in_model_state = [
+        k
+        for k, v in pretrained_state.items()
+        if k not in model_state or v.size() != model_state[k].size()
+    ]
 
     print('Not loaded weights:', not_in_model_state)
     model_state.update(transfer_state)
 
     print(model.load_state_dict(model_state))
-    no_init = [k for k, v in model_state.items()
-               if ('num_batches_tracked' not in k)
-               and (k not in pretrained_state
-               or v.size() != pretrained_state[k].size())]
+    no_init = [
+        k
+        for k, v in model_state.items()
+        if ('num_batches_tracked' not in k)
+        and (k not in pretrained_state or v.size() != pretrained_state[k].size())
+    ]
 
     print('Randomly initialised weights', no_init)
     return transfer_state.keys(), not_in_model_state, no_init
@@ -190,6 +200,7 @@ def load_partial_weights(model, model_path, pretrained_state=None,
 
 class AverageMeterSet:
     """Computes and stores average and current values for a set of meters"""
+
     def __init__(self):
         self.meters = {}
 
@@ -206,20 +217,16 @@ class AverageMeterSet:
             meter.reset()
 
     def values(self, postfix=''):
-        return {name + postfix: meter.val
-                for name, meter in self.meters.items()}
+        return {name + postfix: meter.val for name, meter in self.meters.items()}
 
     def averages(self, postfix='/avg'):
-        return {name + postfix: meter.avg
-                for name, meter in self.meters.items()}
+        return {name + postfix: meter.avg for name, meter in self.meters.items()}
 
     def sums(self, postfix='/sum'):
-        return {name + postfix: meter.sum
-                for name, meter in self.meters.items()}
+        return {name + postfix: meter.sum for name, meter in self.meters.items()}
 
     def counts(self, postfix='/count'):
-        return {name + postfix: meter.count
-                for name, meter in self.meters.items()}
+        return {name + postfix: meter.count for name, meter in self.meters.items()}
 
 
 class AverageMeter:
@@ -241,4 +248,6 @@ class AverageMeter:
         self.avg = self.sum / self.count
 
     def __format__(self, format):
-        return "{self.val:{format}} ({self.avg:{format}})".format(self=self, format=format)
+        return '{self.val:{format}} ({self.avg:{format}})'.format(
+            self=self, format=format
+        )

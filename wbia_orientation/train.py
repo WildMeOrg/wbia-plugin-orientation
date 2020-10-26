@@ -32,15 +32,16 @@ import models
 def parse_args():
     parser = argparse.ArgumentParser(description='Train keypoints network')
     # general
-    parser.add_argument('--cfg',
-                        help='experiment configure file name',
-                        required=True,
-                        type=str)
+    parser.add_argument(
+        '--cfg', help='experiment configure file name', required=True, type=str
+    )
 
-    parser.add_argument('opts',
-                        help="Modify config options using the command-line",
-                        default=None,
-                        nargs=argparse.REMAINDER)
+    parser.add_argument(
+        'opts',
+        help='Modify config options using the command-line',
+        default=None,
+        nargs=argparse.REMAINDER,
+    )
 
     args = parser.parse_args()
 
@@ -79,49 +80,55 @@ def _make_data(cfg, logger):
         valid_loader:
         valid_dataset:
     """
-    train_tform = transforms.Compose([
-                    ctf.RandomHorizontalFlip(p=cfg.DATASET.HOR_FLIP_PROB),
-                    ctf.RandomVerticalFlip(p=cfg.DATASET.VERT_FLIP_PROB),
-                    ctf.RandomRotate(degrees=cfg.DATASET.MAX_ROT,
-                                     mode='edge'),
-                    ctf.RandomScale(scale=cfg.DATASET.SCALE_FACTOR),
-                    ctf.CropObjectAlignedArea(noise=0.1),
-                    ctf.Resize(cfg.MODEL.IMSIZE),
-                    ctf.ColorJitterSample(brightness=0.5,
-                                          contrast=0.5,
-                                          saturation=0.5,
-                                          hue=0.1),
-                    ctf.ToTensor(),
-                    ctf.Normalize(mean=[0.485, 0.456, 0.406],
-                                  std=[0.229, 0.224, 0.225],
-                                  input_size=cfg.MODEL.IMSIZE[0])
-                    ])
+    train_tform = transforms.Compose(
+        [
+            ctf.RandomHorizontalFlip(p=cfg.DATASET.HOR_FLIP_PROB),
+            ctf.RandomVerticalFlip(p=cfg.DATASET.VERT_FLIP_PROB),
+            ctf.RandomRotate(degrees=cfg.DATASET.MAX_ROT, mode='edge'),
+            ctf.RandomScale(scale=cfg.DATASET.SCALE_FACTOR),
+            ctf.CropObjectAlignedArea(noise=0.1),
+            ctf.Resize(cfg.MODEL.IMSIZE),
+            ctf.ColorJitterSample(brightness=0.5, contrast=0.5, saturation=0.5, hue=0.1),
+            ctf.ToTensor(),
+            ctf.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+                input_size=cfg.MODEL.IMSIZE[0],
+            ),
+        ]
+    )
 
-    valid_tform = transforms.Compose([
-                        ctf.CropObjectAlignedArea(noise=0.),
-                        ctf.Resize(cfg.MODEL.IMSIZE),
-                        ctf.ToTensor(),
-                        ctf.Normalize(mean=[0.485, 0.456, 0.406],
-                                      std=[0.229, 0.224, 0.225],
-                                      input_size=cfg.MODEL.IMSIZE[0])
-                        ])
+    valid_tform = transforms.Compose(
+        [
+            ctf.CropObjectAlignedArea(noise=0.0),
+            ctf.Resize(cfg.MODEL.IMSIZE),
+            ctf.ToTensor(),
+            ctf.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+                input_size=cfg.MODEL.IMSIZE[0],
+            ),
+        ]
+    )
 
-    train_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, True, train_tform)
-    valid_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, False, valid_tform)
+    train_dataset = eval('dataset.' + cfg.DATASET.CLASS)(cfg, True, train_tform)
+    valid_dataset = eval('dataset.' + cfg.DATASET.CLASS)(cfg, False, valid_tform)
 
-    train_loader = DataLoader(train_dataset,
-                              batch_size=cfg.TRAIN.BS*len(cfg.GPUS),
-                              shuffle=True,
-                              num_workers=cfg.WORKERS,
-                              pin_memory=cfg.PIN_MEMORY
-                              )
+    train_loader = DataLoader(
+        train_dataset,
+        batch_size=cfg.TRAIN.BS * len(cfg.GPUS),
+        shuffle=True,
+        num_workers=cfg.WORKERS,
+        pin_memory=cfg.PIN_MEMORY,
+    )
 
-    valid_loader = DataLoader(valid_dataset,
-                              batch_size=cfg.TEST.BS*len(cfg.GPUS),
-                              shuffle=False,
-                              num_workers=cfg.WORKERS,
-                              pin_memory=cfg.PIN_MEMORY
-                              )
+    valid_loader = DataLoader(
+        valid_dataset,
+        batch_size=cfg.TEST.BS * len(cfg.GPUS),
+        shuffle=False,
+        num_workers=cfg.WORKERS,
+        pin_memory=cfg.PIN_MEMORY,
+    )
 
     return train_loader, valid_loader, valid_dataset
 
@@ -159,9 +166,7 @@ def main():
     }
 
     begin_epoch = cfg.TRAIN.BEGIN_EPOCH
-    checkpoint_file = os.path.join(
-        output_dir, 'checkpoint.pth'
-    )
+    checkpoint_file = os.path.join(output_dir, 'checkpoint.pth')
 
     if cfg.AUTO_RESUME and os.path.exists(checkpoint_file):
         logger.info("=> loading checkpoint '{}'".format(checkpoint_file))
@@ -169,8 +174,11 @@ def main():
         begin_epoch = checkpoint['epoch']
         best_perf = checkpoint['perf']
         model.load_state_dict(checkpoint['state_dict'])
-        logger.info("=> loaded checkpoint '{}' (epoch {})".format(
-            checkpoint_file, checkpoint['epoch']))
+        logger.info(
+            "=> loaded checkpoint '{}' (epoch {})".format(
+                checkpoint_file, checkpoint['epoch']
+            )
+        )
 
     model = _model_to_gpu(model, cfg)
     optimizer = get_optimizer(cfg, model)
@@ -181,22 +189,14 @@ def main():
     # Train epochs
     for epoch in range(begin_epoch, cfg.TRAIN.END_EPOCH):
 
-        train(cfg,
-              train_loader,
-              model,
-              loss_func,
-              optimizer, epoch,
-              output_dir,
-              writer_dict)
+        train(
+            cfg, train_loader, model, loss_func, optimizer, epoch, output_dir, writer_dict
+        )
 
         # Evaluate on validation set
-        perf_indicator = validate(cfg,
-                                  valid_loader,
-                                  valid_dataset,
-                                  model,
-                                  loss_func,
-                                  output_dir,
-                                  writer_dict)
+        perf_indicator = validate(
+            cfg, valid_loader, valid_dataset, model, loss_func, output_dir, writer_dict
+        )
 
         if perf_indicator >= best_perf:
             best_perf = perf_indicator
@@ -212,21 +212,23 @@ def main():
             'perf': perf_indicator,
             'optimizer': optimizer.state_dict(),
         }
-        checkpoint_dict['state_dict'] = model.module.state_dict() \
-            if cfg.USE_GPU else model.state_dict()
+        checkpoint_dict['state_dict'] = (
+            model.module.state_dict() if cfg.USE_GPU else model.state_dict()
+        )
 
         # Save best model
         torch.save(checkpoint_dict, os.path.join(output_dir, 'checkpoint.pth'))
         if is_best_model:
-            logger.info('=> saving best model state to {} at epoch {}'.
-                        format(output_dir, epoch))
-            torch.save(checkpoint_dict['state_dict'], os.path.join(output_dir,
-                                                                   'best.pth'))
+            logger.info(
+                '=> saving best model state to {} at epoch {}'.format(output_dir, epoch)
+            )
+            torch.save(
+                checkpoint_dict['state_dict'], os.path.join(output_dir, 'best.pth')
+            )
 
     # Save final state
     logger.info('=> saving final model state to {}'.format(output_dir))
-    torch.save(checkpoint_dict['state_dict'], os.path.join(output_dir,
-                                                           'final.pth'))
+    torch.save(checkpoint_dict['state_dict'], os.path.join(output_dir, 'final.pth'))
 
     writer_dict['writer'].close()
 

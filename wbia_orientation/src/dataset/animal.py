@@ -24,11 +24,14 @@ class AnimalDataset(Dataset):
     """
     Class for birds full body and body parts dataset.
     """
+
     def __init__(self, cfg, is_train, transform=None, crop=True, resize=True):
         self.cfg = cfg
         self.is_train = is_train
         self.transform = transform
-        self.split = self.cfg.DATASET.TRAIN_SET if self.is_train else self.cfg.DATASET.TEST_SET
+        self.split = (
+            self.cfg.DATASET.TRAIN_SET if self.is_train else self.cfg.DATASET.TEST_SET
+        )
 
         self.crop = crop
         self.resize = resize
@@ -40,14 +43,19 @@ class AnimalDataset(Dataset):
         else:
             # Load COCO annots and preproc
             db_coco = self._get_coco_db()
-            self.db = self._preproc_db(db_coco=db_coco,
-                                       expand=2.,
-                                       min_size=2*max(self.cfg.MODEL.IMSIZE))
+            self.db = self._preproc_db(
+                db_coco=db_coco, expand=2.0, min_size=2 * max(self.cfg.MODEL.IMSIZE)
+            )
 
-        logger.info('=> load {} samples from {} / {} dataset'.
-                    format(len(self.db), self.cfg.DATASET.NAME, self.split))
+        logger.info(
+            '=> load {} samples from {} / {} dataset'.format(
+                len(self.db), self.cfg.DATASET.NAME, self.split
+            )
+        )
 
-    def __len__(self,):
+    def __len__(
+        self,
+    ):
         return len(self.db)
 
     def _get_preproc_db(self):
@@ -59,17 +67,16 @@ class AnimalDataset(Dataset):
     def _preproc_db_exists(self):
         """ Check if preprocessed dataset exists """
         if len(self.cfg.DATASET.SUFFIX) == 0:
-            self.prep_dir = os.path.join(self.cfg.DATA_DIR,
-                                         self.cfg.DATASET.NAME)
+            self.prep_dir = os.path.join(self.cfg.DATA_DIR, self.cfg.DATASET.NAME)
         else:
-            self.prep_dir = os.path.join(self.cfg.DATA_DIR,
-                                         '{}_{}'.format(self.cfg.DATASET.NAME,
-                                                        self.cfg.DATASET.SUFFIX
-                                                        ))
+            self.prep_dir = os.path.join(
+                self.cfg.DATA_DIR,
+                '{}_{}'.format(self.cfg.DATASET.NAME, self.cfg.DATASET.SUFFIX),
+            )
         self.prep_images = os.path.join(self.prep_dir, 'images', self.split)
-        self.prep_annots = os.path.join(self.prep_dir,
-                                        'annots',
-                                        '{}.json'.format(self.split))
+        self.prep_annots = os.path.join(
+            self.prep_dir, 'annots', '{}.json'.format(self.split)
+        )
 
         if os.path.exists(self.prep_images) and os.path.exists(self.prep_annots):
             return True
@@ -82,10 +89,12 @@ class AnimalDataset(Dataset):
 
     def _get_annot_file(self):
         """ Get name of file with annotations """
-        coc_ann_file = os.path.join(self.cfg.COCO_ANNOT_DIR,
-                                    'orientation.{}.coco'.format(self.cfg.DATASET.NAME),
-                                    'annotations',
-                                    'instances_{}.json'.format(self.split))
+        coc_ann_file = os.path.join(
+            self.cfg.COCO_ANNOT_DIR,
+            'orientation.{}.coco'.format(self.cfg.DATASET.NAME),
+            'annotations',
+            'instances_{}.json'.format(self.split),
+        )
         return coc_ann_file
 
     def _get_coco_db(self):
@@ -110,8 +119,7 @@ class AnimalDataset(Dataset):
                 imgToAnns[ann['image_id']].append(ann)
 
         image_set_index = list(imgs.keys())
-        logger.info('=> Found {} images in {}'.format(len(image_set_index),
-                                                      ann_file))
+        logger.info('=> Found {} images in {}'.format(len(image_set_index), ann_file))
         gt_db = []
         for index in image_set_index:
             img_anns = imgToAnns[index]
@@ -129,14 +137,16 @@ class AnimalDataset(Dataset):
                 continue
 
             if self._select_annot(obj['category_id']):
-                rec.append({
-                    'image_path': image_path,
-                    'aa_bbox': obj['bbox'],
-                    'theta': obj['theta'],
-                    'aa_big_box': obj['segmentation_bbox'],
-                    'category_id': obj['category_id'],
-                    'obj_id': i
-                })
+                rec.append(
+                    {
+                        'image_path': image_path,
+                        'aa_bbox': obj['bbox'],
+                        'theta': obj['theta'],
+                        'aa_big_box': obj['segmentation_bbox'],
+                        'category_id': obj['category_id'],
+                        'obj_id': i,
+                    }
+                )
         return rec
 
     def _preproc_db(self, db_coco, expand, min_size):
@@ -157,16 +167,18 @@ class AnimalDataset(Dataset):
 
             if self.crop:
                 # Get box around axis-aligned bounding box
-                x1, y1, bw, bh = increase_bbox(aa_big_box,
-                                               expand,
-                                               image.shape[:2],
-                                               type='xyhw')
+                x1, y1, bw, bh = increase_bbox(
+                    aa_big_box, expand, image.shape[:2], type='xyhw'
+                )
 
                 # Crop image and coordinates
-                image_cropped = image[y1:y1+bh, x1:x1+bw]
+                image_cropped = image[y1 : y1 + bh, x1 : x1 + bw]
                 if min(image_cropped.shape) < 1:
-                    print('Skipped image {} Cropped to zero size.'.
-                          format(db_rec['image_path']))
+                    print(
+                        'Skipped image {} Cropped to zero size.'.format(
+                            db_rec['image_path']
+                        )
+                    )
                     continue
                 else:
                     image = image_cropped
@@ -178,38 +190,41 @@ class AnimalDataset(Dataset):
             if self.resize:
                 # Compute output size
                 if image.shape[0] <= image.shape[1]:
-                    out_size = (min_size,
-                                int(image.shape[1] * min_size / image.shape[0]))
+                    out_size = (min_size, int(image.shape[1] * min_size / image.shape[0]))
                 else:
-                    out_size = (int(image.shape[0] * min_size / image.shape[1]),
-                                min_size)
+                    out_size = (int(image.shape[0] * min_size / image.shape[1]), min_size)
 
                 # Resize coordinates
                 aa_big_box = resize_coords(aa_big_box, image.shape[:2], out_size)
                 aa_bbox = resize_coords(aa_bbox, image.shape[:2], out_size)
 
                 # Resize image
-                image = skimage_transform.resize(image,
-                                                 out_size,
-                                                 order=3,
-                                                 anti_aliasing=True)
+                image = skimage_transform.resize(
+                    image, out_size, order=3, anti_aliasing=True
+                )
 
             # Save image to processed folder
             im_filename = os.path.basename(db_rec['image_path'])
-            new_filename = os.path.join(self.prep_images,
-                                        '{}_{}{}'.format(os.path.splitext(im_filename)[0],
-                                                         db_rec['obj_id'],
-                                                         os.path.splitext(im_filename)[1])
-                                        )
+            new_filename = os.path.join(
+                self.prep_images,
+                '{}_{}{}'.format(
+                    os.path.splitext(im_filename)[0],
+                    db_rec['obj_id'],
+                    os.path.splitext(im_filename)[1],
+                ),
+            )
             imageio.imwrite(new_filename, img_as_ubyte(image))
 
-            prep_gt_db.append({'image_path': new_filename,
-                                'aa_bbox': aa_bbox,
-                                'theta': db_rec['theta'],
-                                'aa_big_box': aa_big_box,
-                                'category_id': db_rec['category_id'],
-                                'obj_id': db_rec['obj_id']
-                                })
+            prep_gt_db.append(
+                {
+                    'image_path': new_filename,
+                    'aa_bbox': aa_bbox,
+                    'theta': db_rec['theta'],
+                    'aa_big_box': aa_big_box,
+                    'category_id': db_rec['category_id'],
+                    'obj_id': db_rec['obj_id'],
+                }
+            )
         # Save as json
         with open(self.prep_annots, 'w', encoding='utf-8') as f:
             json.dump(prep_gt_db, f, ensure_ascii=False, indent=4)
@@ -232,30 +247,34 @@ class AnimalDataset(Dataset):
 
         if not consistency_flag:
             logger.info('Skipping image {}'.format(image_path))
-            logger.info('Check bounding box annotations: {}, {}'.
-                        format(aa_bbox, aa_big_box))
+            logger.info(
+                'Check bounding box annotations: {}, {}'.format(aa_bbox, aa_big_box)
+            )
 
         return consistency_flag
 
     def _select_annot(self, obj_cat):
-        """ Select annotation to add to the dataset.
+        """Select annotation to add to the dataset.
         The annotation is included:
             a. there is no list of selected categories in config
             b. object category in the list of selected categories in config"""
-        if len(self.cfg.DATASET.SELECT_CATS_LIST) == 0 or \
-           (len(self.cfg.DATASET.SELECT_CATS_LIST) > 0 and
-           obj_cat in self.cfg.DATASET.SELECT_CATS_LIST):
+        if len(self.cfg.DATASET.SELECT_CATS_LIST) == 0 or (
+            len(self.cfg.DATASET.SELECT_CATS_LIST) > 0
+            and obj_cat in self.cfg.DATASET.SELECT_CATS_LIST
+        ):
             return True
         else:
             return False
 
     def _get_image_path(self, filename):
         """ Get full path to image in COCO annotations by image filename """
-        image_path = os.path.join(self.cfg.COCO_ANNOT_DIR,
-                                  'orientation.{}.coco'.format(self.cfg.DATASET.NAME),
-                                  'images',
-                                  self.split,
-                                  filename)
+        image_path = os.path.join(
+            self.cfg.COCO_ANNOT_DIR,
+            'orientation.{}.coco'.format(self.cfg.DATASET.NAME),
+            'images',
+            self.split,
+            filename,
+        )
         return image_path
 
     def __getitem__(self, idx):
@@ -272,14 +291,15 @@ class AnimalDataset(Dataset):
         # width (w) and theta (rotation angle)
         bbox_x, bbox_y, bbox_w, bbox_h = db_rec['aa_bbox']
 
-        xc, yc = bbox_x + bbox_w/2, bbox_y + bbox_h/2
+        xc, yc = bbox_x + bbox_w / 2, bbox_y + bbox_h / 2
         theta = db_rec['theta']
-        xt, yt = rotate_point_by_angle([xc, yc], [bbox_x + bbox_w/2, bbox_y],
-                                       theta)
+        xt, yt = rotate_point_by_angle([xc, yc], [bbox_x + bbox_w / 2, bbox_y], theta)
         w = bbox_w / 2
 
         # C. Transform image and corresponding parameters
         if self.transform:
-            image, xc, yc, xt, yt, w, theta = self.transform((image, xc, yc, xt, yt, w, theta))
+            image, xc, yc, xt, yt, w, theta = self.transform(
+                (image, xc, yc, xt, yt, w, theta)
+            )
 
         return image, xc, yc, xt, yt, w, theta

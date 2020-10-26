@@ -48,9 +48,9 @@ _C.DATASET.SELECT_CATS_LIST = []
 _C.DATASET.SUFFIX = ''
 
 # training data augmentation
-_C.DATASET.HOR_FLIP_PROB = 0.
-_C.DATASET.VERT_FLIP_PROB = 0.
-_C.DATASET.SCALE_FACTOR = [1., 1.]
+_C.DATASET.HOR_FLIP_PROB = 0.0
+_C.DATASET.VERT_FLIP_PROB = 0.0
+_C.DATASET.SCALE_FACTOR = [1.0, 1.0]
 _C.DATASET.MAX_ROT = 30
 
 # train
@@ -74,7 +74,7 @@ _C.TEST.BS = 48
 _C.TEST.HFLIP = False
 _C.TEST.VFLIP = False
 _C.TEST.MODEL_FILE = ''
-_C.TEST.THETA_THR = 10.
+_C.TEST.THETA_THR = 10.0
 _C.TEST.PLOT_ROTATED = False
 _C.TEST.PLOT_ERRORS = False
 
@@ -94,5 +94,6 @@ def update_config(cfg, args):
 
 if __name__ == '__main__':
     import sys
+
     with open(sys.argv[1], 'w') as f:
         print(_C, file=f)

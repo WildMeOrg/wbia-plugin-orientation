@@ -31,23 +31,28 @@ def _make_test_data(cfg, logger):
         test_loader: Data Loader over test dataset
         test_dataset: test dataset object
     """
-    test_transform = transforms.Compose([
-                        custom_transforms.CropObjectAlignedArea(noise=0.),
-                        custom_transforms.Resize(cfg.MODEL.IMSIZE),
-                        custom_transforms.ToTensor(),
-                        custom_transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                                                    std =[0.229, 0.224, 0.225],
-                                                    input_size=cfg.MODEL.IMSIZE[0])
-                                         ])
+    test_transform = transforms.Compose(
+        [
+            custom_transforms.CropObjectAlignedArea(noise=0.0),
+            custom_transforms.Resize(cfg.MODEL.IMSIZE),
+            custom_transforms.ToTensor(),
+            custom_transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225],
+                input_size=cfg.MODEL.IMSIZE[0],
+            ),
+        ]
+    )
 
-    test_dataset = eval('dataset.'+cfg.DATASET.CLASS)(cfg, False, test_transform)
+    test_dataset = eval('dataset.' + cfg.DATASET.CLASS)(cfg, False, test_transform)
 
-    test_loader = torch.utils.data.DataLoader(test_dataset,
-                                              batch_size=cfg.TEST.BS*len(cfg.GPUS),
-                                              shuffle=False,
-                                              num_workers=cfg.WORKERS,
-                                              pin_memory=cfg.PIN_MEMORY
-                                              )
+    test_loader = torch.utils.data.DataLoader(
+        test_dataset,
+        batch_size=cfg.TEST.BS * len(cfg.GPUS),
+        shuffle=False,
+        num_workers=cfg.WORKERS,
+        pin_memory=cfg.PIN_MEMORY,
+    )
 
     return test_loader, test_dataset
 
@@ -56,10 +61,7 @@ def main():
     args = parse_args()
     update_config(cfg, args)
 
-    logger, final_output_dir = create_logger(cfg,
-                                             args.cfg,
-                                             'test',
-                                             False)
+    logger, final_output_dir = create_logger(cfg, args.cfg, 'test', False)
 
     logger.info(pprint.pformat(args))
     logger.info(cfg)
@@ -82,8 +84,9 @@ def main():
     if cfg.USE_GPU:
         model.load_state_dict(torch.load(model_state_file))
     else:
-        model.load_state_dict(torch.load(model_state_file,
-                                         map_location=torch.device('cpu')))
+        model.load_state_dict(
+            torch.load(model_state_file, map_location=torch.device('cpu'))
+        )
 
     model = _model_to_gpu(model, cfg)
     # Initialise losses
@@ -93,18 +96,15 @@ def main():
     test_loader, test_dataset = _make_test_data(cfg, logger)
 
     # Evaluate on validation set
-    perf_indicator = validate(cfg,
-                              test_loader,
-                              test_dataset,
-                              model,
-                              loss_func,
-                              final_output_dir)
+    perf_indicator = validate(
+        cfg, test_loader, test_dataset, model, loss_func, final_output_dir
+    )
 
-    logger.info('Final results. Accuracy@{} on {} {}  is {:.2%}'.
-                format(cfg.TEST.THETA_THR,
-                       cfg.DATASET.NAME,
-                       cfg.DATASET.TEST_SET,
-                       perf_indicator))
+    logger.info(
+        'Final results. Accuracy@{} on {} {}  is {:.2%}'.format(
+            cfg.TEST.THETA_THR, cfg.DATASET.NAME, cfg.DATASET.TEST_SET, perf_indicator
+        )
+    )
 
 
 if __name__ == '__main__':

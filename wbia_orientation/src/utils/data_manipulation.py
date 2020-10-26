@@ -8,28 +8,25 @@ import math
 
 
 def midpoint(point_1, point_2):
-    """Middle point between two points
-    """
+    """Middle point between two points"""
     x1, y1 = point_1
     x2, y2 = point_2
-    return ((x1 + x2)/2, (y1 + y2)/2)
+    return ((x1 + x2) / 2, (y1 + y2) / 2)
 
 
 def add_dist_along_vector(p0, p1, dist):
-    """Add distance along vector
-    """
+    """Add distance along vector"""
     p0 = np.array(p0)
     p1 = np.array(p1)
-    u = (p1 - p0) / np.linalg.norm((p1-p0))
+    u = (p1 - p0) / np.linalg.norm((p1 - p0))
     return p0 + dist * u
 
 
 def add_dict_perpendicular_vector(p0, p1, dist):
-    """Get point in a distance perpendicular to vector
-    """
+    """Get point in a distance perpendicular to vector"""
     p0 = np.array(p0)
     p1 = np.array(p1)
-    u = (p1 - p0) / np.linalg.norm((p1-p0))
+    u = (p1 - p0) / np.linalg.norm((p1 - p0))
     v1 = np.array([-u[1], u[0]])
     v2 = np.array([u[1], -u[0]])
     return p1 + dist * v1, p1 + dist * v2
@@ -58,8 +55,8 @@ def get_object_aligned_box(xc, yc, xt, yt, w):
         of four corners of bounding box (not in sequantial order)
     """
     corner_1, corner_2 = add_dict_perpendicular_vector([xc, yc], [xt, yt], w)
-    dist = np.linalg.norm([xc-xt, yc-yt])
-    xt_, yt_ = add_dist_along_vector([xt, yt], [xc, yc], 2*dist)
+    dist = np.linalg.norm([xc - xt, yc - yt])
+    xt_, yt_ = add_dist_along_vector([xt, yt], [xc, yc], 2 * dist)
     corner_3, corner_4 = add_dict_perpendicular_vector([xc, yc], [xt_, yt_], w)
 
     return corner_1, corner_2, corner_3, corner_4
@@ -109,7 +106,7 @@ def increase_bbox(bbox, scale, image_size, type='xyhw'):
 
 
 def to_origin(bbox_xywh, new_origin):
-    """ Update coordinates of bounding box after moving the origin
+    """Update coordinates of bounding box after moving the origin
     Height and width do not change.
     Coordinates are allowed to be negative and go outside of image boundary.
     Input:
@@ -122,23 +119,27 @@ def to_origin(bbox_xywh, new_origin):
 
 
 def rotate_coordinates(coords, angle, rotation_centre, imsize, resize=False):
-    """Rotate coordinates in the image
-    """
+    """Rotate coordinates in the image"""
     rot_centre = np.asanyarray(rotation_centre)
     angle = math.radians(angle)
-    rot_matrix = np.array([[math.cos(angle), math.sin(angle), 0],
-                           [-math.sin(angle), math.cos(angle), 0],
-                           [0, 0, 1]])
+    rot_matrix = np.array(
+        [
+            [math.cos(angle), math.sin(angle), 0],
+            [-math.sin(angle), math.cos(angle), 0],
+            [0, 0, 1],
+        ]
+    )
     coords = transform.matrix_transform(coords - rot_centre, rot_matrix) + rot_centre
 
     if resize:
         rows, cols = imsize[0], imsize[1]
-        corners = np.array([[0, 0],
-                            [0, rows - 1],
-                            [cols - 1, rows - 1],
-                            [cols - 1, 0]], dtype=np.float32)
+        corners = np.array(
+            [[0, 0], [0, rows - 1], [cols - 1, rows - 1], [cols - 1, 0]], dtype=np.float32
+        )
         if rotation_centre is not None:
-            corners = transform.matrix_transform(corners - rot_centre, rot_matrix) + rot_centre
+            corners = (
+                transform.matrix_transform(corners - rot_centre, rot_matrix) + rot_centre
+            )
 
         x_shift = min(corners[:, 0])
         y_shift = min(corners[:, 1])
@@ -164,7 +165,7 @@ def resize_coords(coords, original_size, target_size):
 
     for i in range(0, len(coords), 2):
         coords[i] = int((coords[i] / original_size[1]) * target_size[1])
-        coords[i+1] = int((coords[i+1] / original_size[0]) * target_size[0])
+        coords[i + 1] = int((coords[i + 1] / original_size[0]) * target_size[0])
     return coords
 
 
@@ -174,22 +175,17 @@ def resize_sample(sample, original_size, target_size):
     # Compute second end of segment w (first end of w is in xt, yt)
     (xw_end, yw_end), _ = add_dict_perpendicular_vector([xc, yc], [xt, yt], w)
 
-    image = transform.resize(image,
-                             target_size,
-                             order=3,
-                             anti_aliasing=True)
+    image = transform.resize(image, target_size, order=3, anti_aliasing=True)
 
     # Update coordinates
     xc, yc = resize_coords((xc, yc), original_size, target_size)
     xt, yt = resize_coords((xt, yt), original_size, target_size)
-    xw_end, yw_end = resize_coords((xw_end, yw_end),
-                                   original_size,
-                                   target_size)
+    xw_end, yw_end = resize_coords((xw_end, yw_end), original_size, target_size)
 
     # Recompute w
-    w = np.linalg.norm([xw_end-xt, yw_end-yt])
+    w = np.linalg.norm([xw_end - xt, yw_end - yt])
 
     # Recompute theta
-    theta = np.arctan2(yt-yc, xt-xc) + math.radians(90)
+    theta = np.arctan2(yt - yc, xt - xc) + math.radians(90)
 
     return image, xc, yc, xt, yt, w, theta
