@@ -1,7 +1,6 @@
-# ------------------------------------------------------------------------------
-# Licensed under the MIT License.
+# -*- coding: utf-8 -*-
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
-# ------------------------------------------------------------------------------
+
 from skimage import transform
 import numpy as np
 import math

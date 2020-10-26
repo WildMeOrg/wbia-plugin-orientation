@@ -1,5 +1,3 @@
-COCO_ANNOT_DIR: '/home/olga/Documents/Datasets/WildMe'
-DATA_DIR: 'data'
 GPUS: (0,)
 WORKERS: 24
 PRINT_FREQ: 10

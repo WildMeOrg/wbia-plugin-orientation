@@ -1,15 +1,14 @@
-# ------------------------------------------------------------------------------
-# Licensed under the MIT License.
+# -*- coding: utf-8 -*-
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
-# ------------------------------------------------------------------------------
+
 from yacs.config import CfgNode as CN
 
 
 _C = CN()
 
-_C.OUTPUT_DIR = 'output'
-_C.LOG_DIR = 'log'
-_C.COCO_ANNOT_DIR = 'data'
+_C.OUTPUT_DIR = 'wbia_orientation/output'
+_C.LOG_DIR = 'wbia_orientation/log'
+_C.COCO_ANNOT_DIR = 'wbia_orientation/data'
 _C.DATA_DIR = 'data'
 _C.USE_GPU = True
 _C.GPUS = (0,)

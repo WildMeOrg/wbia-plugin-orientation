@@ -1,7 +1,6 @@
-# ------------------------------------------------------------------------------
-# Licensed under the MIT License.
+# -*- coding: utf-8 -*-
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
-# ------------------------------------------------------------------------------
+
 import os
 import pprint
 import torch
@@ -12,14 +11,13 @@ import torch.utils.data
 import torch.utils.data.distributed
 import torchvision.transforms as transforms
 
-import tools._init_paths
-from config import cfg
-from config import update_config
+from config.default import _C as cfg
+from config.default import update_config
 from core.function import validate
 from utils.utils import create_logger
 from dataset import custom_transforms
 from train import parse_args, _make_model, _model_to_gpu, _make_loss
-import dataset
+from dataset.animal import AnimalDataset
 
 
 def _make_test_data(cfg, logger):
@@ -44,7 +42,7 @@ def _make_test_data(cfg, logger):
         ]
     )
 
-    test_dataset = eval('dataset.' + cfg.DATASET.CLASS)(cfg, False, test_transform)
+    test_dataset = AnimalDataset(cfg, False, test_transform)
 
     test_loader = torch.utils.data.DataLoader(
         test_dataset,

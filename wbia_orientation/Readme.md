@@ -75,5 +75,5 @@ python test.py --cfg experiments/3_hrnet_coords.yaml DATASET.TEST_SET test2020
 ```
 Averaging results over flips during test time yeilds slightly better accuracy:
 ```
-python test.py --cfg experiments/3_hrnet_coords.yaml DATASET.TEST_SET test2020 TEST.HFLIP True TEST.VFLIP True 
+python test.py --cfg experiments/3_hrnet_coords.yaml DATASET.TEST_SET test2020 TEST.HFLIP True TEST.VFLIP True
 ```

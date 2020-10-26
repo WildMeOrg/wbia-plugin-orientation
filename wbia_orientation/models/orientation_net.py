@@ -1,7 +1,6 @@
-# ------------------------------------------------------------------------------
-# Licensed under the MIT License.
+# -*- coding: utf-8 -*-
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
-# ------------------------------------------------------------------------------
+
 import logging
 import torch.nn as nn
 from torchvision import models as torchmodels

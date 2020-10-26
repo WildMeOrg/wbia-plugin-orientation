@@ -1,7 +1,5 @@
-# ------------------------------------------------------------------------------
-# Licensed under the MIT License.
+# -*- coding: utf-8 -*-
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
-# ------------------------------------------------------------------------------
 
 import argparse
 import os
@@ -17,16 +15,14 @@ import torch.utils.data.distributed
 import torchvision.transforms as transforms
 from tensorboardX import SummaryWriter
 
-import tools._init_paths
-from config import cfg
-from config import update_config
+from config.default import _C as cfg
+from config.default import update_config
 from core.function import train, validate
 from utils.utils import get_optimizer
 from utils.utils import create_logger
 from dataset import custom_transforms as ctf
-
-import dataset
-import models
+from dataset.animal import AnimalDataset
+from models.orientation_net import OrientationNet
 
 
 def parse_args():
@@ -55,7 +51,7 @@ def _make_model(cfg, is_train):
     Returns:
         model: model object
     """
-    model = models.orientation_net.OrientationNet(cfg, is_train)
+    model = OrientationNet(cfg, is_train)
     return model
 
 
@@ -111,8 +107,8 @@ def _make_data(cfg, logger):
         ]
     )
 
-    train_dataset = eval('dataset.' + cfg.DATASET.CLASS)(cfg, True, train_tform)
-    valid_dataset = eval('dataset.' + cfg.DATASET.CLASS)(cfg, False, valid_tform)
+    train_dataset = AnimalDataset(cfg, True, train_tform)
+    valid_dataset = AnimalDataset(cfg, False, valid_tform)
 
     train_loader = DataLoader(
         train_dataset,
@@ -220,7 +216,7 @@ def main():
         torch.save(checkpoint_dict, os.path.join(output_dir, 'checkpoint.pth'))
         if is_best_model:
             logger.info(
-                '=> saving best model state to {} at epoch {}'.format(output_dir, epoch)
+                '=> saving best model to {} epoch {}'.format(output_dir, epoch)
             )
             torch.save(
                 checkpoint_dict['state_dict'], os.path.join(output_dir, 'best.pth')

@@ -145,11 +145,11 @@ target/
 .vscode/
 
 wbia_orientation/output/*
-wbia_orientation/models/*
+wbia_orientation/pretrained_models/*
 wbia_orientation/log/*
 wbia_orientation/data/*
+data/*
 wbia_orientation/__pycache__/*
 
 draws/
 plot/
-

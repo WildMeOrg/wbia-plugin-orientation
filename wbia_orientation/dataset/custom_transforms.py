@@ -1,10 +1,10 @@
-# Licensed under the MIT License.
+# -*- coding: utf-8 -*-
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Differnce from PyTorch Transformers (https://pytorch.org/docs/stable/_modules/torchvision/transforms/transforms.html)
 # 1. Image in a sample is numpy array (not PIL Image)
 # 2. Custom transformers augment image and corresponding coordinates the same way
-# ------------------------------------------------------------------------------
+
 import torch
 from skimage import transform
 from skimage import img_as_ubyte
