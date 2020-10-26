@@ -1,3 +1,66 @@
+# setuptools_scm version discovery writes the version to <pkg>/_version.py
+**/_version.py
+
+# idk why this exists. probably jon's vimrc
+'
+
+.cache
+*.py[cod]
+
+.eggs/
+
+# C extensions
+*.so
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+__pycache__
+
+# Installer logs
+pip-log.txt
+
+# Print Logs
+logs
+htmlcov/
+
+# Unit test / coverage reports
+.coverage
+.tox
+nosetests.xml
+
+# Translations
+*.mo
+
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+.DS_Store
+*.dump.txt
+*.sqlite3
+
+# profiler
+*.lprof
+*.prof
+
+# setuptools_scm version discovery writes the version to <pkg>/_version.py
+**/_version.py
+.coverage*
+
+_docs/_build/
+
+
 # IntelliJ project files
 .idea
 *.iml
@@ -81,11 +144,11 @@ target/
 *.json
 .vscode/
 
-output/*
-models/*
-log/*
-data/*
-external/
+wbia_orientation/output/*
+wbia_orientation/models/*
+wbia_orientation/log/*
+wbia_orientation/data/*
+wbia_orientation/__pycache__/*
 
 draws/
 plot/
