@@ -1,7 +1,7 @@
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 # Licensed under the MIT License.
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
-# ------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 import os
 import time
 import logging
@@ -218,13 +218,14 @@ def validate(cfg, val_loader, val_dataset, model, loss_func, output_dir,
             if cfg.TEST.PLOT_ERRORS:
                 # Collect images, gt and preds for errors
                 err_idx = torch.BoolTensor(perf['err_idx'])
-                plot_rotated(images[err_idx].cpu(),
-                             target_output[err_idx].cpu()*cfg.MODEL.IMSIZE[0],
-                             output[err_idx].detach().cpu()*cfg.MODEL.IMSIZE[0],
-                             theta[err_idx],
-                             compute_theta(output[err_idx].detach().cpu().numpy()),
-                             '{}_{}_err'.format(cfg.DATASET.TEST_SET, i),
-                             output_dir)
+                if err_idx.sum().item() > 1:
+                    plot_rotated(images[err_idx].cpu(),
+                                 target_output[err_idx].cpu()*cfg.MODEL.IMSIZE[0],
+                                 output[err_idx].detach().cpu()*cfg.MODEL.IMSIZE[0],
+                                 theta[err_idx],
+                                 compute_theta(output[err_idx].detach().cpu().numpy()),
+                                 '{}_{}_err'.format(cfg.DATASET.TEST_SET, i),
+                                 output_dir)
 
             if cfg.LOCAL and i > 3:
                 break
