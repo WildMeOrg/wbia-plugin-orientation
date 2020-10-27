@@ -12,10 +12,6 @@ from __future__ import print_function
 
 import os
 import logging
-import functools
-
-import numpy as np
-
 import torch
 import torch.nn as nn
 import torch._utils
