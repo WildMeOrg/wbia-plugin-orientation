@@ -144,7 +144,7 @@ def validate(
                 output_hflipped = hflip_back(
                     output_hflipped.cpu().numpy(),
                     cfg.MODEL.PREDICT_THETA,
-                    cfg.MODEL.IMSIZE,
+                    [1., 1.],
                 )
                 output_hflipped = torch.from_numpy(output_hflipped.copy())
                 if cfg.USE_GPU:
@@ -157,18 +157,18 @@ def validate(
                 output_vflipped = vflip_back(
                     output_vflipped.cpu().numpy(),
                     cfg.MODEL.PREDICT_THETA,
-                    cfg.MODEL.IMSIZE,
+                    [1., 1.],
                 )
                 output_vflipped = torch.from_numpy(output_vflipped.copy())
                 if cfg.USE_GPU:
                     output_vflipped = output_vflipped.cuda()
 
             if cfg.TEST.HFLIP and cfg.TEST.VFLIP:
-                output = (output + output_hflipped + output_vflipped) * 0.3
+                output = (output + output_hflipped + output_vflipped) / 3
             elif not cfg.TEST.HFLIP and cfg.TEST.VFLIP:
-                output = (output + output_vflipped) * 0.5
+                output = (output + output_vflipped) / 2
             elif cfg.TEST.HFLIP and not cfg.TEST.VFLIP:
-                output = (output + output_hflipped) * 0.5
+                output = (output + output_hflipped) / 2
 
             loss = loss_func(output, target_output)
             meters.update('valid_loss', loss.item(), bs)
