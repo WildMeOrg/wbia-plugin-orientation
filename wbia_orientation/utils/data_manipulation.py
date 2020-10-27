@@ -69,7 +69,10 @@ def plot_image_coordinates(ax, image, xc, yc, xt, yt, w):
     ax.plot(xc, yc, 'ro')
     ax.plot(xt, yt, 'yo')
     ax.plot(predicted_oa_box[:, 0], predicted_oa_box[:, 1], 'go')
-
+    ax.plot(predicted_oa_box[:, 0], predicted_oa_box[:, 1], 'go-', linewidth=2)
+    ax.plot([predicted_oa_box[0, 0], predicted_oa_box[-1, 0]],
+            [predicted_oa_box[0, 1], predicted_oa_box[-1, 1]],
+            'go-', linewidth=2)
 
 def increase_bbox(bbox, scale, image_size, type='xyhw'):
     """Increase the size of the bounding box
