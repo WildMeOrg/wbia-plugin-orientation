@@ -10,6 +10,7 @@ import numpy as np
 from core.evaluate import evaluate_orientaion_coords, compute_theta
 from core.evaluate import evaluate_orientaion_theta
 from utils.vis import plot_images, plot_images_theta, plot_rotated
+from utils.vis import plot_theta_err_hist
 from utils.utils import AverageMeterSet
 from utils.utils import save_object
 from utils.utils import hflip_back, vflip_back
@@ -264,6 +265,9 @@ def validate(
         theta_preds_all = np.concatenate(theta_preds_all)
         save_object(theta_gt_all, os.path.join(output_dir, 'theta_gt.pkl'))
         save_object(theta_preds_all, os.path.join(output_dir, 'theta_preds.pkl'))
+
+        # Plot histogram of errors
+        plot_theta_err_hist(theta_gt_all, theta_preds_all, cfg.DATASET.TEST_SET, output_dir)
 
         logger.info(
             '==> Accuracy@{} on {} {}  is {:.2%}'.format(

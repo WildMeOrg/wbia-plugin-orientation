@@ -11,6 +11,7 @@ import numpy as np
 from skimage import transform
 from utils.utils import unnormalize
 from utils.data_manipulation import plot_image_coordinates
+from core.evaluate import normalize_theta
 
 
 def plot_images(
@@ -187,5 +188,22 @@ def plot_images_theta(
 
     # Save plot
     file_name = os.path.join(output_dir, 'debug_images', '{}.png'.format(prefix))
+    fig.savefig(file_name, format='png', dpi=100, bbox_inches='tight', facecolor='w')
+    plt.close(fig)
+
+
+def plot_theta_err_hist(theta_gt, theta_pred, prefix, output_dir):
+    np_norm_theta = np.vectorize(normalize_theta)
+    theta_pred = np.rad2deg(theta_pred)
+    theta_gt = np.rad2deg(theta_gt)
+    err_theta = np.abs(np_norm_theta(theta_pred) - np_norm_theta(theta_gt))
+
+    fig, ax = plt.subplots()
+    ax.hist(err_theta)
+    ax.set_xlabel('Error in degrees')
+    ax.set_ylabel('Number of images')
+
+    # Save plot
+    file_name = os.path.join(output_dir, 'hist_{}.png'.format(prefix))
     fig.savefig(file_name, format='png', dpi=100, bbox_inches='tight', facecolor='w')
     plt.close(fig)

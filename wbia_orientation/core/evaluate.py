@@ -120,7 +120,7 @@ def evaluate_orientaion_theta(theta_pred, theta_gt, theta_thr=10):
     if type(theta_gt) == torch.Tensor:
         theta_gt = theta_gt.numpy()
 
-    # Comvert to angles
+    # Convert to angles
     theta_pred = np.rad2deg(np.arccos(theta_pred))
     theta_gt = np.rad2deg(np.arccos(theta_gt))
 
