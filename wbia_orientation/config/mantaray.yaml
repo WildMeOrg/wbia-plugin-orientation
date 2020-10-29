@@ -3,7 +3,7 @@ WORKERS: 24
 PRINT_FREQ: 10
 USE_GPU: False
 LOCAL: False
-VERSION: vb4
+VERSION: final
 
 DATASET:
   CLASS: animal
