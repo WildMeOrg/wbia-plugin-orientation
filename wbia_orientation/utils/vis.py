@@ -12,9 +12,10 @@ from skimage import transform
 from utils.utils import unnormalize
 from utils.data_manipulation import plot_image_coordinates
 from core.evaluate import normalize_theta
+import matplotlib.style as style
 
 
-def plot_images(
+def plot_boxes_gt_preds(
     input_images,
     coords_gt,
     coords_pred,
@@ -27,11 +28,21 @@ def plot_images(
     max_rows=4,
 ):
     """
-    input_images: torch tensor of shape (bs, c, h, w)
-    coords: torch tensor shape (bs, 5) where each row is [xc, yc, xt, yt, w]
-    theta: torch tensor shape (bs) with values of theta
-    file_name: string, name of the file to save plot
-    max_cols: int, max number of columns in plot
+    Plot grouhd truth and predicted object-aligned bounding boxes
+    Args:
+        input_images (torch tensor): shape (bs, c, h, w)
+                                     images
+        coords_gt (torch tensor): shape (bs, 5)
+                   each row is [xc, yc, xt, yt, w] is ground truth
+        coords_pred (torch tensor): shape (bs, 5)
+                     each row is [xc, yc, xt, yt, w] is prediction
+        theta_gt (torch tensor): shape (bs) with ground truth values of theta in radians
+        theta_pred (torch tensor): shape (bs) with predictions of theta in radians
+        prefix (string): prefix for plot filename
+        output_dir (string): path to output directory to save plot
+        min_rows (int): min number of rows in plot (default=2)
+        max_cols (int): max number of columns in plot (default=4)
+        max_rows (int): max number of rows in plot (default=4)
     """
     images_un = unnormalize(input_images)
     bs = input_images.size(0)
@@ -62,6 +73,7 @@ def plot_images(
             ax[r, 2 * c].set_title(
                 'GT Theta {:.0f} deg'.format(math.degrees(theta_gt[r * ncols + c]))
             )
+            ax[r, 2 * c].axis('off')
 
             # Plot predictions
             plot_image_coordinates(
@@ -76,6 +88,7 @@ def plot_images(
             ax[r, 2 * c + 1].set_title(
                 'Preds Theta {:.0f} deg'.format(math.degrees(theta_pred[r * ncols + c]))
             )
+            ax[r, 2 * c + 1].axis('off')
 
     # Save plot
     file_name = os.path.join(output_dir, 'debug_images', '{}.png'.format(prefix))
@@ -83,7 +96,7 @@ def plot_images(
     plt.close(fig)
 
 
-def plot_rotated(
+def plot_rotated_gt_preds(
     input_images,
     coords_gt,
     coords_pred,
@@ -95,12 +108,22 @@ def plot_rotated(
     max_cols=4,
     max_rows=4,
 ):
-    """Plot images rotated with ground truth and predicted angles
-    input_images: torch tensor of shape (bs, c, h, w)
-    coords: torch tensor shape (bs, 5) where each row is [xc, yc, xt, yt, w]
-    theta: torch tensor shape (bs) with values of theta
-    file_name: string, name of the file to save plot
-    max_cols: int, max number of columns in plot
+    """
+    Plot images rotated with ground truth and predicted angles
+    Args:
+        input_images (torch tensor): shape (bs, c, h, w)
+                                     images
+        coords_gt (torch tensor): shape (bs, 5)
+                   each row is [xc, yc, xt, yt, w] is ground truth
+        coords_pred (torch tensor): shape (bs, 5)
+                     each row is [xc, yc, xt, yt, w] is prediction
+        theta_gt (torch tensor): shape (bs) with ground truth values of theta in radians
+        theta_pred (torch tensor): shape (bs) with predictions of theta in radians
+        prefix (string): prefix for plot filename
+        output_dir (string): path to output directory to save plot
+        min_rows (int): min number of rows in plot (default=2)
+        max_cols (int): max number of columns in plot (default=4)
+        max_rows (int): max number of rows in plot (default=4)
     """
     images_un = unnormalize(input_images).numpy().transpose(0, 2, 3, 1)
     coords_gt = coords_gt.numpy()
@@ -129,6 +152,7 @@ def plot_rotated(
             )
             ax[r, 2 * c].imshow(image_rotated)
             ax[r, 2 * c].set_title('GT Rotated by {:.0f} deg'.format(degrees_gt))
+            ax[r, 2 * c].axis('off')
 
             # Plot predictions
             degrees_pred = math.degrees(theta_pred[r * ncols + c])
@@ -139,6 +163,7 @@ def plot_rotated(
             )
             ax[r, 2 * c + 1].imshow(image_rotated)
             ax[r, 2 * c + 1].set_title('Preds Rotated by {:.0f} deg'.format(degrees_pred))
+            ax[r, 2 * c + 1].axis('off')
 
     # Save plot
     file_name = os.path.join(output_dir, 'debug_images', '{}.png'.format(prefix))
@@ -146,9 +171,9 @@ def plot_rotated(
     plt.close(fig)
 
 
-def plot_images_theta(
+def plot_rotated_preds(
     input_images,
-    theta_gt,
+    coords_pred,
     theta_pred,
     prefix,
     output_dir,
@@ -156,17 +181,22 @@ def plot_images_theta(
     max_cols=4,
     max_rows=4,
 ):
+    """Plot images rotated with predicted angles
+    Args:
+        input_images (torch tensor): shape (bs, c, h, w)
+                                     images
+        coords_pred (torch tensor): shape (bs, 5)
+                     each row is [xc, yc, xt, yt, w] is prediction
+        theta_pred (torch tensor): shape (bs) with predictions of theta
+                                   in radians
+        prefix (string): prefix for plot filename
+        output_dir (string): path to output directory to save plot
+        min_rows (int): min number of rows in plot (default=2)
+        max_cols (int): max number of columns in plot (default=4)
+        max_rows (int): max number of rows in plot (default=4)
     """
-    input_images: torch tensor of shape (bs, c, h, w)
-    theta_gt: torch tensor shape (bs, 1) with ground truth cosine values theta
-    theta_pred: torch tensor shape (bs, 1) with predicted cosine values theta
-    file_name: string, name of the file to save plot
-    max_cols: int, max number of columns in plot
-    """
-    images_un = unnormalize(input_images)
-    theta_gt = np.arccos(theta_gt.view(theta_gt.size(0)).numpy())
-    theta_pred = np.arccos(theta_pred.view(theta_pred.size(0)).numpy())
-
+    images_un = unnormalize(input_images).numpy().transpose(0, 2, 3, 1)
+    coords_pred = coords_pred.numpy()
     bs = input_images.size(0)
     ncols = min(max_cols, bs)
     nrows = int(math.ceil(float(bs) / ncols))
@@ -175,16 +205,26 @@ def plot_images_theta(
         ncols = bs // nrows
     nrows = min(nrows, max_rows)
 
-    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(ncols * 4, nrows * 4))
+    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(ncols * 8, nrows * 4))
     for r in range(nrows):
         for c in range(ncols):
-            ax[r, c].imshow(images_un[r * ncols + c].numpy().transpose((1, 2, 0)))
-            ax[r, c].set_title(
-                'Gt {:.0f} Pred {:.0f} deg'.format(
-                    math.degrees(theta_gt[r * ncols + c]),
-                    math.degrees(theta_pred[r * ncols + c]),
-                )
+            # If no images left in a batch, do not plot
+            if r * ncols + c >= bs:
+                continue
+
+            # Plot predictions
+            degrees_pred = math.degrees(theta_pred[r * ncols + c])
+            image_rotated = transform.rotate(
+                images_un[r * ncols + c],
+                angle=degrees_pred,
+                center=coords_pred[r * ncols + c, :1],
             )
+            image_combined = np.concatenate(
+                [images_un[r * ncols + c], image_rotated], axis=1
+            )
+            ax[r, c].imshow(image_combined)
+            ax[r, c].set_title('Rotated by {:.0f} deg'.format(degrees_pred))
+            ax[r, c].axis('off')
 
     # Save plot
     file_name = os.path.join(output_dir, 'debug_images', '{}.png'.format(prefix))
@@ -193,6 +233,17 @@ def plot_images_theta(
 
 
 def plot_theta_err_hist(theta_gt, theta_pred, prefix, output_dir):
+    """
+    Plot histogram of errors of angle theta predictions
+    Args:
+        theta_gt (torch tensor): shape (bs) with ground truth values of theta
+                                 in radians
+        theta_pred (torch tensor): shape (bs) with predictions of theta
+                                   in radians
+        prefix (string): prefix for plot filename
+        output_dir (string): path to output directory to save plot
+    """
+    style.use('seaborn')
     np_norm_theta = np.vectorize(normalize_theta)
     theta_pred = np.rad2deg(theta_pred)
     theta_gt = np.rad2deg(theta_gt)
@@ -200,7 +251,7 @@ def plot_theta_err_hist(theta_gt, theta_pred, prefix, output_dir):
     err_theta = np.abs(np_norm_theta(err_theta))
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.hist(err_theta,  bins=36)
+    ax.hist(err_theta, bins=36)
     ax.set_xticks(list(range(0, 180, 10)))
     ax.set_xlabel('Error in degrees')
     ax.set_ylabel('Number of images')
@@ -209,3 +260,4 @@ def plot_theta_err_hist(theta_gt, theta_pred, prefix, output_dir):
     file_name = os.path.join(output_dir, 'hist_{}.png'.format(prefix))
     fig.savefig(file_name, format='png', dpi=100, bbox_inches='tight', facecolor='w')
     plt.close(fig)
+    style.use('classic')

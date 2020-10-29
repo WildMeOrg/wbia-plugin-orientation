@@ -85,52 +85,34 @@ def save_object(obj, filename):
         pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
 
-def hflip_back(output_flipped, predict_angle, image_h_w):
+def hflip_back(output_flipped, image_h_w):
     """Flip predicted values back after horizontal flip
     ouput_flipped: numpy.ndarray either (batch_size, 5) or (batch_size, 1)
     """
-    if predict_angle:
-        assert (
-            output_flipped.ndim == 2 and output_flipped.shape[1] == 1
-        ), 'output_flipped should be [batch_size, 1]'
-    else:
-        assert (
-            output_flipped.ndim == 2 and output_flipped.shape[1] == 5
-        ), 'output_flipped should be [batch_size, 5]'
+    assert (
+        output_flipped.ndim == 2 and output_flipped.shape[1] == 5
+    ), 'output_flipped should be [batch_size, 5]'
 
     h, w = image_h_w
-    if predict_angle:
-        # TODO Flip theta
-        output_flipped[:, 0] = -output_flipped[:, 0]
-    else:
-        # Flip x-coordinates, y-coordinates and w do not change
-        output_flipped[:, 0] = w - output_flipped[:, 0]
-        output_flipped[:, 2] = w - output_flipped[:, 2]
+    # Flip x-coordinates, y-coordinates and w do not change
+    output_flipped[:, 0] = w - output_flipped[:, 0]
+    output_flipped[:, 2] = w - output_flipped[:, 2]
 
     return output_flipped
 
 
-def vflip_back(output_flipped, predict_angle, image_h_w):
+def vflip_back(output_flipped, image_h_w):
     """Flip predicted values back after vertical flip
     ouput_flipped: numpy.ndarray either (batch_size, 5) or (batch_size, 1)
     """
-    if predict_angle:
-        assert (
-            output_flipped.ndim == 2 and output_flipped.shape[1] == 1
-        ), 'output_flipped should be [batch_size, 1]'
-    else:
-        assert (
-            output_flipped.ndim == 2 and output_flipped.shape[1] == 5
-        ), 'output_flipped should be [batch_size, 5]'
+    assert (
+        output_flipped.ndim == 2 and output_flipped.shape[1] == 5
+    ), 'output_flipped should be [batch_size, 5]'
 
     h, w = image_h_w
-    if predict_angle:
-        # TODO Flip theta
-        output_flipped[:, 0] = -output_flipped[:, 0]
-    else:
-        # Flip x-coordinates, y-coordinates and w do not change
-        output_flipped[:, 1] = h - output_flipped[:, 1]
-        output_flipped[:, 3] = h - output_flipped[:, 3]
+    # Flip x-coordinates, y-coordinates and w do not change
+    output_flipped[:, 1] = h - output_flipped[:, 1]
+    output_flipped[:, 3] = h - output_flipped[:, 3]
 
     return output_flipped
 

@@ -99,43 +99,6 @@ def evaluate_orientaion_coords(
     return eval_dict
 
 
-def evaluate_orientaion_theta(theta_pred, theta_gt, theta_thr=10):
-    """
-    Evaluate errors and accuracy of orientation detection from predicted theta
-    Input:
-        theta_pred: numpy array or tensor of shape (bs),
-                    ground truth for cosine of theta
-        theta_gt: numpy array or tensor of shape (bs),
-                  ground truth for cosine of theta
-        theta_thr (int): threshold for tolerated error in degrees
-    Returns:
-        eval_dict (dictionary):
-            'err_theta': mean error in degrees for angle theta
-            'acc_theta': accuracy of theta prediction,
-                         considered correct if error is below threshold
-    """
-    # Convert to numpy arrays if tensors
-    if type(theta_pred) == torch.Tensor:
-        theta_pred = theta_pred.numpy()
-    if type(theta_gt) == torch.Tensor:
-        theta_gt = theta_gt.numpy()
-
-    # Convert to angles
-    theta_pred = np.rad2deg(np.arccos(theta_pred))
-    theta_gt = np.rad2deg(np.arccos(theta_gt))
-
-    err_theta = np.abs(theta_pred - theta_gt)
-    correct_idx = err_theta <= theta_thr
-    acc_theta = correct_idx.sum() / len(theta_gt)
-
-    eval_dict = {
-        'err_theta': np.mean(err_theta),
-        'acc_theta': acc_theta,
-        'err_idx': ~correct_idx,
-    }
-    return eval_dict
-
-
 def normalize_theta(theta, degrees=True):
     """Normalize angle theta to -180 and 180 degrees
     Input:
