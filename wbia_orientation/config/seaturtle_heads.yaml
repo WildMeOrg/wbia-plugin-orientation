@@ -3,20 +3,22 @@ WORKERS: 24
 PRINT_FREQ: 10
 USE_GPU: True
 LOCAL: False
-VERSION: final
 
 DATASET:
   CLASS: animal
-  NAME: 'mantaray'
+  NAME: 'seaturtle'
   MAX_ROT: 180
   SCALE_FACTOR: [0.8, 1.2]
   HOR_FLIP_PROB: 0.5
   VERT_FLIP_PROB: 0.5
   TEST_SET: test2020
   TRAIN_SET: train2020
+  SELECT_CATS_LIST: [1, 3, 5]
+  SUFFIX: 'heads'
 
 MODEL:
-  CORE_NAME: 'efficientnet-b4'
+  CORE_NAME: 'hrnet'
+  PRETRAINED: 'pretrained_models/hrnetv2_w32_imagenet_pretrained.pth'
   IMSIZE:
   - 224
   - 224
@@ -72,10 +74,10 @@ MODEL:
 
 TRAIN:
   END_EPOCH: 100
-  LR: 0.0001
+  LR: 0.00005
 
 TEST:
-  MODEL_FILE: 'wbia_orientation/output/mantaray_6_efficientnet_coords_vb4/best.pth'
+  MODEL_FILE: 'wbia_orientation/output/seaturtle_4_hrnet_seaturtle_heads_v0/best.pth'
   HFLIP: True
   VFLIP: True
   PLOT_ROTATED: True

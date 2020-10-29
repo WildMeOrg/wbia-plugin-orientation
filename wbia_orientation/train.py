@@ -215,9 +215,7 @@ def main():
         # Save best model
         torch.save(checkpoint_dict, os.path.join(output_dir, 'checkpoint.pth'))
         if is_best_model:
-            logger.info(
-                '=> saving best model to {} epoch {}'.format(output_dir, epoch)
-            )
+            logger.info('=> saving best model to {} epoch {}'.format(output_dir, epoch))
             torch.save(
                 checkpoint_dict['state_dict'], os.path.join(output_dir, 'best.pth')
             )

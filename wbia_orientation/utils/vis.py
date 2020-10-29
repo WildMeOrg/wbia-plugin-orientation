@@ -260,4 +260,4 @@ def plot_theta_err_hist(theta_gt, theta_pred, prefix, output_dir):
     file_name = os.path.join(output_dir, 'hist_{}.png'.format(prefix))
     fig.savefig(file_name, format='png', dpi=100, bbox_inches='tight', facecolor='w')
     plt.close(fig)
-    style.use('classic')
+    style.use('default')

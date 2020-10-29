@@ -61,21 +61,28 @@ def get_object_aligned_box(xc, yc, xt, yt, w):
     return corner_1, corner_2, corner_3, corner_4
 
 
-def plot_image_coordinates(ax, image, xc, yc, xt, yt, w):
+def plot_image_coordinates(ax, image, xc, yc, xt, yt, w, marker='g-'):
     predicted_oa_box = get_object_aligned_box(xc, yc, xt, yt, w)
     predicted_oa_box = np.array(predicted_oa_box)
 
     ax.imshow(image)
     ax.plot(xc, yc, 'ro')
     ax.plot(xt, yt, 'yo')
-    ax.plot(predicted_oa_box[:, 0], predicted_oa_box[:, 1], 'go')
-    ax.plot(predicted_oa_box[:, 0], predicted_oa_box[:, 1], 'go-', linewidth=2)
+    ax.plot(predicted_oa_box[:, 0], predicted_oa_box[:, 1], marker)
     ax.plot(
         [predicted_oa_box[0, 0], predicted_oa_box[-1, 0]],
         [predicted_oa_box[0, 1], predicted_oa_box[-1, 1]],
-        'go-',
-        linewidth=2,
+        marker,
     )
+
+
+def plot_image_bbox(ax, image, bbox_xywh, marker='g-'):
+    """Plot bounding box on image
+    """
+    ax.imshow(image)
+    x, y, w, h = bbox_xywh
+    points = np.array([[x, y], [x+w, y], [x+w, y+h], [x, y+h], [x, y]])
+    ax.plot(points[:, 0], points[:, 1], marker, linewidth=2)
 
 
 def increase_bbox(bbox, scale, image_size, type='xyhw'):
@@ -161,7 +168,7 @@ def resize_coords(coords, original_size, target_size):
         original_size: size of image (h, w)
         target_size: target size of image (h, w)
     """
-    assert isinstance(coords, (list, tuple))
+    assert isinstance(coords, (list, tuple, np.ndarray))
     assert len(coords) % 2 == 0
     assert len(original_size) == 2
     assert len(target_size) == 2
@@ -176,12 +183,38 @@ def resize_coords(coords, original_size, target_size):
 
 
 def resize_sample(sample, original_size, target_size):
+    """Resize sample
+    Input:
+        sample: image, xc, yc, xt, yt, w, theta
+        original_size: size of image (h, w)
+        target_size: target size of image (h, w)
+    """
     image, xc, yc, xt, yt, w, theta = sample
+
+    # Resize image
+    image = transform.resize(image, target_size, order=3, anti_aliasing=True)
+
+    # Resize object aligned box
+    oa_box = xc, yc, xt, yt, w
+    xc, yc, xt, yt, w = resize_oa_box(oa_box, original_size, target_size)
+
+    # Recompute theta
+    theta = np.arctan2(yt - yc, xt - xc) + math.radians(90)
+
+    return image, xc, yc, xt, yt, w, theta
+
+
+def resize_oa_box(oa_box, original_size, target_size):
+    """Resize object aligned box parametrized with five numbers
+    Input:
+        sample (list or tuple of 5 floats): xc, yc, xt, yt, w
+        original_size: size of image (h, w)
+        target_size: target size of image (h, w)
+    """
+    xc, yc, xt, yt, w = oa_box
 
     # Compute second end of segment w (first end of w is in xt, yt)
     (xw_end, yw_end), _ = add_dict_perpendicular_vector([xc, yc], [xt, yt], w)
-
-    image = transform.resize(image, target_size, order=3, anti_aliasing=True)
 
     # Update coordinates
     xc, yc = resize_coords((xc, yc), original_size, target_size)
@@ -191,7 +224,4 @@ def resize_sample(sample, original_size, target_size):
     # Recompute w
     w = np.linalg.norm([xw_end - xt, yw_end - yt])
 
-    # Recompute theta
-    theta = np.arctan2(yt - yc, xt - xc) + math.radians(90)
-
-    return image, xc, yc, xt, yt, w, theta
+    return xc, yc, xt, yt, w
