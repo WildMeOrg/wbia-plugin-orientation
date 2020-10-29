@@ -31,7 +31,6 @@ _C.MODEL = CN()
 _C.MODEL.CORE_NAME = 'resnet50'
 _C.MODEL.PRETRAINED = ''
 _C.MODEL.IMSIZE = [256, 256]  # width * height, ex: 192 * 256
-_C.MODEL.PREDICT_THETA = False
 _C.MODEL.EXTRA = CN(new_allowed=True)
 
 _C.LOSS = CN()
@@ -76,6 +75,7 @@ _C.TEST.MODEL_FILE = ''
 _C.TEST.THETA_THR = 10.0
 _C.TEST.PLOT_ROTATED = False
 _C.TEST.PLOT_ERRORS = False
+_C.TEST.PLOT_ROTATED_PREDS_ONLY = False
 
 # debug
 _C.DEBUG = CN()
