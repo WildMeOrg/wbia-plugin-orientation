@@ -11,28 +11,19 @@ logger = logging.getLogger(__name__)
 
 
 class OrientationNet(nn.Module):
-    """CNN that normalizes orientation of the object in the image
+    """CNN that normalizes orientation of the object in the image.
+    Model outputs 5 floats: xc, yc, xt, yt, w
     Input:
         core_name (string): name of core model, class from torchvision.models
-        predict_angle (bool, default False):
-            if False then output is 5 floats: xc, yc, xt, yt, x
-            if True then output is cos(theta), angle of rotation in
-                clockwise direction of the image from vertical orientation
     """
 
     def __init__(self, cfg, is_train):
         super(OrientationNet, self).__init__()
-        self.predict_angle = cfg.MODEL.PREDICT_THETA
         core_name = cfg.MODEL.CORE_NAME
 
-        if self.predict_angle:
-            output_num = 1
-            # Use Tahn activation function (output from -1 to 1) for angle
-            self.tanh = nn.Tanh()
-        else:
-            output_num = 5
-            # Use Sigmoid activation function (output from 0 to 1) for coords
-            self.sigmoid = nn.Sigmoid()
+        output_num = 5
+        # Use Sigmoid activation function (output from 0 to 1) for coords
+        self.sigmoid = nn.Sigmoid()
 
         # Load core model
         if 'hrnet' in core_name.lower():
@@ -66,9 +57,5 @@ class OrientationNet(nn.Module):
 
     def forward(self, x):
         out = self.model(x)
-
-        if self.predict_angle:
-            out = self.tanh(out)
-        else:
-            out = self.sigmoid(out)
+        out = self.sigmoid(out)
         return out
