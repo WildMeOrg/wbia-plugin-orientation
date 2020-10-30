@@ -12,7 +12,6 @@ from utils.vis import plot_boxes_gt_preds, plot_rotated_gt_preds
 from utils.vis import plot_theta_err_hist, plot_rotated_preds
 from utils.utils import AverageMeterSet
 from utils.utils import save_object
-from utils.utils import hflip_back, vflip_back
 
 torch.autograd.set_detect_anomaly(True)
 logger = logging.getLogger(__name__)
@@ -113,37 +112,10 @@ def validate(
                 target_output = target_output.cuda(non_blocking=True)
 
             # Compute output of Orientation Network
-            output = model(images)
-
-            # Predict on flipped images and aggregate results
-            if cfg.TEST.HFLIP:
-                images_hflipped = torch.flip(images, [3])
-                output_hflipped = model(images_hflipped)
-
-                output_hflipped = hflip_back(
-                    output_hflipped.cpu().numpy(), [1.0, 1.0],
-                )
-                output_hflipped = torch.from_numpy(output_hflipped.copy())
-                if cfg.USE_GPU:
-                    output_hflipped = output_hflipped.cuda()
-
-            if cfg.TEST.VFLIP:
-                images_vflipped = torch.flip(images, [2])
-                output_vflipped = model(images_vflipped)
-
-                output_vflipped = vflip_back(
-                    output_vflipped.cpu().numpy(), [1.0, 1.0],
-                )
-                output_vflipped = torch.from_numpy(output_vflipped.copy())
-                if cfg.USE_GPU:
-                    output_vflipped = output_vflipped.cuda()
-
-            if cfg.TEST.HFLIP and cfg.TEST.VFLIP:
-                output = (output + output_hflipped + output_vflipped) / 3
-            elif not cfg.TEST.HFLIP and cfg.TEST.VFLIP:
-                output = (output + output_vflipped) / 2
-            elif cfg.TEST.HFLIP and not cfg.TEST.VFLIP:
-                output = (output + output_hflipped) / 2
+            output = model.compute_with_flips(images,
+                                              cfg.TEST.HFLIP,
+                                              cfg.TEST.VFLIP,
+                                              cfg.USE_GPU)
 
             loss = loss_func(output, target_output)
             meters.update('valid_loss', loss.item(), bs)
@@ -253,3 +225,5 @@ def validate(
         )
 
     return meters.meters['valid_acc_theta'].avg
+
+
