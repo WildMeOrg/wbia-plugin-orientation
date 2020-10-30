@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from torch.utils.data import Dataset
 from skimage import transform as skimage_transform
 import imageio
@@ -20,18 +21,16 @@ class AnimalWbiaDataset(Dataset):
 
         # Crop bounding box area
         x1, y1, h, w = self.bboxes[idx]
-        image = image[y1:y1+h, x1:x1+w]
+        image = image[y1 : y1 + h, x1 : x1 + w]
         if min(image.shape) < 1:
             raise ValueError(
-                'Skipped image {} Cropped to zero size.'.format(
-                    self.image_paths[idx]
-                )
+                'Skipped image {} Cropped to zero size.'.format(self.image_paths[idx])
             )
 
         # Resize image
         image = skimage_transform.resize(
-                image, self.target_imsize, order=3, anti_aliasing=True
-                )
+            image, self.target_imsize, order=3, anti_aliasing=True
+        )
 
         if self.transform is not None:
             image = self.transform(image)

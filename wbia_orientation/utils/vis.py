@@ -251,7 +251,7 @@ def plot_theta_err_hist(theta_gt, theta_pred, prefix, output_dir):
     err_theta = np.abs(np_norm_theta(err_theta))
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.hist(err_theta, bins=36)
+    ax.hist(err_theta, bins=list(range(0, 180, 5)))
     ax.set_xticks(list(range(0, 180, 10)))
     ax.set_xlabel('Error in degrees')
     ax.set_ylabel('Number of images')

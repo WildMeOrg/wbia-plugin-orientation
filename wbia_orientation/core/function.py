@@ -112,10 +112,9 @@ def validate(
                 target_output = target_output.cuda(non_blocking=True)
 
             # Compute output of Orientation Network
-            output = model.compute_with_flips(images,
-                                              cfg.TEST.HFLIP,
-                                              cfg.TEST.VFLIP,
-                                              cfg.USE_GPU)
+            output = model.compute_with_flips(
+                images, cfg.TEST.HFLIP, cfg.TEST.VFLIP, cfg.USE_GPU
+            )
 
             loss = loss_func(output, target_output)
             meters.update('valid_loss', loss.item(), bs)
@@ -225,5 +224,3 @@ def validate(
         )
 
     return meters.meters['valid_acc_theta'].avg
-
-

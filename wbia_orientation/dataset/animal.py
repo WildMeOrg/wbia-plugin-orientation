@@ -254,7 +254,7 @@ class AnimalDataset(Dataset):
 
     def _select_annot(self, obj_cat):
         """Select annotation to add to the dataset.
-        The annotation is included:
+        The annotation is included if:
             a. there is no list of selected categories in config
             b. object category in the list of selected categories in config"""
         if len(self.cfg.DATASET.SELECT_CATS_LIST) == 0 or (

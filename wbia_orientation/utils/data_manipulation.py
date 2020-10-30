@@ -77,11 +77,10 @@ def plot_image_coordinates(ax, image, xc, yc, xt, yt, w, marker='g-'):
 
 
 def plot_image_bbox(ax, image, bbox_xywh, marker='g-'):
-    """Plot bounding box on image
-    """
+    """Plot bounding box on image"""
     ax.imshow(image)
     x, y, w, h = bbox_xywh
-    points = np.array([[x, y], [x+w, y], [x+w, y+h], [x, y+h], [x, y]])
+    points = np.array([[x, y], [x + w, y], [x + w, y + h], [x, y + h], [x, y]])
     ax.plot(points[:, 0], points[:, 1], marker, linewidth=2)
 
 

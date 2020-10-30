@@ -62,10 +62,8 @@ class OrientationNet(nn.Module):
         out = self.sigmoid(out)
         return out
 
-    def compute_with_flips(self, images, hflip=True, vflip=True,
-                           use_gpu=False):
-        """Compute output over horizontal and vertical flips and average
-        """
+    def compute_with_flips(self, images, hflip=True, vflip=True, use_gpu=False):
+        """Compute output over horizontal and vertical flips and average"""
         # Compute output of Orientation Network
         output = self.forward(images)
 
@@ -75,7 +73,8 @@ class OrientationNet(nn.Module):
             output_hflipped = self.forward(images_hflipped)
 
             output_hflipped = hflip_back(
-                output_hflipped.cpu().numpy(), [1.0, 1.0],
+                output_hflipped.cpu().numpy(),
+                [1.0, 1.0],
             )
             output_hflipped = torch.from_numpy(output_hflipped.copy())
             if use_gpu:
@@ -86,7 +85,8 @@ class OrientationNet(nn.Module):
             output_vflipped = self.forward(images_vflipped)
 
             output_vflipped = vflip_back(
-                output_vflipped.cpu().numpy(), [1.0, 1.0],
+                output_vflipped.cpu().numpy(),
+                [1.0, 1.0],
             )
             output_vflipped = torch.from_numpy(output_vflipped.copy())
             if use_gpu:
