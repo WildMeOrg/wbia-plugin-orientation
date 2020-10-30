@@ -55,7 +55,7 @@ def native_mb_python_tag(plat_impl=None, version_info=None):
     return mb_tag
 
 
-def parse_version(fpath='wbia_id/__init__.py'):
+def parse_version(fpath='wbia_orientation/__init__.py'):
     """
     Statically parse the version number from a python file
 
@@ -169,19 +169,18 @@ def parse_requirements(fname='requirements.txt', with_version=False):
     return packages
 
 
-NAME = 'wbia-id'
+NAME = 'wbia-orientation'
 
 
 MB_PYTHON_TAG = native_mb_python_tag()  # NOQA
 
 AUTHORS = [
-    'Jason Parham',
-    'WildMe Developers',
+    'Olga Moskvyak',
 ]
-AUTHOR_EMAIL = 'dev@wildme.org'
-URL = 'https://github.com/WildbookOrg/wbia-plugin-id-example'
+AUTHOR_EMAIL = 'olgamoskvyak@gmail.com'
+URL = 'https://github.com/WildbookOrg/wbia-plugin-orientation'
 LICENSE = 'Apache Version 2.0'
-DESCRIPTION = 'wbia_id - An example ID plug-in for the WBIA system'
+DESCRIPTION = 'wbia_orientation - A plug-in for detecting the orientation of various species in images for WBIA system'
 
 
 KWARGS = OrderedDict(
@@ -205,13 +204,13 @@ KWARGS = OrderedDict(
     # See https://github.com/pypa/setuptools_scm/ for more information
     setup_requires=['setuptools_scm'],
     use_scm_version={
-        'write_to': 'wbia_id/_version.py',
+        'write_to': 'wbia_orientation/_version.py',
         'write_to_template': '__version__ = "{version}"',
         'tag_regex': '^(?P<prefix>v)?(?P<version>[^\\+]+)(?P<suffix>.*)?$',
         'local_scheme': 'dirty-tag',
     },
     packages=find_packages(),
-    package_dir={'wbia_id': 'wbia_id'},
+    package_dir={'wbia_orientation': 'wbia_orientation'},
     include_package_data=False,
     # List of classifiers available at:
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
