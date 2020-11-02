@@ -57,15 +57,8 @@ class OrientationNet(nn.Module):
             logger.error('=> invalid core_name {}'.format(core_name))
             raise ValueError('Invalid core_name: {}'.format(core_name))
 
-    def forward(self, x):
-        out = self.model(x)
-        out = self.sigmoid(out)
-        return out
-
-    def compute_with_flips(self, images, hflip=True, vflip=True, use_gpu=False):
-        """Compute output over horizontal and vertical flips and average"""
-        # Compute output of Orientation Network
-        output = self.forward(images)
+    def forward(self, images, hflip=False, vflip=False, use_gpu=True):
+        output = self.sigmoid(self.model(images))
 
         # Predict on flipped images and aggregate results
         if hflip:

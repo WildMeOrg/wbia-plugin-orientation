@@ -35,7 +35,7 @@ def train(cfg, train_loader, model, loss_func, optimizer, epoch, output_dir, wri
             target_output = target_output.cuda(non_blocking=True)
 
         # Compute output of Orientation Network
-        output = model(images)
+        output = model(images, cfg.TEST.HFLIP, cfg.TEST.VFLIP, cfg.USE_GPU)
 
         # Compute loss and backpropagate
         loss = loss_func(output, target_output)
@@ -112,9 +112,7 @@ def validate(
                 target_output = target_output.cuda(non_blocking=True)
 
             # Compute output of Orientation Network
-            output = model.compute_with_flips(
-                images, cfg.TEST.HFLIP, cfg.TEST.VFLIP, cfg.USE_GPU
-            )
+            output = model(images, cfg.TEST.HFLIP, cfg.TEST.VFLIP, cfg.USE_GPU)
 
             loss = loss_func(output, target_output)
             meters.update('valid_loss', loss.item(), bs)
