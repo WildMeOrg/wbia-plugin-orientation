@@ -77,12 +77,6 @@ _C.TEST.PLOT_ROTATED = False
 _C.TEST.PLOT_ERRORS = False
 _C.TEST.PLOT_ROTATED_PREDS_ONLY = False
 
-# debug
-_C.DEBUG = CN()
-_C.DEBUG.DEBUG = False
-_C.DEBUG.SAVE_BATCH_IMAGES_GT = False
-_C.DEBUG.SAVE_BATCH_IMAGES_PRED = False
-
 
 def update_config(cfg, args):
     cfg.defrost()
