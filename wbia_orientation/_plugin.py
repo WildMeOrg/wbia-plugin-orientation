@@ -16,14 +16,14 @@ import random
 this_dir = os.path.dirname(__file__)
 sys.path.insert(0, os.path.join(this_dir, '..', 'wbia_orientation'))
 
-from dataset.animal_wbia import AnimalWbiaDataset
-import torchvision.transforms as transforms
-from config.default import _C as cfg
-from train import _make_model, _model_to_gpu
-from utils.data_manipulation import resize_oa_box
-from core.evaluate import compute_theta
-from utils.data_manipulation import plot_image_bbox
-from utils.data_manipulation import plot_image_coordinates
+from dataset.animal_wbia import AnimalWbiaDataset  # noqa: E402
+import torchvision.transforms as transforms  # noqa: E402
+from config.default import _C as cfg  # noqa: E402
+from train import _make_model, _model_to_gpu  # noqa: E402
+from utils.data_manipulation import resize_oa_box  # noqa: E402
+from core.evaluate import compute_theta  # noqa: E402
+from utils.data_manipulation import plot_image_bbox  # noqa: E402
+from utils.data_manipulation import plot_image_coordinates  # noqa: E402
 
 (print, rrr, profile) = ut.inject2(__name__)
 
@@ -63,7 +63,7 @@ def wbia_plugin_detect_oriented_box(
     ibs, aid_list, species, use_gpu=False, plot_samples=True
 ):
     r"""
-    Detect orientation of provided images
+    Detect orientation of animals in images
 
     Args:
         ibs (WBIAController):  wbia controller object
@@ -72,12 +72,12 @@ def wbia_plugin_detect_oriented_box(
         use_gpu (bool): use GPU or CPU for model inference (default: False)
         plot_samples (bool): plot some samples and save to disk (default: True)
 
-
     Returns:
-        list: gid_list
+        list of lists: outputs
+            [[xc, yc, xt, yt, w], ...]
 
     CommandLine:
-        python -m wbia_orientation._plugin wbia_plugin_detect_oriented_box
+        python -m wbia_orientation._plugin --test-wbia_plugin_detect_oriented_box
 
     Example:
         >>> # ENABLE_DOCTEST
@@ -96,8 +96,14 @@ def wbia_plugin_detect_oriented_box(
         >>> assert diff.all() < 1e-6
 
     """
+    assert (
+        species in CONFIGS.keys()
+    ), 'Species {} is not supported. The following \
+        species are supported: {}'.format(
+        species, list(CONFIGS.keys())
+    )
+
     # A. Load config and model
-    # TODO check how to define species
     cfg = _load_config(species, use_gpu)
     model = _load_model(cfg)
 
@@ -115,9 +121,7 @@ def wbia_plugin_detect_oriented_box(
                 images = images.cuda(non_blocking=True)
 
             # Compute output of Orientation Network
-            output = model.compute_with_flips(
-                images.float(), cfg.TEST.HFLIP, cfg.TEST.VFLIP, cfg.USE_GPU
-            )
+            output = model(images.float(), cfg.TEST.HFLIP, cfg.TEST.VFLIP, cfg.USE_GPU)
             outputs.append(output)
 
     # Post-processing
@@ -140,13 +144,8 @@ def wbia_plugin_detect_oriented_box(
 
 
 def orientation_load_data(ibs, aid_list, target_imsize, cfg):
-    """
-    Preprocess images by cropping bounding box, converting to tensor and
-    normalizing
-
-    Returns:
-        prep_images (tensor):
-
+    r"""
+    Load data, preprocess and create data loaders
     """
     test_transform = transforms.Compose(
         [
@@ -173,7 +172,9 @@ def orientation_load_data(ibs, aid_list, target_imsize, cfg):
 
 
 def orientation_post_proc(output, bboxes):
-    """Post processing of model output"""
+    r"""
+    Post processing of model output
+    """
     # Concatenate and convert to numpy
     output = torch.cat(output, dim=0).numpy()
 
@@ -191,6 +192,9 @@ def orientation_post_proc(output, bboxes):
 
 
 def _load_config(species, use_gpu):
+    r"""
+    Load a configuration file for species
+    """
     config_file = CONFIGS[species]
     cfg.defrost()
     cfg.merge_from_file(config_file)
@@ -200,6 +204,9 @@ def _load_config(species, use_gpu):
 
 
 def _load_model(cfg):
+    r"""
+    Load a model based on config file
+    """
     model = _make_model(cfg, is_train=False)
 
     import torch
@@ -221,7 +228,16 @@ def wbia_orientation_test_ibs(
     subset='test2020',
     select_cats=[],
 ):
-    """Create database to test orientation from coco annotation files"""
+    r"""
+    Create a database to test orientation detection from a coco annotation file
+    """
+    assert (
+        species in CONFIGS.keys()
+    ), 'Species {} is not supported. The following \
+        species are supported: {}'.format(
+        species, list(CONFIGS.keys())
+    )
+
     testdb_name = 'testdb_' + species
     test_ibs = wbia.opendb(testdb_name, allow_newdir=True)
     if len(test_ibs.get_valid_gids()) > 0:
@@ -272,7 +288,9 @@ def wbia_orientation_test_ibs(
 def wbia_orientation_plot(
     ibs, aid_list, bboxes, output, prefix, output_dir='./', nrows=4, ncols=4
 ):
-    """Plot random examples"""
+    r"""
+    Plot random examples
+    """
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(ncols * 4, nrows * 4))
@@ -359,7 +377,7 @@ def wbia_orientation_plot(
 if __name__ == '__main__':
     r"""
     CommandLine:
-        python -m wbia_id._plugin --allexamples
+        python -m wbia_orientation._plugin --allexamples
     """
     import multiprocessing
 

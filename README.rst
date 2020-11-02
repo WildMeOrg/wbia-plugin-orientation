@@ -1,10 +1,10 @@
-=====================
-Wildbook IA - wbia_id
-=====================
+===============================
+Wildbook IA - wbia_orientation
+===============================
 
-ID Plug-in Example - Part of the WildMe / Wildbook IA Project.
+Orientation Plug-in - Part of the WildMe / Wildbook IA Project.
 
-An example of how to design and use a Python module as a plug-in in the WBIA system
+A plugin for automatic detection of object-oriented bounding box based on axis-aligned box.
 
 Installation
 ------------
@@ -18,7 +18,7 @@ REST API
 
 With the plugin installed, register the module name with the `WBIAControl.py` file
 in the wbia repository located at `wbia/wbia/control/WBIAControl.py`.  Register
-the module by adding the string (for example, `wbia_plugin_identification_example`) to the
+the module by adding the string `wbia_plugin_orientation` to the
 list `AUTOLOAD_PLUGIN_MODNAMES`.
 
 Then, load the web-based WBIA IA service and open the URL that is registered with
@@ -29,13 +29,12 @@ the `@register_api decorator`.
     cd ~/code/wbia/
     python dev.py --web
 
-Navigate in a browser to http://127.0.0.1:5000/api/plugin/example/helloworld/ where
-this returns a formatted JSON response, including the serialized returned value
-from the `wbia_plugin_identification_example_hello_world()` function
+.. TODO update Rest API
+.. Navigate in a browser to http://127.0.0.1:5000/api/plugin/example/helloworld/ where this returns a formatted JSON response, including the serialized returned valuefrom the `wbia_plugin_identification_example_hello_world()` function
 
 .. code:: text
 
-    {"status": {"cache": -1, "message": "", "code": 200, "success": true}, "response": "[wbia_plugin_identification_example] hello world with WBIA controller <WBIAController(testdb1) at 0x11e776e90>"}
+..     {"status": {"cache": -1, "message": "", "code": 200, "success": true}, "response": "[wbia_plugin_identification_example] hello world with WBIA controller <WBIAController(testdb1) at 0x11e776e90>"}
 
 Python API
 ----------
@@ -43,24 +42,16 @@ Python API
 .. code:: bash
 
     python
-
-    Python 2.7.14 (default, Sep 27 2017, 12:15:00)
-    [GCC 4.2.1 Compatible Apple LLVM 9.0.0 (clang-900.0.37)] on darwin
-    Type "help", "copyright", "credits" or "license" for more information.
     >>> import wbia
     >>> ibs = wbia.opendb()
-
-    [ibs.__init__] new IBEISController
-    [ibs._init_dirs] ibs.dbdir = u'/Datasets/testdb1'
-    [depc] Initialize ANNOTATIONS depcache in u'/Datasets/testdb1/_ibsdb/_wbia_cache'
-    [depc] Initialize IMAGES depcache in u'/Datasets/testdb1/_ibsdb/_wbia_cache'
-    [ibs.__init__] END new WBIAController
-
-    >>> ibs.wbia_plugin_identification_example_hello_world()
-    '[wbia_plugin_identification_example] hello world with WBIA controller <WBIAController(testdb1) at 0x10b24c9d0>'
+    >>> species = 'spotteddolphin'
+    >>> ibs = wbia_orientation._plugin.wbia_orientation_test_ibs(species)
+    >>> aid_list = ibs.get_valid_aids()
+    >>> aid_list = aid_list[:3]
+    >>> output = ibs.wbia_plugin_detect_oriented_box(aid_list, species, False, False)
 
 The function from the plugin is automatically added as a method to the ibs object
-as `ibs.wbia_plugin_identification_example_hello_world()`, which is registered using the
+as `ibs.wbia_plugin_detect_oriented_box()`, which is registered using the
 `@register_ibs_method decorator`.
 
 Code Style and Development Guidelines
@@ -119,82 +110,97 @@ To run doctests with `+REQUIRES(--web-tests)` do:
 
     pytest --web-tests
 
-# Orientation network
-
-## Overview
-TODO
-
-
-## Results
+Results
+------------
 Accuracy of predicting an angle of orientation on **a test set**. Accuracy is computed for **10 and 15 degrees** thresholds:
-| Dataset              | Acc@10   | Acc@15  |
-| -------------        |:--------:| :------:|
-| Seadragon heads      | 95.45%   | 97.60%  |
-| Seaturtle heads      | 82.42%   | 91.81%  |
-| Spotted Dolphin      | 80.02%   | 89.22%  |
-| Manta Ray            | 66.67%   | 73.90% |
+
++----------------------+---------------+--------------+
+| Dataset              | Accuracy@10   | Accuracy@15  |
++======================+===============+==============+
+| Seadragon heads      | 95.45%        | 97.60%       |
++----------------------+---------------+--------------+
+| Seaturtle heads      | 82.42%        | 91.81%       |
++----------------------+---------------+--------------+
+| Spotted Dolphin      | 80.02%        | 89.22%       |
++----------------------+---------------+--------------+
+| Manta Ray            | 66.67%        | 73.90%       |
++----------------------+---------------+--------------+
+| Right Whale          |               |              |
++----------------------+---------------+--------------+
+| Hammerhead           |               |              |
++----------------------+---------------+--------------+
+| Whale Shark          |               |              |
++----------------------+---------------+--------------+
 
 
-## Examples
+Examples
+------------
 TODO
 
 
-## Implementation details
-### Dependencies
-
+Implementation details
+----------------------
+Dependencies
+~~~~~~~~~~~~
 * Python >= 3.7
 * PyTorch >= 1.5
 
-### Data
+Data
+~~~~~~~~~~~~
 Data used for training and evaluation:
-* sea turtle head parts - [orientation.seaturtle.coco.tar.gz](https://cthulhu.dyn.wildme.io/public/datasets/orientation.seaturtle.coco.tar.gz)
-* sea dragon head parts - [orientation.seadragon.coco.tar.gz](https://cthulhu.dyn.wildme.io/public/datasets/orientation.seadragon.coco.tar.gz)
-* manta ray body annotations - [orientation.mantaray.coco.tar.gz](https://cthulhu.dyn.wildme.io/public/datasets/orientation.mantaray.coco.tar.gz)
-* spotted dolphin body annotations - [orientation.spotteddolphin.coco.tar.gz](https://cthulhu.dyn.wildme.io/public/datasets/orientation.spotteddolphin.coco.tar.gz)
-* hammerhead shark body annotations - [orientation.hammerhead.coco.tar.gz](https://cthulhu.dyn.wildme.io/public/datasets/orientation.hammerhead.coco.tar.gz)
-* right whale bonnet parts - [orientation.rightwhale.coco.tar.gz](https://cthulhu.dyn.wildme.io/public/datasets/orientation.rightwhale.coco.tar.gz)
-### Data augmentations
-#### Preprocessing
+ * sea turtle head parts - `orientation.seaturtle.coco.tar.gz <https://cthulhu.dyn.wildme.io/public/datasets/orientation.seaturtle.coco.tar.gz>`_
+ * sea dragon head parts - `orientation.seadragon.coco.tar.gz <https://cthulhu.dyn.wildme.io/public/datasets/orientation.seadragon.coco.tar.gz>`_
+ * manta ray body annotations - `orientation.mantaray.coco.tar.gz <https://cthulhu.dyn.wildme.io/public/datasets/orientation.mantaray.coco.tar.gz>`_
+ * spotted dolphin body annotations - `orientation.spotteddolphin.coco.tar.gz <https://cthulhu.dyn.wildme.io/public/datasets/orientation.spotteddolphin.coco.tar.gz>`_
+ * hammerhead shark body annotations - `orientation.hammerhead.coco.tar.gz <https://cthulhu.dyn.wildme.io/public/datasets/orientation.hammerhead.coco.tar.gz>`_
+ * right whale bonnet parts - `orientation.rightwhale.coco.tar.gz <https://cthulhu.dyn.wildme.io/public/datasets/orientation.rightwhale.coco.tar.gz>`_
+ * whale  shark - `orientation.whaleshark.coco.tar.gz <https://cthulhu.dyn.wildme.io/public/datasets/orientation.whaleshark.coco.tar.gz>`_
+
+Data preprocessing
+~~~~~~~~~~~~~~~~~~
 Each dataset is preprocessed to speed-up image loading during training. At the first time of running a training or a testing script on a dataset the following operations are applied:
-* an object is cropped based on a segmentation boudnding box from annotations with a padding around equal to the half size of the box to allow for image augmentations
-* an image is resized so the smaller side is equal to the double size of a model input; the aspect ratio is preserved.
+ * an object is cropped based on a segmentation boudnding box from annotations with a padding around equal to the half size of the box to allow for image augmentations
+ * an image is resized so the smaller side is equal to the double size of a model input; the aspect ratio is preserved.
 
 The preprocessed dataset is saved in `data` directory.
 
-#### Augmentations
+Data augmentations
+~~~~~~~~~~~~~~~~~~
 During the training the data is augmented online in the following way:
-* Random Horizontal Flips
-* Random Vertical Flips
-* Random Rotations
-* Random Scale
-* Random Crop
-* Color Jitter (variations in brightness, hue, constrast and saturation)
+ * Random Horizontal Flips
+ * Random Vertical Flips
+ * Random Rotations
+ * Random Scale
+ * Random Crop
+ * Color Jitter (variations in brightness, hue, contrast and saturation)
 
 Both training and testing data are resized to the model input size and normalized.
 
-### Training
+Training
+~~~~~~~~~~~~
 Run the training script:
-```
-python train.py --cfg <path_to_config_file> <additional_optional_params>
-```
+
+.. code:: bash
+
+  python wbia_orientation/train.py --cfg <path_to_config_file> <additional_optional_params>
+
 Configuration files are listed in `experiments` folder. For example, the following line trains the model with parameters specified in the config file:
-```
-python train.py --cfg experiments/3_hrnet_coords.yaml
-```
-Parameters from the config can be overwritten with command line parameters. To train on a different dataset with the same configuration, provide a dataset name as a parameter:
-```
-python train.py --cfg experiments/3_hrnet_coords.yaml DATASET.NAME spotteddolphin
-```
-### Testing
+
+.. code:: bash
+
+  python wbia_orientation/train.py --cfg wbia_orientation/config/mantaray.yaml
+
+
+Testing
+~~~~~~~~~~~~
 The test script evaluates on the test set with the best model saved during training:
-```
-python test.py --cfg <path_to_config_file> <additional_optional_params>
-```
+
+.. code:: bash
+
+  python wbia_orientation/test.py --cfg <path_to_config_file> <additional_optional_params>
+
 For example:
-```
-python test.py --cfg experiments/3_hrnet_coords.yaml DATASET.TEST_SET test2020
-```
-Averaging results over flips during test time yeilds slightly better accuracy:
-```
-python test.py --cfg experiments/3_hrnet_coords.yaml DATASET.TEST_SET test2020 TEST.HFLIP True TEST.VFLIP True
-```
+
+.. code:: bash
+
+  python wbia_orientation/test.py --cfg wbia_orientation/config/mantaray.yaml

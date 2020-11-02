@@ -4,7 +4,7 @@
 import torch
 import logging
 import torch.nn as nn
-from torchvision import models as torchmodels
+from torchvision import models as torchmodels  # noqa: F401
 from efficientnet_pytorch import EfficientNet
 import models
 from utils.utils import hflip_back, vflip_back

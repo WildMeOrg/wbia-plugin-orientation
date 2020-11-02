@@ -3,16 +3,16 @@
 
 import math
 import os
-import matplotlib
-
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 import numpy as np
 from skimage import transform
 from utils.utils import unnormalize
 from utils.data_manipulation import plot_image_coordinates
 from core.evaluate import normalize_theta
-import matplotlib.style as style
+import matplotlib
+
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.style as style  # noqa: E402
 
 
 def plot_boxes_gt_preds(
