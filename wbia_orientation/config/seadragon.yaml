@@ -17,67 +17,17 @@ DATASET:
   SUFFIX: 'heads'
 
 MODEL:
-  CORE_NAME: 'hrnet'
-  PRETRAINED: 'pretrained_models/hrnetv2_w32_imagenet_pretrained.pth'
+  CORE_NAME: 'efficientnet-b4'
   IMSIZE:
   - 224
   - 224
-  EXTRA:
-    STAGE1:
-      NUM_MODULES: 1
-      NUM_RANCHES: 1
-      BLOCK: BOTTLENECK
-      NUM_BLOCKS:
-      - 4
-      NUM_CHANNELS:
-      - 64
-      FUSE_METHOD: SUM
-    STAGE2:
-      NUM_MODULES: 1
-      NUM_BRANCHES: 2
-      BLOCK: BASIC
-      NUM_BLOCKS:
-      - 4
-      - 4
-      NUM_CHANNELS:
-      - 32
-      - 64
-      FUSE_METHOD: SUM
-    STAGE3:
-      NUM_MODULES: 4
-      NUM_BRANCHES: 3
-      BLOCK: BASIC
-      NUM_BLOCKS:
-      - 4
-      - 4
-      - 4
-      NUM_CHANNELS:
-      - 32
-      - 64
-      - 128
-      FUSE_METHOD: SUM
-    STAGE4:
-      NUM_MODULES: 3
-      NUM_BRANCHES: 4
-      BLOCK: BASIC
-      NUM_BLOCKS:
-      - 4
-      - 4
-      - 4
-      - 4
-      NUM_CHANNELS:
-      - 32
-      - 64
-      - 128
-      - 256
-      FUSE_METHOD: SUM
 
 TRAIN:
   END_EPOCH: 100
   LR: 0.00005
 
 TEST:
-  MODEL_FILE: 'wbia_orientation/output/seadragon_5_hrnet_seadragon_heads_v0/best.pth'
+  MODEL_FILE: ''
   HFLIP: True
   VFLIP: True
   PLOT_ROTATED: True

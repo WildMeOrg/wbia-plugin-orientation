@@ -6,7 +6,7 @@ LOCAL: False
 
 DATASET:
   CLASS: animal
-  NAME: 'mantaray'
+  NAME: 'seadragon'
   MAX_ROT: 180
   SCALE_FACTOR: [0.8, 1.2]
   HOR_FLIP_PROB: 0.5
@@ -15,59 +15,10 @@ DATASET:
   TRAIN_SET: train2020
 
 MODEL:
-  CORE_NAME: 'efficientnet-b5'
+  CORE_NAME: 'efficientnet-b4'
   IMSIZE:
   - 224
   - 224
-  EXTRA:
-    STAGE1:
-      NUM_MODULES: 1
-      NUM_RANCHES: 1
-      BLOCK: BOTTLENECK
-      NUM_BLOCKS:
-      - 4
-      NUM_CHANNELS:
-      - 64
-      FUSE_METHOD: SUM
-    STAGE2:
-      NUM_MODULES: 1
-      NUM_BRANCHES: 2
-      BLOCK: BASIC
-      NUM_BLOCKS:
-      - 4
-      - 4
-      NUM_CHANNELS:
-      - 32
-      - 64
-      FUSE_METHOD: SUM
-    STAGE3:
-      NUM_MODULES: 4
-      NUM_BRANCHES: 3
-      BLOCK: BASIC
-      NUM_BLOCKS:
-      - 4
-      - 4
-      - 4
-      NUM_CHANNELS:
-      - 32
-      - 64
-      - 128
-      FUSE_METHOD: SUM
-    STAGE4:
-      NUM_MODULES: 3
-      NUM_BRANCHES: 4
-      BLOCK: BASIC
-      NUM_BLOCKS:
-      - 4
-      - 4
-      - 4
-      - 4
-      NUM_CHANNELS:
-      - 32
-      - 64
-      - 128
-      - 256
-      FUSE_METHOD: SUM
 
 TRAIN:
   END_EPOCH: 100
