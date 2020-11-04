@@ -12,7 +12,7 @@ _C.COCO_ANNOT_DIR = 'wbia_orientation/data'
 _C.DATA_DIR = 'data'
 _C.USE_GPU = True
 _C.GPUS = (0,)
-_C.WORKERS = 4
+_C.WORKERS = 24
 _C.PRINT_FREQ = 10
 _C.AUTO_RESUME = True
 _C.PIN_MEMORY = True
@@ -28,9 +28,9 @@ _C.CUDNN.ENABLED = True
 
 # Common params for models
 _C.MODEL = CN()
-_C.MODEL.CORE_NAME = 'resnet50'
+_C.MODEL.CORE_NAME = 'efficientnet-b4'
 _C.MODEL.PRETRAINED = ''
-_C.MODEL.IMSIZE = [256, 256]  # width * height, ex: 192 * 256
+_C.MODEL.IMSIZE = [224, 224]  # width * height, ex: 192 * 256
 _C.MODEL.EXTRA = CN(new_allowed=True)
 
 _C.LOSS = CN()
@@ -39,17 +39,17 @@ _C.LOSS = CN()
 _C.DATASET = CN()
 _C.DATASET.NAME = ''
 _C.DATASET.CLASS = 'animal'
-_C.DATASET.TRAIN_SET = 'train'
-_C.DATASET.TEST_SET = 'valid'
+_C.DATASET.TRAIN_SET = 'train2020'
+_C.DATASET.TEST_SET = 'test2020'
 _C.DATASET.DATA_FORMAT = 'jpg'
 _C.DATASET.SELECT_CATS_LIST = []
 _C.DATASET.SUFFIX = ''
 
 # training data augmentation
-_C.DATASET.HOR_FLIP_PROB = 0.0
-_C.DATASET.VERT_FLIP_PROB = 0.0
-_C.DATASET.SCALE_FACTOR = [1.0, 1.0]
-_C.DATASET.MAX_ROT = 30
+_C.DATASET.HOR_FLIP_PROB = 0.5
+_C.DATASET.VERT_FLIP_PROB = 0.5
+_C.DATASET.SCALE_FACTOR = [0.8, 1.2]
+_C.DATASET.MAX_ROT = 180
 
 # train
 _C.TRAIN = CN()
@@ -69,13 +69,13 @@ _C.TRAIN.CHECKPOINT = ''
 # testing
 _C.TEST = CN()
 _C.TEST.BS = 48
-_C.TEST.HFLIP = False
-_C.TEST.VFLIP = False
+_C.TEST.HFLIP = True
+_C.TEST.VFLIP = True
 _C.TEST.MODEL_FILE = ''
 _C.TEST.THETA_THR = 10.0
-_C.TEST.PLOT_ROTATED = False
-_C.TEST.PLOT_ERRORS = False
-_C.TEST.PLOT_ROTATED_PREDS_ONLY = False
+_C.TEST.PLOT_ROTATED = True
+_C.TEST.PLOT_ERRORS = True
+_C.TEST.PLOT_ROTATED_PREDS_ONLY = True
 
 
 def update_config(cfg, args):

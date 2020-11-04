@@ -1,0 +1,7 @@
+DATASET:
+  NAME: 'seaturtle'
+  SELECT_CATS_LIST: [1, 3, 5]
+  SUFFIX: 'heads'
+
+TEST:
+  MODEL_FILE: ''
