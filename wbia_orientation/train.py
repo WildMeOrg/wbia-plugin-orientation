@@ -107,8 +107,8 @@ def _make_data(cfg, logger):
         ]
     )
 
-    train_dataset = AnimalDataset(cfg, True, train_tform)
-    valid_dataset = AnimalDataset(cfg, False, valid_tform)
+    train_dataset = AnimalDataset(cfg, cfg.DATASET.TRAIN_SET, train_tform)
+    valid_dataset = AnimalDataset(cfg, cfg.DATASET.VALID_SET, valid_tform)
 
     train_loader = DataLoader(
         train_dataset,
@@ -182,8 +182,14 @@ def main():
     if cfg.AUTO_RESUME and os.path.exists(checkpoint_file):
         optimizer.load_state_dict(checkpoint['optimizer'])
 
+    lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
+            optimizer, cfg.TRAIN.LR_STEP, cfg.TRAIN.LR_FACTOR,
+            begin_epoch-1
+        )
+
     # Train epochs
     for epoch in range(begin_epoch, cfg.TRAIN.END_EPOCH):
+        lr_scheduler.step()
 
         train(
             cfg, train_loader, model, loss_func, optimizer, epoch, output_dir, writer_dict

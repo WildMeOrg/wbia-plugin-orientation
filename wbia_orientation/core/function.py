@@ -65,6 +65,9 @@ def train(cfg, train_loader, model, loss_func, optimizer, epoch, output_dir, wri
             msg = 'Epoch: [{0}][{1}/{2}]\tBatch time {batch_time:.3f}s\t'.format(
                 epoch, i, len(train_loader), batch_time=batch_time
             )
+            for param_group in optimizer.param_groups:
+                msg += 'LR {}\t'.format(param_group['lr'])
+
             for key, val in meters.meters.items():
                 msg += '{} {:.4f} ({:.4f})\t'.format(key, val.val, val.avg)
             logger.info(msg)

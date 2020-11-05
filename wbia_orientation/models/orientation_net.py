@@ -21,6 +21,7 @@ class OrientationNet(nn.Module):
 
     def __init__(self, cfg, is_train):
         super(OrientationNet, self).__init__()
+        self.is_train = is_train
         core_name = cfg.MODEL.CORE_NAME
 
         output_num = 5
@@ -61,35 +62,36 @@ class OrientationNet(nn.Module):
         output = self.sigmoid(self.model(images))
 
         # Predict on flipped images and aggregate results
-        if hflip:
-            images_hflipped = torch.flip(images, [3])
-            output_hflipped = self.forward(images_hflipped)
+        if not self.is_train:
+            if hflip:
+                images_hflipped = torch.flip(images, [3])
+                output_hflipped = self.forward(images_hflipped)
 
-            output_hflipped = hflip_back(
-                output_hflipped.cpu().numpy(),
-                [1.0, 1.0],
-            )
-            output_hflipped = torch.from_numpy(output_hflipped.copy())
-            if use_gpu:
-                output_hflipped = output_hflipped.cuda()
+                output_hflipped = hflip_back(
+                    output_hflipped.detach().cpu().numpy(),
+                    [1.0, 1.0],
+                )
+                output_hflipped = torch.from_numpy(output_hflipped.copy())
+                if use_gpu:
+                    output_hflipped = output_hflipped.cuda()
 
-        if vflip:
-            images_vflipped = torch.flip(images, [2])
-            output_vflipped = self.forward(images_vflipped)
+            if vflip:
+                images_vflipped = torch.flip(images, [2])
+                output_vflipped = self.forward(images_vflipped)
 
-            output_vflipped = vflip_back(
-                output_vflipped.cpu().numpy(),
-                [1.0, 1.0],
-            )
-            output_vflipped = torch.from_numpy(output_vflipped.copy())
-            if use_gpu:
-                output_vflipped = output_vflipped.cuda()
+                output_vflipped = vflip_back(
+                    output_vflipped.detach().cpu().numpy(),
+                    [1.0, 1.0],
+                )
+                output_vflipped = torch.from_numpy(output_vflipped.copy())
+                if use_gpu:
+                    output_vflipped = output_vflipped.cuda()
 
-        if hflip and vflip:
-            output = (output + output_hflipped + output_vflipped) / 3
-        elif not hflip and vflip:
-            output = (output + output_vflipped) / 2
-        elif hflip and not vflip:
-            output = (output + output_hflipped) / 2
+            if hflip and vflip:
+                output = (output + output_hflipped + output_vflipped) / 3
+            elif not hflip and vflip:
+                output = (output + output_vflipped) / 2
+            elif hflip and not vflip:
+                output = (output + output_hflipped) / 2
 
         return output

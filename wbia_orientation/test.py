@@ -42,7 +42,7 @@ def _make_test_data(cfg, logger):
         ]
     )
 
-    test_dataset = AnimalDataset(cfg, False, test_transform)
+    test_dataset = AnimalDataset(cfg, cfg.DATASET.TEST_SET, test_transform)
 
     test_loader = torch.utils.data.DataLoader(
         test_dataset,

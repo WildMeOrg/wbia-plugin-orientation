@@ -24,13 +24,10 @@ class AnimalDataset(Dataset):
     Class for birds full body and body parts dataset.
     """
 
-    def __init__(self, cfg, is_train, transform=None, crop=True, resize=True):
+    def __init__(self, cfg, split, transform=None, crop=True, resize=True):
         self.cfg = cfg
-        self.is_train = is_train
         self.transform = transform
-        self.split = (
-            self.cfg.DATASET.TRAIN_SET if self.is_train else self.cfg.DATASET.TEST_SET
-        )
+        self.split = split
 
         self.crop = crop
         self.resize = resize
