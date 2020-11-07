@@ -29,7 +29,7 @@ _C.CUDNN.ENABLED = True
 # Common params for models
 _C.MODEL = CN()
 _C.MODEL.CORE_NAME = 'hrnet'
-_C.MODEL.PRETRAINED = 'pretrained_models/hrnetv2_w32_imagenet_pretrained.pth'
+_C.MODEL.PRETRAINED = 'wbia_orientation/pretrained_models/hrnetv2_w32_imagenet_pretrained.pth'
 _C.MODEL.IMSIZE = [224, 224]  # width * height, ex: 192 * 256
 _C.MODEL.EXTRA = CN(new_allowed=True)
 
@@ -86,10 +86,10 @@ _C.DATASET.MAX_ROT = 180
 
 # train
 _C.TRAIN = CN()
-_C.TRAIN.BS = 32
+_C.TRAIN.BS = 48
 _C.TRAIN.LR = 0.00005
 _C.TRAIN.LR_FACTOR = 0.1
-_C.TRAIN.LR_STEP = [50, 90]
+_C.TRAIN.LR_STEP = [200]
 _C.TRAIN.OPTIMIZER = 'adam'
 _C.TRAIN.MOMENTUM = 0.9
 _C.TRAIN.WD = 0.0001

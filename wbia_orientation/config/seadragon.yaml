@@ -4,4 +4,4 @@ DATASET:
   SUFFIX: 'heads'
 
 TEST:
-  MODEL_FILE: 'wbia_orientation/output/seadragon_seadragon_v0/best.pth'
+  MODEL_FILE: ''
