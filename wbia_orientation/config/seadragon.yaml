@@ -2,6 +2,3 @@ DATASET:
   NAME: 'seadragon'
   SELECT_CATS_LIST: [1, 3]
   SUFFIX: 'heads'
-
-TEST:
-  MODEL_FILE: ''
