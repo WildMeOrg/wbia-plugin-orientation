@@ -117,11 +117,11 @@ Accuracy of predicting an angle of orientation on **a test set**. Accuracy is co
 +----------------------+---------------+--------------+
 | Dataset              | Accuracy@10   | Accuracy@15  |
 +======================+===============+==============+
-| Seadragon heads      | 95.45%        | 97.60%       |
+| Seadragon heads      | 95.33%        | 97.73%       |
 +----------------------+---------------+--------------+
-| Seaturtle heads      | 82.42%        | 91.81%       |
+| Seaturtle heads      | 84.64%        | 91.64%       |
 +----------------------+---------------+--------------+
-| Spotted Dolphin      | 80.02%        | 89.22%       |
+| Spotted Dolphin      | 81.04%        | 88.08%       |
 +----------------------+---------------+--------------+
 | Manta Ray            | 66.67%        | 73.90%       |
 +----------------------+---------------+--------------+
@@ -204,3 +204,10 @@ For example:
 .. code:: bash
 
   python wbia_orientation/test.py --cfg wbia_orientation/config/mantaray.yaml
+
+By default, the accuracy of detected rotation angle is computed for a threshold of 10 degrees.
+Pass a different value as a command line parameter to evaluate with another threshold:
+
+.. code:: bash
+
+  python wbia_orientation/test.py --cfg wbia_orientation/config/mantaray.yaml TEST.THETA_THR 15.

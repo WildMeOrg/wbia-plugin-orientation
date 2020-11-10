@@ -95,8 +95,13 @@ def main():
 
     # Evaluate on validation set
     perf_indicator = validate(
-        cfg, test_loader, test_dataset, model, loss_func,
-        cfg.DATASET.TEST_SET, final_output_dir
+        cfg,
+        test_loader,
+        test_dataset,
+        model,
+        loss_func,
+        cfg.DATASET.TEST_SET,
+        final_output_dir,
     )
 
     logger.info(

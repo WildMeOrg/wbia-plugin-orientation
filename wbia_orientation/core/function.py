@@ -96,8 +96,14 @@ def train(cfg, train_loader, model, loss_func, optimizer, epoch, output_dir, wri
 
 
 def validate(
-    cfg, val_loader, val_dataset, model, loss_func, split_name,
-    output_dir, writer_dict=None
+    cfg,
+    val_loader,
+    val_dataset,
+    model,
+    loss_func,
+    split_name,
+    output_dir,
+    writer_dict=None,
 ):
     meters = AverageMeterSet()
     theta_gt_all = []
@@ -212,9 +218,7 @@ def validate(
         save_object(theta_preds_all, os.path.join(output_dir, 'theta_preds.pkl'))
 
         # Plot histogram of errors
-        plot_theta_err_hist(
-            theta_gt_all, theta_preds_all, split_name, output_dir
-        )
+        plot_theta_err_hist(theta_gt_all, theta_preds_all, split_name, output_dir)
 
         logger.info(
             '==> Accuracy@{} on {} {}  is {:.2%}'.format(

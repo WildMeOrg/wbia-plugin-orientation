@@ -183,9 +183,8 @@ def main():
         optimizer.load_state_dict(checkpoint['optimizer'])
 
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
-            optimizer, cfg.TRAIN.LR_STEP, cfg.TRAIN.LR_FACTOR,
-            begin_epoch-1
-        )
+        optimizer, cfg.TRAIN.LR_STEP, cfg.TRAIN.LR_FACTOR, begin_epoch - 1
+    )
 
     # Train epochs
     for epoch in range(begin_epoch, cfg.TRAIN.END_EPOCH):
@@ -196,9 +195,14 @@ def main():
 
         # Evaluate on validation set
         perf_indicator = validate(
-            cfg, valid_loader, valid_dataset, model, loss_func,
+            cfg,
+            valid_loader,
+            valid_dataset,
+            model,
+            loss_func,
             cfg.DATASET.VALID_SET,
-            output_dir, writer_dict
+            output_dir,
+            writer_dict,
         )
 
         lr_scheduler.step()
