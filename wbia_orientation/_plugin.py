@@ -296,7 +296,7 @@ def wbia_orientation_test_ibs(
                     gid_list[filenames.index(imageid2filename[ann['image_id']])]
                 )
                 bbox_list.append(ann['segmentation_bbox'])
-                # theta_list.append(ann['theta'])
+                theta_list.append(ann['theta'])
 
         test_ibs.add_annots(gid_annots, bbox_list=bbox_list, theta_list=theta_list)
 
