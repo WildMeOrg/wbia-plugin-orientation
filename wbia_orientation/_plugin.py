@@ -34,17 +34,17 @@ register_route = controller_inject.get_wbia_flask_route(__name__)
 
 # TODO upload models
 MODEL_URLS = {
-    'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.h5',
-    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragib.h5',
-    'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.h5',
-    'mantaray': 'https://wildbookiarepository.azureedge.net/models/orientation.mantaray.h5',
-    'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.h5',
-    'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.h5',
-    'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.h5',
+    'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.pth',
+    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragib.pth',
+    'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.pth',
+    'mantaray': 'https://wildbookiarepository.azureedge.net/models/orientation.mantaray.pth',
+    'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.pth',
+    'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.pth',
+    'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.pth',
 }
 
 CONFIGS = {
-    'seaturtle': 'wbia_orientation/config/seaturtle_heads.yaml',
+    'seaturtle': 'wbia_orientation/config/seaturtle.yaml',
     'seadragon': 'wbia_orientation/config/seadragon.yaml',
     'whaleshark': 'wbia_orientation/config/whaleshark.yaml',
     'mantaray': 'wbia_orientation/config/mantaray.yaml',
@@ -73,8 +73,9 @@ def wbia_plugin_detect_oriented_box(
         plot_samples (bool): plot some samples and save to disk (default: True)
 
     Returns:
-        list of lists: outputs
+        list of lists: list of params of object-oriented boxes
             [[xc, yc, xt, yt, w], ...]
+        list of floats: list of angles of rotation in radians
 
     CommandLine:
         python -m wbia_orientation._plugin --test-wbia_plugin_detect_oriented_box
@@ -86,13 +87,15 @@ def wbia_plugin_detect_oriented_box(
         >>> species = 'spotteddolphin'
         >>> ibs = wbia_orientation._plugin.wbia_orientation_test_ibs(species)
         >>> aid_list = ibs.get_valid_aids()
-        >>> aid_list = aid_list[:3]
-        >>> output = ibs.wbia_plugin_detect_oriented_box(aid_list, species, False, False)
-        >>> expected_output = [[562.0, 740.0, 274.0, 176.0, 394.6137390136719],
-        ...  [1028.0, 462.0, 1616.0, 619.0, 445.028076171875],
-        ...  [837.0, 307.0, 1259.0, 532.0, 406.98895263671875]]
+        >>> aid_list = aid_list[:10]
+        >>> output, theta = ibs.wbia_plugin_detect_oriented_box(aid_list, species, False, False)
+        >>> expected_theta = [-0.4158303737640381, 1.5231519937515259,
+                              2.0344438552856445, 1.6124389171600342,
+                              1.5768203735351562, 4.669830322265625,
+                              1.3162155151367188, 1.2578175067901611,
+                              0.9936041831970215,  0.8561460971832275]
         >>> import numpy as np
-        >>> diff = np.abs(np.array(output) - np.array(expected_output))
+        >>> diff = np.abs(np.array(theta) - np.array(expected_theta))
         >>> assert diff.all() < 1e-6
 
     """
@@ -105,7 +108,7 @@ def wbia_plugin_detect_oriented_box(
 
     # A. Load config and model
     cfg = _load_config(species, use_gpu)
-    model = _load_model(cfg)
+    model = _load_model(cfg, cfg.TEST.MODEL_FILE)
 
     # B. Preprocess image to model input
     test_loader, test_dataset, bboxes = orientation_load_data(
@@ -125,7 +128,7 @@ def wbia_plugin_detect_oriented_box(
             outputs.append(output)
 
     # Post-processing
-    outputs = orientation_post_proc(outputs, bboxes)
+    outputs, theta = orientation_post_proc(outputs, bboxes)
 
     # Plot random samples
     if plot_samples:
@@ -134,13 +137,14 @@ def wbia_plugin_detect_oriented_box(
             aid_list,
             bboxes,
             outputs,
+            theta,
             species,
             output_dir='./examples',
             nrows=4,
             ncols=4,
         )
 
-    return outputs
+    return outputs, theta
 
 
 def orientation_load_data(ibs, aid_list, target_imsize, cfg):
@@ -173,7 +177,19 @@ def orientation_load_data(ibs, aid_list, target_imsize, cfg):
 
 def orientation_post_proc(output, bboxes):
     r"""
-    Post processing of model output
+    Post-process model output to get params of object-oriented bounding box
+    in the original image and angles of rotation theta
+
+    Args:
+        output (torch tensor): tensor of shape (bs, 5), output of the model
+                               each row is [xc, yc, xt, yt, w],
+                               coords are between 0 and 1
+       bboxes (list of tuples): list of bounding box coordinates (x, y, w, h)
+
+    Returns:
+        output (list of lists): list of sublists [xc, yc, xt, yt, w]
+                                coordinates are absolute in the original image
+        theta (list of floats): list of angles of rotation in radians
     """
     # Concatenate and convert to numpy
     output = torch.cat(output, dim=0).numpy()
@@ -186,9 +202,13 @@ def orientation_post_proc(output, bboxes):
             output[i], original_size=[1.0, 1.0], target_size=[bboxes[i][3], bboxes[i][2]]
         )
 
-    # Convert to list
+    # Compute theta from coordinates of object-aligned box
+    theta = compute_theta(output)
+
+    # Convert to lists
     output = output.tolist()
-    return output
+    theta = theta.tolist()
+    return output, theta
 
 
 def _load_config(species, use_gpu):
@@ -203,7 +223,7 @@ def _load_config(species, use_gpu):
     return cfg
 
 
-def _load_model(cfg):
+def _load_model(cfg, model_path):
     r"""
     Load a model based on config file
     """
@@ -212,12 +232,10 @@ def _load_model(cfg):
     import torch
 
     if cfg.USE_GPU:
-        model.load_state_dict(torch.load(cfg.TEST.MODEL_FILE))
+        model.load_state_dict(torch.load(model_path))
     else:
-        model.load_state_dict(
-            torch.load(cfg.TEST.MODEL_FILE, map_location=torch.device('cpu'))
-        )
-    print('Loaded model from {}'.format(cfg.TEST.MODEL_FILE))
+        model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    print('Loaded model from {}'.format(model_path))
     model = _model_to_gpu(model, cfg)
     return model
 
@@ -278,7 +296,7 @@ def wbia_orientation_test_ibs(
                     gid_list[filenames.index(imageid2filename[ann['image_id']])]
                 )
                 bbox_list.append(ann['segmentation_bbox'])
-                theta_list.append(ann['theta'])
+                # theta_list.append(ann['theta'])
 
         test_ibs.add_annots(gid_annots, bbox_list=bbox_list, theta_list=theta_list)
 
@@ -286,7 +304,7 @@ def wbia_orientation_test_ibs(
 
 
 def wbia_orientation_plot(
-    ibs, aid_list, bboxes, output, prefix, output_dir='./', nrows=4, ncols=4
+    ibs, aid_list, bboxes, output, theta, prefix, output_dir='./', nrows=4, ncols=4
 ):
     r"""
     Plot random examples
@@ -300,6 +318,7 @@ def wbia_orientation_plot(
     aid_plot = [aid_list[i] for i in idx_plot]
     bboxes_plot = [bboxes[i] for i in idx_plot]
     output_plot = [output[i] for i in idx_plot]
+    theta_plot = [theta[i] for i in idx_plot]
 
     for r in range(nrows):
         for c in range(ncols):
@@ -350,12 +369,10 @@ def wbia_orientation_plot(
 
             # Compute theta from predicted coordinates
             xc, yc, xt, yt, w = output_plot[r * ncols + c]
-            theta = compute_theta(
-                np.expand_dims(np.array(output_plot[r * ncols + c]), axis=0)
-            )
+            theta_degree = math.degrees(theta_plot[r * ncols + c])
             image_bbox_rot = transform.rotate(
                 image_bbox,
-                angle=math.degrees(theta),
+                angle=theta_degree,
                 center=[xc, yc],
                 preserve_range=True,
             ).astype('uint8')
@@ -366,6 +383,7 @@ def wbia_orientation_plot(
                 [image_bbox[:, :, ::-1], image_bbox_rot[:, :, ::-1]], axis=1
             )
             ax[r, c].imshow(image_plot)
+            ax[r, c].set_title('Rotated by {} degrees'.format(theta_degree))
             ax[r, c].axis('off')
     plt.tight_layout()
     # Save plot

@@ -12,7 +12,7 @@ _C.COCO_ANNOT_DIR = 'wbia_orientation/data'
 _C.DATA_DIR = 'data'
 _C.USE_GPU = True
 _C.GPUS = (0,)
-_C.WORKERS = 24
+_C.WORKERS = 0
 _C.PRINT_FREQ = 10
 _C.AUTO_RESUME = True
 _C.PIN_MEMORY = True
@@ -29,7 +29,9 @@ _C.CUDNN.ENABLED = True
 # Common params for models
 _C.MODEL = CN()
 _C.MODEL.CORE_NAME = 'hrnet'
-_C.MODEL.PRETRAINED = 'wbia_orientation/pretrained_models/hrnetv2_w32_imagenet_pretrained.pth'
+_C.MODEL.PRETRAINED = (
+    'wbia_orientation/pretrained_models/hrnetv2_w32_imagenet_pretrained.pth'
+)
 _C.MODEL.IMSIZE = [224, 224]  # width * height, ex: 192 * 256
 _C.MODEL.EXTRA = CN(new_allowed=True)
 
