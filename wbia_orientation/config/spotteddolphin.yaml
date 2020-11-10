@@ -1,2 +1,5 @@
 DATASET:
   NAME: 'spotteddolphin'
+
+TEST:
+  MODEL_FILE: 'wbia_orientation/output/spotteddolphin_spotteddolphin_v0/best.pth'

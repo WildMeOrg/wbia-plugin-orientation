@@ -2,3 +2,6 @@ DATASET:
   NAME: 'seaturtle'
   SELECT_CATS_LIST: [1, 3, 5]
   SUFFIX: 'heads'
+
+TEST:
+  MODEL_FILE: 'wbia_orientation/output/seaturtle_seaturtle_v1/best.pth'
