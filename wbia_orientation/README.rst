@@ -4,7 +4,24 @@ Orientation detection results and evaluation
 
 Quantitative results
 ---------------------
-All wildlife cases are trained with the same model and the same training setup.
+All wildlife cases are trained with the same model and using the same training setup.
+
+The results vary from case to case.
+Good results are achieved on sea dragon heads, whale sharks, sea turtle heads, spotted dolphins
+and right whales where ground truth annotations are consistent.
+
+Detecting orientation on manta rays is challenging due to variety of
+viewpoints and poses of mantas underwater.
+More training data will likely to improve the accuracy.
+
+Results on hammerhead sharks are low due to noisy ground truth annotations where
+some images are annotated with the head as the front and other images are
+annotated with the tail as the front.
+These discrepancies affect the learning process and the model usually chooses a point
+in the middle of the body during optimization.
+Cleaning annotations will most likely improve performance
+dramatically as hammerhead sharks have a very distinct shape of the head.
+
 
 Accuracy
 ==========
@@ -75,7 +92,7 @@ Qualitative results
 Sea Dragon heads
 ================
 
-Green - an axis-aligned box, Red - a detected object-aligned box. Yellow dot indicates a detected front of the animal.
+Green is an axis-aligned box, Red is a detected object-aligned box. Yellow side indicates a detected front of the animal.
 
 .. figure:: ../examples/seadragon_bboxes_1.jpg
    :align: center
@@ -88,7 +105,7 @@ Original orientation vs Detected orientation:
 Whale Shark
 ================
 
-Green - an axis-aligned box, Red - a detected object-aligned box. Yellow dot indicates a detected front of the animal.
+Green is an axis-aligned box, Red is a detected object-aligned box. Yellow side indicates a detected front of the animal.
 
 .. figure:: ../examples/whaleshark_bboxes_1.jpg
    :align: center
@@ -102,7 +119,7 @@ Original orientation vs Detected orientation:
 Sea turtle heads
 =================
 
-Green - an axis-aligned box, Red - a detected object-aligned box. Yellow dot indicates a detected front of the animal.
+Green is an axis-aligned box, Red is a detected object-aligned box. Yellow side indicates a detected front of the animal.
 
 .. figure:: ../examples/seaturtle_bboxes_1.jpg
    :align: center
@@ -115,7 +132,7 @@ Original orientation vs Detected orientation:
 Spotted Dolphin
 ================
 
-Green - an axis-aligned box, Red - a detected object-aligned box. Yellow dot indicates a detected front of the animal.
+Green is an axis-aligned box, Red is a detected object-aligned box. Yellow side indicates a detected front of the animal.
 
 .. figure:: ../examples/spotteddolphin_bboxes_1.jpg
    :align: center
@@ -128,7 +145,7 @@ Original orientation vs Detected orientation:
 Right Whale
 ================
 
-Green - an axis-aligned box, Red - a detected object-aligned box. Yellow dot indicates a detected front of the animal.
+Green is an axis-aligned box, Red is a detected object-aligned box. Yellow side indicates a detected front of the animal.
 
 .. figure:: ../examples/rightwhale_bboxes_1.jpg
    :align: center
@@ -141,7 +158,7 @@ Original orientation vs Detected orientation:
 Manta Ray
 ==============
 
-Green - an axis-aligned box, Red - a detected object-aligned box. Yellow dot indicates a detected front of the animal.
+Green is an axis-aligned box, Red is a detected object-aligned box. Yellow side indicates a detected front of the animal.
 
 .. figure:: ../examples/mantaray_bboxes_1.jpg
    :align: center
@@ -154,7 +171,7 @@ Original orientation vs Detected orientation:
 Hammerhead Shark
 ================
 
-Green - an axis-aligned box, Red - a detected object-aligned box. Yellow dot indicates a detected front of the animal.
+Green is an axis-aligned box, Red is a detected object-aligned box. Yellow side indicates a detected front of the animal.
 
 .. figure:: ../examples/hammerhead_bboxes_1.jpg
    :align: center
