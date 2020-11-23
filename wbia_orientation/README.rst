@@ -56,7 +56,7 @@ Qualitative results
 Sea Dragon heads
 ================
 
-Green - axis-aligned box, Red - detected object-aligned box. Yellow dot indicates the front of the animal.
+Green - axis-aligned box, Red - detected object-aligned box. Yellow dot indicates the detected front of the animal.
 
 .. figure:: ../examples/seadragon_bboxes_1.png
    :align: center
@@ -69,7 +69,7 @@ Original orientation vs Detected orientation:
 Sea turtle heads
 =================
 
-Green - axis-aligned box, Red - detected object-aligned box. Yellow dot indicates the front of the animal.
+Green - axis-aligned box, Red - detected object-aligned box. Yellow dot indicates the detected front of the animal.
 
 .. figure:: ../examples/seaturtle_bboxes_1.png
    :align: center
@@ -82,7 +82,7 @@ Original orientation vs Detected orientation:
 Manta rays
 ==============
 
-Green - axis-aligned box, Red - detected object-aligned box. Yellow dot indicates the front of the animal.
+Green - axis-aligned box, Red - detected object-aligned box. Yellow dot indicates the detected front of the animal.
 
 .. figure:: ../examples/mantaray_bboxes_1.png
    :align: center
