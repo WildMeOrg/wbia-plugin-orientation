@@ -110,32 +110,10 @@ To run doctests with `+REQUIRES(--web-tests)` do:
 
     pytest --web-tests
 
-Results
-------------
-Accuracy of predicting an angle of orientation on **a test set**. Accuracy is computed for **10 and 15 degrees** thresholds:
+Results and Examples
+---------------------
 
-+----------------------+---------------+--------------+
-| Dataset              | Accuracy@10   | Accuracy@15  |
-+======================+===============+==============+
-| Seadragon heads      | 95.33%        | 97.73%       |
-+----------------------+---------------+--------------+
-| Seaturtle heads      | 84.64%        | 91.64%       |
-+----------------------+---------------+--------------+
-| Spotted Dolphin      | 81.04%        | 88.08%       |
-+----------------------+---------------+--------------+
-| Manta Ray            | 66.67%        | 73.90%       |
-+----------------------+---------------+--------------+
-| Right Whale          |               |              |
-+----------------------+---------------+--------------+
-| Hammerhead           |               |              |
-+----------------------+---------------+--------------+
-| Whale Shark          |               |              |
-+----------------------+---------------+--------------+
-
-
-Examples
-------------
-TODO
+Quantitative and qualitative results are `here </wbia_orientation>`_
 
 
 Implementation details
