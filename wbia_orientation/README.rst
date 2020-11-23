@@ -103,6 +103,7 @@ Sea turtle heads
 =================
 
 Green - an axis-aligned box, Red - a detected object-aligned box. Yellow dot indicates a detected front of the animal.
+
 .. figure:: ../examples/seaturtle_bboxes_1.jpg
    :align: center
 
@@ -138,7 +139,7 @@ Original orientation vs Detected orientation:
    :align: center
 
 Manta Ray
-==============j
+==============
 
 Green - an axis-aligned box, Red - a detected object-aligned box. Yellow dot indicates a detected front of the animal.
 
