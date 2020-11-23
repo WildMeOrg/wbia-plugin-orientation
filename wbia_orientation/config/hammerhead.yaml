@@ -1,2 +1,7 @@
 DATASET:
   NAME: 'hammerhead'
+
+TEST:
+  MODEL_FILE: 'wbia_orientation/output/hammerhead_hammerhead_v0/best.pth'
+
+VERSION: v0

@@ -1,2 +1,7 @@
 DATASET:
   NAME: 'whaleshark'
+
+TEST:
+  MODEL_FILE: 'wbia_orientation/output/whaleshark_whaleshark_v0/best.pth'
+
+VERSION: v0

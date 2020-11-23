@@ -1,2 +1,8 @@
 DATASET:
   NAME: 'rightwhale'
+
+TEST:
+  MODEL_FILE: 'wbia_orientation/output/rightwhale_rightwhale_v0/best.pth'
+  BS: 32
+
+VERSION: v0
