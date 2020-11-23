@@ -201,16 +201,16 @@ def orientation_post_proc(output, bboxes):
     for i in range(len(output)):
         # Each row in output is an array of 5 [xc, yc, xt, yt, w]
         # Bboxes is of format (x, y, w, h) while target size is [h, w]
-        output[i] = resize_oa_box(output[i],
-                                  original_size=[1.0, 1.0],
-                                  target_size=[bboxes[i][3], bboxes[i][2]]
-                                  )
+        x1, y1, bw, bh = bboxes[i]
+        output[i] = resize_oa_box(
+            output[i], original_size=[1.0, 1.0], target_size=[bh, bw]
+        )
 
         # Shift coordinates from bounding box origin to original origin
-        output[i][0] += bboxes[i][0]
-        output[i][1] += bboxes[i][1]
-        output[i][2] += bboxes[i][0]
-        output[i][3] += bboxes[i][1]
+        output[i][0] += x1
+        output[i][1] += y1
+        output[i][2] += x1
+        output[i][3] += y1
 
     # Convert to lists
     output = output.tolist()
@@ -338,7 +338,6 @@ def wbia_orientation_plot(
             if r * ncols + c >= len(aid_list):
                 continue
             aid = aid_plot[r * ncols + c]
-            #x1, y1, bw, bh = bboxes_plot[r * ncols + c]
             image_original = ibs.get_annot_images([aid])[0]
 
             # Plot original box
@@ -362,48 +361,56 @@ def wbia_orientation_plot(
 
     plt.tight_layout()
     # Save plot
-    file_name = os.path.join(output_dir, '{}_bboxes.png'.format(prefix))
-    fig.savefig(file_name, format='png', dpi=100, bbox_inches='tight', facecolor='w')
+    file_name = os.path.join(output_dir, '{}_bboxes.jpg'.format(prefix))
+    fig.savefig(file_name, format='jpg', bbox_inches='tight', facecolor='w')
     plt.close(fig)
 
-    fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(ncols * 8, nrows * 4))
+    fig = plt.figure(constrained_layout=False, figsize=(ncols * 8, nrows * 4))
+    outer_gs = fig.add_gridspec(nrows=nrows, ncols=ncols)
 
     for r in range(nrows):
         for c in range(ncols):
+            # Set grid spec
+            gs = outer_gs[r, c].subgridspec(1, 2, wspace=0.0)
+            left = fig.add_subplot(gs[0])
+            right = fig.add_subplot(gs[1])
+
             # If no images left, do not plot
             if r * ncols + c >= len(aid_list):
                 continue
+
             aid = aid_plot[r * ncols + c]
             x1, y1, bw, bh = bboxes_plot[r * ncols + c]
             image_original = ibs.get_annot_images([aid])[0]
             # Crop patch and rotate image
             image_bbox = image_original[y1 : y1 + bh, x1 : x1 + bw]
+            left.imshow(image_bbox[:, :, ::-1])
+            left.set_title('Input', fontsize=14)
+            left.axis('off')
 
             # Compute theta from predicted coordinates
             xc, yc, xt, yt, w = output_plot[r * ncols + c]
             xc -= x1
             yc -= y1
             theta_degree = math.degrees(theta_plot[r * ncols + c])
+
+            # Rotate cropped patch
+            rotation_centre = np.asarray([xc, yc])
             image_bbox_rot = transform.rotate(
                 image_bbox,
                 angle=theta_degree,
-                center=[xc, yc],
+                center=rotation_centre,
+                mode='constant',
+                resize=True,
                 preserve_range=True,
             ).astype('uint8')
+            right.imshow(image_bbox_rot[:, :, ::-1])
+            right.set_title('Rotated by {:.0f} degrees'.format(theta_degree), fontsize=14)
+            right.axis('off')
 
-            # Plot side-by-side patches cropped by original axis-aligned bbox
-            # and detected object-aligned box
-            image_plot = np.concatenate(
-                [image_bbox[:, :, ::-1], image_bbox_rot[:, :, ::-1]], axis=1
-            )
-            ax[r, c].imshow(image_plot)
-            ax[r, c].set_title('Rotated by {:.0f} degrees'.format(theta_degree),
-                               fontsize=16)
-            ax[r, c].axis('off')
-    plt.tight_layout()
     # Save plot
-    file_name = os.path.join(output_dir, '{}_rotated.png'.format(prefix))
-    fig.savefig(file_name, format='png', dpi=100, bbox_inches='tight', facecolor='w')
+    file_name = os.path.join(output_dir, '{}_rotated.jpg'.format(prefix))
+    fig.savefig(file_name, format='jpg', bbox_inches='tight', facecolor='w')
     plt.close(fig)
 
 

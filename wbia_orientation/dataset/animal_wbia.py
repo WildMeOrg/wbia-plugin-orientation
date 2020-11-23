@@ -20,12 +20,12 @@ class AnimalWbiaDataset(Dataset):
             raise ValueError('Fail to read {}'.format(self.image_paths[id]))
 
         # Crop bounding box area
-        x1, y1, h, w = self.bboxes[idx]
+        x1, y1, w, h = self.bboxes[idx]
         image = image[y1 : y1 + h, x1 : x1 + w]
         if min(image.shape) < 1:
-            raise ValueError(
-                'Skipped image {} Cropped to zero size.'.format(self.image_paths[idx])
-            )
+            # Use original image
+            image = imageio.imread(self.image_paths[idx])
+            self.bboxes[idx] = [0, 0, image.shape[1], image.shape[0]]
 
         # Resize image
         image = skimage_transform.resize(
