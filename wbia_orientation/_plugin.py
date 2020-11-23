@@ -35,7 +35,7 @@ register_route = controller_inject.get_wbia_flask_route(__name__)
 # TODO upload models
 MODEL_URLS = {
     'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.pth',
-    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragib.pth',
+    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragon.pth',
     'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.pth',
     'mantaray': 'https://wildbookiarepository.azureedge.net/models/orientation.mantaray.pth',
     'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.pth',
@@ -140,7 +140,7 @@ def wbia_plugin_detect_oriented_box(
             theta,
             species,
             output_dir='./examples',
-            nrows=4,
+            nrows=3,
             ncols=4,
         )
 
@@ -177,8 +177,8 @@ def orientation_load_data(ibs, aid_list, target_imsize, cfg):
 
 def orientation_post_proc(output, bboxes):
     r"""
-    Post-process model output to get params of object-oriented bounding box
-    in the original image and angles of rotation theta
+    Post-process model output to get object-oriented bounding box
+    angles of rotation theta in the original image
 
     Args:
         output (torch tensor): tensor of shape (bs, 5), output of the model
@@ -194,16 +194,23 @@ def orientation_post_proc(output, bboxes):
     # Concatenate and convert to numpy
     output = torch.cat(output, dim=0).numpy()
 
+    # Compute theta from coordinates of object-aligned box
+    theta = compute_theta(output)
+
     # Resize coords back to original size
     for i in range(len(output)):
         # Each row in output is an array of 5 [xc, yc, xt, yt, w]
         # Bboxes is of format (x, y, w, h) while target size is [h, w]
-        output[i] = resize_oa_box(
-            output[i], original_size=[1.0, 1.0], target_size=[bboxes[i][3], bboxes[i][2]]
-        )
+        output[i] = resize_oa_box(output[i],
+                                  original_size=[1.0, 1.0],
+                                  target_size=[bboxes[i][3], bboxes[i][2]]
+                                  )
 
-    # Compute theta from coordinates of object-aligned box
-    theta = compute_theta(output)
+        # Shift coordinates from bounding box origin to original origin
+        output[i][0] += bboxes[i][0]
+        output[i][1] += bboxes[i][1]
+        output[i][2] += bboxes[i][0]
+        output[i][3] += bboxes[i][1]
 
     # Convert to lists
     output = output.tolist()
@@ -256,9 +263,9 @@ def wbia_orientation_test_ibs(
         species, list(CONFIGS.keys())
     )
 
-    testdb_name = 'testdb_' + species
+    testdb_name = 'testdb_' + species + '_' + subset
     test_ibs = wbia.opendb(testdb_name, allow_newdir=True)
-    if len(test_ibs.get_valid_gids()) > 0:
+    if len(test_ibs.get_valid_aids()) > 0:
         return test_ibs
     else:
         # Load coco annotations
@@ -284,7 +291,11 @@ def wbia_orientation_test_ibs(
         imageid2filename = {d['id']: d['file_name'] for d in dataset['images']}
         filenames = [d['file_name'] for d in dataset['images']]
 
-        for ann in dataset['annotations']:
+        annotations = dataset['annotations']
+        if 'parts' in dataset:
+            annotations += dataset['parts']
+
+        for ann in annotations:
             # Select annotation.
             # The annotation is included if:
             # a. there is no list of selected categories in config
@@ -315,6 +326,7 @@ def wbia_orientation_plot(
     idx_plot = random.sample(
         list(range(len(aid_list))), min(nrows * ncols, len(aid_list))
     )
+    idx_plot = list(range(len(aid_list)))
     aid_plot = [aid_list[i] for i in idx_plot]
     bboxes_plot = [bboxes[i] for i in idx_plot]
     output_plot = [output[i] for i in idx_plot]
@@ -326,7 +338,7 @@ def wbia_orientation_plot(
             if r * ncols + c >= len(aid_list):
                 continue
             aid = aid_plot[r * ncols + c]
-            x1, y1, bw, bh = bboxes_plot[r * ncols + c]
+            #x1, y1, bw, bh = bboxes_plot[r * ncols + c]
             image_original = ibs.get_annot_images([aid])[0]
 
             # Plot original box
@@ -339,10 +351,10 @@ def wbia_orientation_plot(
             plot_image_coordinates(
                 ax[r, c],
                 image_original[:, :, ::-1],
-                xc + x1,
-                yc + y1,
-                xt + x1,
-                yt + y1,
+                xc,
+                yc,
+                xt,
+                yt,
                 w,
                 marker='r-',
             )
@@ -350,7 +362,7 @@ def wbia_orientation_plot(
 
     plt.tight_layout()
     # Save plot
-    file_name = os.path.join(output_dir, '{}_random_bboxes.png'.format(prefix))
+    file_name = os.path.join(output_dir, '{}_bboxes.png'.format(prefix))
     fig.savefig(file_name, format='png', dpi=100, bbox_inches='tight', facecolor='w')
     plt.close(fig)
 
@@ -369,6 +381,8 @@ def wbia_orientation_plot(
 
             # Compute theta from predicted coordinates
             xc, yc, xt, yt, w = output_plot[r * ncols + c]
+            xc -= x1
+            yc -= y1
             theta_degree = math.degrees(theta_plot[r * ncols + c])
             image_bbox_rot = transform.rotate(
                 image_bbox,
@@ -383,11 +397,12 @@ def wbia_orientation_plot(
                 [image_bbox[:, :, ::-1], image_bbox_rot[:, :, ::-1]], axis=1
             )
             ax[r, c].imshow(image_plot)
-            ax[r, c].set_title('Rotated by {} degrees'.format(theta_degree))
+            ax[r, c].set_title('Rotated by {:.0f} degrees'.format(theta_degree),
+                               fontsize=16)
             ax[r, c].axis('off')
     plt.tight_layout()
     # Save plot
-    file_name = os.path.join(output_dir, '{}_random_rotated.png'.format(prefix))
+    file_name = os.path.join(output_dir, '{}_rotated.png'.format(prefix))
     fig.savefig(file_name, format='png', dpi=100, bbox_inches='tight', facecolor='w')
     plt.close(fig)
 

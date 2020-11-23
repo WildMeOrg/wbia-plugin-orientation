@@ -3,5 +3,7 @@ DATASET:
   SELECT_CATS_LIST: [1, 3]
   SUFFIX: 'heads'
 
+VERSION: v2
+
 TEST:
   MODEL_FILE: 'wbia_orientation/output/seadragon_seadragon_v2/best.pth'

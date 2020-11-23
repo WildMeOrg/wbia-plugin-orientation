@@ -1,2 +1,7 @@
 DATASET:
   NAME: 'mantaray'
+
+TEST:
+  MODEL_FILE: 'wbia_orientation/output/mantaray_mantaray_v1/best.pth'
+
+VERSION: v1

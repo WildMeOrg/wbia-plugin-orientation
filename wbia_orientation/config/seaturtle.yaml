@@ -5,3 +5,5 @@ DATASET:
 
 TEST:
   MODEL_FILE: 'wbia_orientation/output/seaturtle_seaturtle_v1/best.pth'
+
+VERSION: v1
