@@ -4,7 +4,8 @@ Wildbook IA - wbia_orientation
 
 Orientation Plug-in - Part of the WildMe / Wildbook IA Project.
 
-A plugin for automatic detection of object-oriented bounding box based on axis-aligned box.
+A plugin for automatic detection of object-oriented bounding box based on axis-aligned box
+for wildlife species.
 
 Installation
 ------------
@@ -43,12 +44,21 @@ Python API
 
     python
     >>> import wbia
-    >>> ibs = wbia.opendb()
+    >>> import wbia_orientation
     >>> species = 'spotteddolphin'
-    >>> ibs = wbia_orientation._plugin.wbia_orientation_test_ibs(species)
+    >>> url = 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.spotteddolphin.coco.tar.gz'
+    >>> ibs = wbia_orientation._plugin.wbia_orientation_test_ibs(species, dataset_url=url)
     >>> aid_list = ibs.get_valid_aids()
-    >>> aid_list = aid_list[:3]
-    >>> output = ibs.wbia_plugin_detect_oriented_box(aid_list, species, False, False)
+    >>> aid_list = aid_list[:10]
+    >>> output, theta = ibs.wbia_plugin_detect_oriented_box(aid_list, species, False, False)
+    >>> expected_theta = [-0.4158303737640381, 1.5231519937515259,
+                          2.0344438552856445, 1.6124389171600342,
+                          1.5768203735351562, 4.669830322265625,
+                          1.3162155151367188, 1.2578175067901611,
+                          0.9936041831970215,  0.8561460971832275]
+    >>> import numpy as np
+    >>> diff = np.abs(np.array(theta) - np.array(expected_theta))
+    >>> assert diff.all() < 1e-6
 
 The function from the plugin is automatically added as a method to the ibs object
 as `ibs.wbia_plugin_detect_oriented_box()`, which is registered using the
@@ -113,7 +123,7 @@ To run doctests with `+REQUIRES(--web-tests)` do:
 Results and Examples
 ---------------------
 
-Quantitative and qualitative results are `here </wbia_orientation>`_
+Quantitative and qualitative results are presented `here </wbia_orientation>`_
 
 
 Implementation details
@@ -125,7 +135,9 @@ Dependencies
 
 Data
 ~~~~~~~~~~~~
+
 Data used for training and evaluation:
+
  * sea turtle head parts - `orientation.seaturtle.coco.tar.gz <https://cthulhu.dyn.wildme.io/public/datasets/orientation.seaturtle.coco.tar.gz>`_
  * sea dragon head parts - `orientation.seadragon.coco.tar.gz <https://cthulhu.dyn.wildme.io/public/datasets/orientation.seadragon.coco.tar.gz>`_
  * manta ray body annotations - `orientation.mantaray.coco.tar.gz <https://cthulhu.dyn.wildme.io/public/datasets/orientation.mantaray.coco.tar.gz>`_
@@ -136,6 +148,7 @@ Data used for training and evaluation:
 
 Data preprocessing
 ~~~~~~~~~~~~~~~~~~
+
 Each dataset is preprocessed to speed-up image loading during training. At the first time of running a training or a testing script on a dataset the following operations are applied:
  * an object is cropped based on a segmentation boudnding box from annotations with a padding around equal to the half size of the box to allow for image augmentations
  * an image is resized so the smaller side is equal to the double size of a model input; the aspect ratio is preserved.
@@ -144,7 +157,9 @@ The preprocessed dataset is saved in `data` directory.
 
 Data augmentations
 ~~~~~~~~~~~~~~~~~~
+
 During the training the data is augmented online in the following way:
+
  * Random Horizontal Flips
  * Random Vertical Flips
  * Random Rotations
@@ -156,6 +171,7 @@ Both training and testing data are resized to the model input size and normalize
 
 Training
 ~~~~~~~~~~~~
+
 Run the training script:
 
 .. code:: bash
@@ -169,8 +185,15 @@ Configuration files are listed in `experiments` folder. For example, the followi
   python wbia_orientation/train.py --cfg wbia_orientation/config/mantaray.yaml
 
 
+To override a parameter in config, add this parameter as a command line argument:
+
+.. code:: bash
+
+  python wbia_orientation/train.py --cfg wbia_orientation/config/mantaray.yaml TRAIN.BS 64
+
 Testing
 ~~~~~~~~~~~~
+
 The test script evaluates on the test set with the best model saved during training:
 
 .. code:: bash
