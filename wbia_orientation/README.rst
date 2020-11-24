@@ -12,14 +12,14 @@ and right whales where ground truth annotations are consistent.
 
 Detecting orientation on manta rays is challenging due to variety of
 viewpoints and poses of mantas underwater.
-More training data will likely to improve the accuracy.
+More training data will improve the accuracy.
 
 Results on hammerhead sharks are low due to noisy ground truth annotations where
 some images are annotated with the head as the front and other images are
 annotated with the tail as the front.
 These discrepancies affect the learning process and the model usually chooses a point
 in the middle of the body during optimization.
-Cleaning annotations will most likely improve performance
+Cleaning annotations will improve performance
 dramatically as hammerhead sharks have a very distinct shape of the head.
 
 

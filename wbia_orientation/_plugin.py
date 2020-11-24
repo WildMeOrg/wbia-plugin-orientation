@@ -33,13 +33,23 @@ _, register_ibs_method = controller_inject.make_ibs_register_decorator(__name__)
 register_api = controller_inject.get_wbia_flask_api(__name__)
 register_route = controller_inject.get_wbia_flask_route(__name__)
 
+#MODEL_URLS = {
+#    'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.pth',
+#    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragon.pth',
+#    'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.pth',
+#    'mantaray': 'https://wildbookiarepository.azureedge.net/models/orientation.mantaray.pth',
+#    'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.pth',
+#    'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.pth',
+#    'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.pth',
+#}
+
 MODEL_URLS = {
     'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.pth',
-    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragon.pth',
+    'seadragon': 'wbia_orientation/output/seadragon_seadragon_v2/best.pth',
     'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.pth',
-    'mantaray': 'https://wildbookiarepository.azureedge.net/models/orientation.mantaray.pth',
+    'mantaray': 'wbia_orientation/output/mantaray_mantaray_v1/best.pth',
     'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.pth',
-    'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.pth',
+    'hammerhead': 'wbia_orientation/output/hammerhead_hammerhead_v0/best.pth',
     'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.pth',
 }
 
@@ -100,11 +110,30 @@ def wbia_plugin_detect_oriented_box(
         >>> aid_list = ibs.get_valid_aids()
         >>> aid_list = aid_list[:10]
         >>> output, theta = ibs.wbia_plugin_detect_oriented_box(aid_list, species, False, False)
-        >>> expected_theta = [-0.4158303737640381, 1.5231519937515259,
-                              2.0344438552856445, 1.6124389171600342,
-                              1.5768203735351562, 4.669830322265625,
-                              1.3162155151367188, 1.2578175067901611,
-                              0.9936041831970215,  0.8561460971832275]
+        >>> expected_theta = [-0.3071622848510742, 1.2332571744918823,
+                              1.6512340307235718, 1.6928660869598389,
+                              1.3716390132904053, 4.61941385269165,
+                              1.1511050462722778, 1.093467116355896,
+                              1.1569938659667969, 0.7397593855857849]
+        >>> import numpy as np
+        >>> diff = np.abs(np.array(theta) - np.array(expected_theta))
+        >>> assert diff.all() < 1e-6
+
+        >>> # ENABLE_DOCTEST
+        >>> import wbia
+        >>> import wbia_orientation
+        >>> species = 'seadragon'
+        >>> select_cats = [1,3]
+        >>> url = 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.seadragon.coco.tar.gz'
+        >>> ibs = wbia_orientation._plugin.wbia_orientation_test_ibs(species, select_cats=select_cats, dataset_url=url)
+        >>> aid_list = ibs.get_valid_aids()
+        >>> aid_list = aid_list[:10]
+        >>> output, theta = ibs.wbia_plugin_detect_oriented_box(aid_list, species, False, False)
+        >>> expected_theta = [2.2275471687316895, 4.496161937713623,
+                              3.693049430847168, 3.4513893127441406,
+                              3.496103525161743, 4.1899213790893555,
+                              4.020716190338135, 2.2543320655822754,
+                              3.9189162254333496, 2.3440582752227783]
         >>> import numpy as np
         >>> diff = np.abs(np.array(theta) - np.array(expected_theta))
         >>> assert diff.all() < 1e-6
@@ -118,7 +147,7 @@ def wbia_plugin_detect_oriented_box(
 
     # A. Load config and model
     cfg = _load_config(species, use_gpu)
-    model = _load_model(cfg, cfg.TEST.MODEL_FILE)
+    model = _load_model(cfg, MODEL_URLS[species])
 
     # B. Preprocess image to model input
     test_loader, test_dataset, bboxes = orientation_load_data(
