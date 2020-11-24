@@ -1,1 +1,9 @@
 wbia-utool
+wildbook-ia
+torch==1.6
+torchvision
+matplotlib
+yacs
+scikit-image
+tensorboardX
+efficientnet-pytorch
