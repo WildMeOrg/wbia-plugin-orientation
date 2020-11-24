@@ -24,6 +24,7 @@ from utils.data_manipulation import resize_oa_box  # noqa: E402
 from core.evaluate import compute_theta  # noqa: E402
 from utils.data_manipulation import plot_image_bbox  # noqa: E402
 from utils.data_manipulation import plot_image_coordinates  # noqa: E402
+from utils.file_downloader import download_file  # noqa: E402
 
 (print, rrr, profile) = ut.inject2(__name__)
 
@@ -32,7 +33,6 @@ _, register_ibs_method = controller_inject.make_ibs_register_decorator(__name__)
 register_api = controller_inject.get_wbia_flask_api(__name__)
 register_route = controller_inject.get_wbia_flask_route(__name__)
 
-# TODO upload models
 MODEL_URLS = {
     'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.pth',
     'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragon.pth',
@@ -51,6 +51,16 @@ CONFIGS = {
     'spotteddolphin': 'wbia_orientation/config/spotteddolphin.yaml',
     'hammerhead': 'wbia_orientation/config/hammerhead.yaml',
     'rightwhale': 'wbia_orientation/config/rightwhale.yaml',
+}
+
+DATA_ARCHIVES = {
+    'seaturtle': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.seaturtle.coco.tar.gz',
+    'seadragon': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.seadragon.coco.tar.gz',
+    'whaleshark': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.whaleshark.coco.tar.gz',
+    'mantaray': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.mantaray.coco.tar.gz',
+    'spotteddolphin': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.spotteddolphin.coco.tar.gz',
+    'hammerhead': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.hammerhead.coco.tar.gz',
+    'rightwhale': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.rightwhale.coco.tar.gz'
 }
 
 register_preproc_image = controller_inject.register_preprocs['image']
@@ -85,7 +95,8 @@ def wbia_plugin_detect_oriented_box(
         >>> import wbia
         >>> import wbia_orientation
         >>> species = 'spotteddolphin'
-        >>> ibs = wbia_orientation._plugin.wbia_orientation_test_ibs(species)
+        >>> url = 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.spotteddolphin.coco.tar.gz'
+        >>> ibs = wbia_orientation._plugin.wbia_orientation_test_ibs(species, dataset_url=url)
         >>> aid_list = ibs.get_valid_aids()
         >>> aid_list = aid_list[:10]
         >>> output, theta = ibs.wbia_plugin_detect_oriented_box(aid_list, species, False, False)
@@ -97,7 +108,6 @@ def wbia_plugin_detect_oriented_box(
         >>> import numpy as np
         >>> diff = np.abs(np.array(theta) - np.array(expected_theta))
         >>> assert diff.all() < 1e-6
-
     """
     assert (
         species in CONFIGS.keys()
@@ -249,9 +259,10 @@ def _load_model(cfg, model_path):
 
 def wbia_orientation_test_ibs(
     species,
-    coco_annot_dir='/external/contractors/olga.moskvyak/data',
     subset='test2020',
     select_cats=[],
+    data_dir = 'data/downloaded_annot_archives',
+    dataset_url=''
 ):
     r"""
     Create a database to test orientation detection from a coco annotation file
@@ -263,14 +274,16 @@ def wbia_orientation_test_ibs(
         species, list(CONFIGS.keys())
     )
 
-    testdb_name = 'testdb_' + species + '_' + subset
+    testdb_name = os.path.join('data', 'testdb_' + species + '_' + subset)
     test_ibs = wbia.opendb(testdb_name, allow_newdir=True)
     if len(test_ibs.get_valid_aids()) > 0:
         return test_ibs
     else:
+        # Download data archive
+        download_file(dataset_url, data_dir, extract=True)
         # Load coco annotations
         db_coco_ann_path = os.path.join(
-            coco_annot_dir, 'orientation.{}.coco'.format(species)
+            data_dir, 'orientation.{}.coco'.format(species)
         )
         test_annots = os.path.join(
             db_coco_ann_path, 'annotations', 'instances_{}.json'.format(subset)
