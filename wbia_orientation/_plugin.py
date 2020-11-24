@@ -33,7 +33,7 @@ _, register_ibs_method = controller_inject.make_ibs_register_decorator(__name__)
 register_api = controller_inject.get_wbia_flask_api(__name__)
 register_route = controller_inject.get_wbia_flask_route(__name__)
 
-#MODEL_URLS = {
+# MODEL_URLS = {
 #    'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.20201120.pth',
 #    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragon.20201120.pth',
 #    'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.20201120.pth',
@@ -41,7 +41,7 @@ register_route = controller_inject.get_wbia_flask_route(__name__)
 #    'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.20201120.pth',
 #    'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.20201120.pth',
 #    'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.pth',
-#}
+# }
 
 MODEL_URLS = {
     'seaturtle': 'wbia_orientation/output/seaturtle_seaturtle_v1/best.pth',
@@ -70,7 +70,7 @@ DATA_ARCHIVES = {
     'mantaray': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.mantaray.coco.tar.gz',
     'spotteddolphin': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.spotteddolphin.coco.tar.gz',
     'hammerhead': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.hammerhead.coco.tar.gz',
-    'rightwhale': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.rightwhale.coco.tar.gz'
+    'rightwhale': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.rightwhale.coco.tar.gz',
 }
 
 register_preproc_image = controller_inject.register_preprocs['image']
@@ -291,8 +291,8 @@ def wbia_orientation_test_ibs(
     species,
     subset='test2020',
     select_cats=[],
-    data_dir = 'data/downloaded_annot_archives',
-    dataset_url=''
+    data_dir='data/downloaded_annot_archives',
+    dataset_url='',
 ):
     r"""
     Create a database to test orientation detection from a coco annotation file
@@ -312,9 +312,7 @@ def wbia_orientation_test_ibs(
         # Download data archive
         download_file(dataset_url, data_dir, extract=True)
         # Load coco annotations
-        db_coco_ann_path = os.path.join(
-            data_dir, 'orientation.{}.coco'.format(species)
-        )
+        db_coco_ann_path = os.path.join(data_dir, 'orientation.{}.coco'.format(species))
         test_annots = os.path.join(
             db_coco_ann_path, 'annotations', 'instances_{}.json'.format(subset)
         )

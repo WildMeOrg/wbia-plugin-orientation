@@ -62,8 +62,7 @@ def get_object_aligned_box(xc, yc, xt, yt, w):
 
 
 def plot_image_coordinates(ax, image, xc, yc, xt, yt, w, marker='g-'):
-    """Plot object-aligned box on image using 5 parameters
-    """
+    """Plot object-aligned box on image using 5 parameters"""
     predicted_oa_box = get_object_aligned_box(xc, yc, xt, yt, w)
     predicted_oa_box = np.array(predicted_oa_box)
 
@@ -75,7 +74,7 @@ def plot_image_coordinates(ax, image, xc, yc, xt, yt, w, marker='g-'):
     ax.plot(
         [predicted_oa_box[0, 0], predicted_oa_box[-1, 0]],
         [predicted_oa_box[0, 1], predicted_oa_box[-1, 1]],
-        marker
+        marker,
     )
 
 

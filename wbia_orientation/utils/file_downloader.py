@@ -19,8 +19,7 @@ def downloader(url, target_dir, resume_byte_pos=None):
 
     # Append information to resume download at specific byte position
     # to header
-    resume_header = ({'Range': f'bytes={resume_byte_pos}-'}
-                     if resume_byte_pos else None)
+    resume_header = {'Range': f'bytes={resume_byte_pos}-'} if resume_byte_pos else None
 
     # Establish connection
     r = requests.get(url, stream=True, headers=resume_header)
@@ -35,10 +34,17 @@ def downloader(url, target_dir, resume_byte_pos=None):
 
     with open(file, mode) as f:
         print('Downloading data from {}'.format(url))
-        with tqdm(total=file_size, unit='B',
-                  unit_scale=True, unit_divisor=1024,
-                  desc='', initial=initial_pos,
-                  ascii=True, miniters=1, leave=True) as pbar:
+        with tqdm(
+            total=file_size,
+            unit='B',
+            unit_scale=True,
+            unit_divisor=1024,
+            desc='',
+            initial=initial_pos,
+            ascii=True,
+            miniters=1,
+            leave=True,
+        ) as pbar:
             for chunk in r.iter_content(32 * block_size):
                 f.write(chunk)
                 pbar.update(len(chunk))
