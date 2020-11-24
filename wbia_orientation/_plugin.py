@@ -34,23 +34,23 @@ register_api = controller_inject.get_wbia_flask_api(__name__)
 register_route = controller_inject.get_wbia_flask_route(__name__)
 
 #MODEL_URLS = {
-#    'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.pth',
-#    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragon.pth',
-#    'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.pth',
-#    'mantaray': 'https://wildbookiarepository.azureedge.net/models/orientation.mantaray.pth',
-#    'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.pth',
-#    'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.pth',
-#    'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.pth',
+#    'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.20201120.pth',
+#    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragon.20201120.pth',
+#    'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.20201120.pth',
+#    'mantaray': 'https://wildbookiarepository.azureedge.net/models/orientation.mantaray.20201120.pth',
+#    'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.20201120.pth',
+#    'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.20201120.pth',
+#    'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.pth',
 #}
 
 MODEL_URLS = {
-    'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.pth',
+    'seaturtle': 'wbia_orientation/output/seaturtle_seaturtle_v1/best.pth',
     'seadragon': 'wbia_orientation/output/seadragon_seadragon_v2/best.pth',
-    'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.pth',
+    'whaleshark': 'wbia_orientation/output/whaleshark_whaleshark_v0/best.pth',
     'mantaray': 'wbia_orientation/output/mantaray_mantaray_v1/best.pth',
-    'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.pth',
+    'spotteddolphin': 'wbia_orientation/output/spotteddolphin_spotteddolphin_v0/best.pth',
     'hammerhead': 'wbia_orientation/output/hammerhead_hammerhead_v0/best.pth',
-    'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.pth',
+    'rightwhale': 'wbia_orientation/output/rightwhale_rightwhale_v0/best.pth',
 }
 
 CONFIGS = {
@@ -119,6 +119,7 @@ def wbia_plugin_detect_oriented_box(
         >>> diff = np.abs(np.array(theta) - np.array(expected_theta))
         >>> assert diff.all() < 1e-6
 
+    Example:
         >>> # ENABLE_DOCTEST
         >>> import wbia
         >>> import wbia_orientation
