@@ -33,24 +33,14 @@ _, register_ibs_method = controller_inject.make_ibs_register_decorator(__name__)
 register_api = controller_inject.get_wbia_flask_api(__name__)
 register_route = controller_inject.get_wbia_flask_route(__name__)
 
-# MODEL_URLS = {
-#    'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.20201120.pth',
-#    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragon.20201120.pth',
-#    'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.20201120.pth',
-#    'mantaray': 'https://wildbookiarepository.azureedge.net/models/orientation.mantaray.20201120.pth',
-#    'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.20201120.pth',
-#    'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.20201120.pth',
-#    'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.pth',
-# }
-
 MODEL_URLS = {
-    'seaturtle': 'wbia_orientation/output/seaturtle_seaturtle_v1/best.pth',
-    'seadragon': 'wbia_orientation/output/seadragon_seadragon_v2/best.pth',
-    'whaleshark': 'wbia_orientation/output/whaleshark_whaleshark_v0/best.pth',
-    'mantaray': 'wbia_orientation/output/mantaray_mantaray_v1/best.pth',
-    'spotteddolphin': 'wbia_orientation/output/spotteddolphin_spotteddolphin_v0/best.pth',
-    'hammerhead': 'wbia_orientation/output/hammerhead_hammerhead_v0/best.pth',
-    'rightwhale': 'wbia_orientation/output/rightwhale_rightwhale_v0/best.pth',
+    'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.20201120.pth',
+    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragon.20201120.pth',
+    'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.20201120.pth',
+    'mantaray': 'https://wildbookiarepository.azureedge.net/models/orientation.mantaray.20201120.pth',
+    'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.20201120.pth',
+    'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.20201120.pth',
+    'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.pth',
 }
 
 CONFIGS = {
@@ -270,11 +260,20 @@ def _load_config(species, use_gpu):
     return cfg
 
 
-def _load_model(cfg, model_path):
+def _load_model(cfg, model_url=None):
     r"""
     Load a model based on config file
     """
     model = _make_model(cfg, is_train=False)
+
+    # Download the model and put it in the models folder
+    if model_url is not None:
+        os.makedirs('models', exist_ok=True)
+        model_fname = model_url.split('/')[-1]
+        ut.grab_file_url(model_url, download_dir='models', fname=model_fname)
+        model_path = os.path.join('models', model_fname)
+    else:
+        model_path = cfg.TEST.MODEL_FILE
 
     import torch
 
