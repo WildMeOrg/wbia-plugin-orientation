@@ -5,7 +5,8 @@ import numpy as np
 import utool as ut
 import wbia
 import os
-import sys
+
+# import sys
 import torch
 import json
 import matplotlib.pyplot as plt
@@ -13,18 +14,16 @@ from skimage import transform
 import math
 import random
 
-this_dir = os.path.dirname(__file__)
-sys.path.insert(0, os.path.join(this_dir, '..', 'wbia_orientation'))
-
-from dataset.animal_wbia import AnimalWbiaDataset  # noqa: E402
 import torchvision.transforms as transforms  # noqa: E402
-from config.default import _C as cfg  # noqa: E402
-from train import _make_model, _model_to_gpu  # noqa: E402
-from utils.data_manipulation import resize_oa_box  # noqa: E402
-from core.evaluate import compute_theta  # noqa: E402
-from utils.data_manipulation import plot_image_bbox  # noqa: E402
-from utils.data_manipulation import plot_image_coordinates  # noqa: E402
-from utils.file_downloader import download_file  # noqa: E402
+
+from wbia_orientation.config.default import _C as cfg  # noqa
+from wbia_orientation.core.evaluate import compute_theta  # noqa: E402
+from wbia_orientation.dataset.animal_wbia import AnimalWbiaDataset  # noqa: E402
+from wbia_orientation.train import _make_model, _model_to_gpu  # noqa: E402
+from wbia_orientation.utils.data_manipulation import resize_oa_box  # noqa: E402
+from wbia_orientation.utils.data_manipulation import plot_image_bbox  # noqa: E402
+from wbia_orientation.utils.data_manipulation import plot_image_coordinates  # noqa: E402
+from wbia_orientation.utils.file_downloader import download_file  # noqa: E402
 
 (print, rrr, profile) = ut.inject2(__name__)
 

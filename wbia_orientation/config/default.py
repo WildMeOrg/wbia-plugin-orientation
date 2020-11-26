@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
 
-from yacs.config import CfgNode as CN
+from yacs.config import CfgNode as CN  # NOQA
 
 
 _C = CN()
