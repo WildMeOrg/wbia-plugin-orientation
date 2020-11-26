@@ -72,6 +72,7 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 
 
 @register_ibs_method
+@register_api('/api/plugin/orientation/', methods=['GET', 'POST'])
 def wbia_plugin_detect_oriented_box(
     ibs, aid_list, species, use_gpu=False, plot_samples=True
 ):
