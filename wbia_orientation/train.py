@@ -15,14 +15,14 @@ import torch.utils.data.distributed
 import torchvision.transforms as transforms
 from tensorboardX import SummaryWriter
 
-from config.default import _C as cfg
-from config.default import update_config
-from core.function import train, validate
-from utils.utils import get_optimizer
-from utils.utils import create_logger
-from dataset import custom_transforms as ctf
-from dataset.animal import AnimalDataset
-from models.orientation_net import OrientationNet
+from wbia_orientation.config.default import _C as cfg  # NOQA
+from wbia_orientation.config.default import update_config
+from wbia_orientation.core.function import train, validate
+from wbia_orientation.dataset import custom_transforms as ctf
+from wbia_orientation.dataset.animal import AnimalDataset
+from wbia_orientation.models.orientation_net import OrientationNet
+from wbia_orientation.utils.utils import get_optimizer
+from wbia_orientation.utils.utils import create_logger
 
 
 def parse_args():

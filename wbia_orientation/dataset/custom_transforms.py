@@ -12,12 +12,13 @@ import random
 import math
 import numpy as np
 from random import randint
-from torchvision.transforms import functional as F
+from torchvision.transforms import functional as F  # NOQA
 from torchvision.transforms import RandomAffine, ColorJitter
-from utils.data_manipulation import get_object_aligned_box
-from utils.data_manipulation import increase_bbox
-from utils.data_manipulation import resize_sample
-from utils.data_manipulation import rotate_coordinates
+
+from wbia_orientation.utils.data_manipulation import get_object_aligned_box
+from wbia_orientation.utils.data_manipulation import increase_bbox
+from wbia_orientation.utils.data_manipulation import resize_sample
+from wbia_orientation.utils.data_manipulation import rotate_coordinates
 
 
 class RandomHorizontalFlip(object):

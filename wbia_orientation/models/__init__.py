@@ -1,2 +1,2 @@
 # -*- coding: utf-8 -*-
-from models import cls_hrnet  # noqa: F401
+from wbia_orientation.models import cls_hrnet  # NOQA

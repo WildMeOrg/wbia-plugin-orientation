@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
 
-from yacs.config import CfgNode as CN
+from yacs.config import CfgNode as CN  # NOQA
+import os
 
+
+MODULE_PATH = os.path.abspath(os.path.join(os.path.split(__file__)[0], '..'))
 
 _C = CN()
 
-_C.OUTPUT_DIR = 'wbia_orientation/output'
-_C.LOG_DIR = 'wbia_orientation/log'
-_C.COCO_ANNOT_DIR = '/external/contractors/olga.moskvyak/data'
+_C.OUTPUT_DIR = os.path.join(MODULE_PATH, 'output')
+_C.LOG_DIR = os.path.join(MODULE_PATH, 'log')
+# _C.COCO_ANNOT_DIR = '/external/contractors/olga.moskvyak/data'
+_C.COCO_ANNOT_DIR = os.path.join(MODULE_PATH, 'data')
 _C.DATA_DIR = 'data'
 _C.USE_GPU = True
 _C.GPUS = (0,)
@@ -29,9 +33,10 @@ _C.CUDNN.ENABLED = True
 # Common params for models
 _C.MODEL = CN()
 _C.MODEL.CORE_NAME = 'hrnet'
-_C.MODEL.PRETRAINED = (
-    'wbia_orientation/pretrained_models/hrnetv2_w32_imagenet_pretrained.pth'
+_C.MODEL.PRETRAINED = os.path.join(
+    MODULE_PATH, 'pretrained_models', 'hrnetv2_w32_imagenet_pretrained.pth'
 )
+
 _C.MODEL.IMSIZE = [224, 224]  # width * height, ex: 192 * 256
 _C.MODEL.EXTRA = CN(new_allowed=True)
 

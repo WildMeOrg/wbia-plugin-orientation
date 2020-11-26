@@ -4,10 +4,10 @@
 import torch
 import logging
 import torch.nn as nn
-from torchvision import models as torchmodels  # noqa: F401
+from torchvision import models as torchmodels  # NOQA
 from efficientnet_pytorch import EfficientNet
-import models
-from utils.utils import hflip_back, vflip_back
+
+from wbia_orientation.utils.utils import hflip_back, vflip_back
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +30,9 @@ class OrientationNet(nn.Module):
 
         # Load core model
         if 'hrnet' in core_name.lower():
-            self.model = models.cls_hrnet.get_cls_net(cfg)
+            from wbia_orientation.models import cls_hrnet
+
+            self.model = cls_hrnet.get_cls_net(cfg)
         elif 'efficientnet' in core_name.lower():
             self.model = EfficientNet.from_pretrained(core_name)
         else:

@@ -5,10 +5,11 @@ import math
 import os
 import numpy as np
 from skimage import transform
-from utils.utils import unnormalize
-from utils.data_manipulation import plot_image_coordinates
-from core.evaluate import normalize_theta
 import matplotlib
+
+from wbia_orientation.utils.utils import unnormalize
+from wbia_orientation.utils.data_manipulation import plot_image_coordinates
+from wbia_orientation.core.evaluate import normalize_theta
 
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt  # noqa: E402
