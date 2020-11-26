@@ -32,6 +32,10 @@ _, register_ibs_method = controller_inject.make_ibs_register_decorator(__name__)
 register_api = controller_inject.get_wbia_flask_api(__name__)
 register_route = controller_inject.get_wbia_flask_route(__name__)
 
+
+PROJECT_PATH = os.path.abspath(os.path.join(os.path.split(__file__)[0], '..'))
+
+
 MODEL_URLS = {
     'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.20201120.pth',
     'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragon.20201120.pth',
@@ -168,7 +172,6 @@ def wbia_plugin_detect_oriented_box(
             outputs,
             theta,
             species,
-            output_dir='./examples',
             nrows=3,
             ncols=4,
         )
@@ -251,7 +254,13 @@ def _load_config(species, use_gpu):
     r"""
     Load a configuration file for species
     """
-    config_file = CONFIGS[species]
+    config_url = CONFIGS[species]
+
+    config_fname = config_url.split('/')[-1]
+    config_file = ut.grab_file_url(
+        config_url, appname='wbia_orientation', check_hash=True, fname=config_fname
+    )
+
     cfg.defrost()
     cfg.merge_from_file(config_file)
     cfg.USE_GPU = use_gpu
@@ -267,12 +276,11 @@ def _load_model(cfg, model_url=None):
 
     # Download the model and put it in the models folder
     if model_url is not None:
-        os.makedirs('models', exist_ok=True)
+        # os.makedirs('models', exist_ok=True)  # Note: Use system-specific cache folder
         model_fname = model_url.split('/')[-1]
-        ut.grab_file_url(
+        model_path = ut.grab_file_url(
             model_url, appname='wbia_orientation', check_hash=True, fname=model_fname
         )
-        model_path = os.path.join('models', model_fname)
     else:
         model_path = cfg.TEST.MODEL_FILE
 
@@ -356,11 +364,13 @@ def wbia_orientation_test_ibs(
 
 
 def wbia_orientation_plot(
-    ibs, aid_list, bboxes, output, theta, prefix, output_dir='./', nrows=4, ncols=4
+    ibs, aid_list, bboxes, output, theta, prefix, output_dir=None, nrows=4, ncols=4
 ):
     r"""
     Plot random examples
     """
+    if output_dir is None:
+        output_dir = os.path.abspath(os.path.join(PROJECT_PATH, 'examples'))
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(ncols * 4, nrows * 4))

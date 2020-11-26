@@ -2,17 +2,17 @@
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
 
 from yacs.config import CfgNode as CN  # NOQA
-from os.path import abspath, join, split
+import os
 
 
-PROJECT_PATH = abspath(join(split(__file__)[0], '..'))
+MODULE_PATH = os.path.abspath(os.path.join(os.path.split(__file__)[0], '..'))
 
 _C = CN()
 
-_C.OUTPUT_DIR = join(PROJECT_PATH, 'output')
-_C.LOG_DIR = join(PROJECT_PATH, 'log')
+_C.OUTPUT_DIR = os.path.join(MODULE_PATH, 'output')
+_C.LOG_DIR = os.path.join(MODULE_PATH, 'log')
 # _C.COCO_ANNOT_DIR = '/external/contractors/olga.moskvyak/data'
-_C.COCO_ANNOT_DIR = join(PROJECT_PATH, 'data')
+_C.COCO_ANNOT_DIR = os.path.join(MODULE_PATH, 'data')
 _C.DATA_DIR = 'data'
 _C.USE_GPU = True
 _C.GPUS = (0,)
@@ -33,8 +33,8 @@ _C.CUDNN.ENABLED = True
 # Common params for models
 _C.MODEL = CN()
 _C.MODEL.CORE_NAME = 'hrnet'
-_C.MODEL.PRETRAINED = join(
-    PROJECT_PATH, 'pretrained_models', 'hrnetv2_w32_imagenet_pretrained.pth'
+_C.MODEL.PRETRAINED = os.path.join(
+    MODULE_PATH, 'pretrained_models', 'hrnetv2_w32_imagenet_pretrained.pth'
 )
 
 _C.MODEL.IMSIZE = [224, 224]  # width * height, ex: 192 * 256
