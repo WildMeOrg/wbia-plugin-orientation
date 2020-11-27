@@ -16,8 +16,10 @@ import torch
 import torch.nn as nn
 import torch._utils
 import torch.nn.functional as F
+import utool as ut
 
 BN_MOMENTUM = 0.1
+HRNET_PRETRAINED_URL = 'https://wildbookiarepository.azureedge.net/models/orientation.hrnetv2_w32_imagenet_pretrained.pth'
 logger = logging.getLogger(__name__)
 
 
@@ -565,5 +567,10 @@ class HighResolutionNet(nn.Module):
 
 def get_cls_net(config, **kwargs):
     model = HighResolutionNet(config, **kwargs)
-    model.init_weights(config.MODEL.PRETRAINED)
+    model_url = HRNET_PRETRAINED_URL
+    model_fname = model_url.split('/')[-1]
+    model_path = ut.grab_file_url(
+        model_url, appname='wbia_orientation', check_hash=True, fname=model_fname
+    )
+    model.init_weights(model_path)
     return model
