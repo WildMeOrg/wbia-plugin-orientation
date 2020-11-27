@@ -1,9 +1,11 @@
 efficientnet-pytorch
 matplotlib
+numpy
 scikit-image
 tensorboardX
 torch==1.6
 torchvision
+tqdm
 wbia-utool
 wildbook-ia
 yacs

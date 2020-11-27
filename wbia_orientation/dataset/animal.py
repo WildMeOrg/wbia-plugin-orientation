@@ -11,10 +11,11 @@ from skimage import img_as_ubyte
 from collections import defaultdict
 
 from torch.utils.data import Dataset
-from utils.data_manipulation import rotate_point_by_angle
-from utils.data_manipulation import increase_bbox
-from utils.data_manipulation import to_origin
-from utils.data_manipulation import resize_coords
+
+from wbia_orientation.utils.data_manipulation import rotate_point_by_angle
+from wbia_orientation.utils.data_manipulation import increase_bbox
+from wbia_orientation.utils.data_manipulation import to_origin
+from wbia_orientation.utils.data_manipulation import resize_coords
 
 logger = logging.getLogger(__name__)
 
@@ -251,9 +252,11 @@ class AnimalDataset(Dataset):
 
     def _select_annot(self, obj_cat):
         """Select annotation to add to the dataset.
+
         The annotation is included if:
             a. there is no list of selected categories in config
-            b. object category in the list of selected categories in config"""
+            b. object category in the list of selected categories in config
+        """
         if len(self.cfg.DATASET.SELECT_CATS_LIST) == 0 or (
             len(self.cfg.DATASET.SELECT_CATS_LIST) > 0
             and obj_cat in self.cfg.DATASET.SELECT_CATS_LIST

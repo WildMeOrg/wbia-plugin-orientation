@@ -5,7 +5,8 @@ import numpy as np
 import utool as ut
 import wbia
 import os
-import sys
+
+# import sys
 import torch
 import json
 import matplotlib.pyplot as plt
@@ -13,18 +14,16 @@ from skimage import transform
 import math
 import random
 
-this_dir = os.path.dirname(__file__)
-sys.path.insert(0, os.path.join(this_dir, '..', 'wbia_orientation'))
-
-from dataset.animal_wbia import AnimalWbiaDataset  # noqa: E402
 import torchvision.transforms as transforms  # noqa: E402
-from config.default import _C as cfg  # noqa: E402
-from train import _make_model, _model_to_gpu  # noqa: E402
-from utils.data_manipulation import resize_oa_box  # noqa: E402
-from core.evaluate import compute_theta  # noqa: E402
-from utils.data_manipulation import plot_image_bbox  # noqa: E402
-from utils.data_manipulation import plot_image_coordinates  # noqa: E402
-from utils.file_downloader import download_file  # noqa: E402
+
+from wbia_orientation.config.default import _C as cfg  # noqa
+from wbia_orientation.core.evaluate import compute_theta  # noqa: E402
+from wbia_orientation.dataset.animal_wbia import AnimalWbiaDataset  # noqa: E402
+from wbia_orientation.train import _make_model, _model_to_gpu  # noqa: E402
+from wbia_orientation.utils.data_manipulation import resize_oa_box  # noqa: E402
+from wbia_orientation.utils.data_manipulation import plot_image_bbox  # noqa: E402
+from wbia_orientation.utils.data_manipulation import plot_image_coordinates  # noqa: E402
+from wbia_orientation.utils.file_downloader import download_file  # noqa: E402
 
 (print, rrr, profile) = ut.inject2(__name__)
 
@@ -32,6 +31,10 @@ _, register_ibs_method = controller_inject.make_ibs_register_decorator(__name__)
 
 register_api = controller_inject.get_wbia_flask_api(__name__)
 register_route = controller_inject.get_wbia_flask_route(__name__)
+
+
+PROJECT_PATH = os.path.abspath(os.path.join(os.path.split(__file__)[0], '..'))
+
 
 MODEL_URLS = {
     'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.20201120.pth',
@@ -44,23 +47,23 @@ MODEL_URLS = {
 }
 
 CONFIGS = {
-    'seaturtle': 'wbia_orientation/config/seaturtle.yaml',
-    'seadragon': 'wbia_orientation/config/seadragon.yaml',
-    'whaleshark': 'wbia_orientation/config/whaleshark.yaml',
-    'mantaray': 'wbia_orientation/config/mantaray.yaml',
-    'spotteddolphin': 'wbia_orientation/config/spotteddolphin.yaml',
-    'hammerhead': 'wbia_orientation/config/hammerhead.yaml',
-    'rightwhale': 'wbia_orientation/config/rightwhale.yaml',
+    'seaturtle': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.20201120.yaml',
+    'seadragon': 'https://wildbookiarepository.azureedge.net/models/orientation.seadragon.20201120.yaml',
+    'whaleshark': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.20201120.yaml',
+    'mantaray': 'https://wildbookiarepository.azureedge.net/models/orientation.mantaray.20201120.yaml',
+    'spotteddolphin': 'https://wildbookiarepository.azureedge.net/models/orientation.spotteddolphin.20201120.yaml',
+    'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.20201120.yaml',
+    'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.yaml',
 }
 
 DATA_ARCHIVES = {
-    'seaturtle': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.seaturtle.coco.tar.gz',
-    'seadragon': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.seadragon.coco.tar.gz',
-    'whaleshark': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.whaleshark.coco.tar.gz',
-    'mantaray': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.mantaray.coco.tar.gz',
-    'spotteddolphin': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.spotteddolphin.coco.tar.gz',
-    'hammerhead': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.hammerhead.coco.tar.gz',
-    'rightwhale': 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.rightwhale.coco.tar.gz',
+    'seaturtle': 'https://wildbookiarepository.azureedge.net/datasets/orientation.seaturtle.coco.tar.gz',
+    'seadragon': 'https://wildbookiarepository.azureedge.net/datasets/orientation.seadragon.coco.tar.gz',
+    'whaleshark': 'https://wildbookiarepository.azureedge.net/datasets/orientation.whaleshark.coco.tar.gz',
+    'mantaray': 'https://wildbookiarepository.azureedge.net/datasets/orientation.mantaray.coco.tar.gz',
+    'spotteddolphin': 'https://wildbookiarepository.azureedge.net/datasets/orientation.spotteddolphin.coco.tar.gz',
+    'hammerhead': 'https://wildbookiarepository.azureedge.net/datasets/orientation.hammerhead.coco.tar.gz',
+    'rightwhale': 'https://wildbookiarepository.azureedge.net/datasets/orientation.rightwhale.coco.tar.gz',
 }
 
 register_preproc_image = controller_inject.register_preprocs['image']
@@ -69,6 +72,7 @@ register_preproc_annot = controller_inject.register_preprocs['annot']
 
 
 @register_ibs_method
+@register_api('/api/plugin/orientation/', methods=['GET', 'POST'])
 def wbia_plugin_detect_oriented_box(
     ibs, aid_list, species, use_gpu=False, plot_samples=True
 ):
@@ -95,7 +99,7 @@ def wbia_plugin_detect_oriented_box(
         >>> import wbia
         >>> import wbia_orientation
         >>> species = 'spotteddolphin'
-        >>> url = 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.spotteddolphin.coco.tar.gz'
+        >>> url = 'https://wildbookiarepository.azureedge.net/datasets/orientation.spotteddolphin.coco.tar.gz'
         >>> ibs = wbia_orientation._plugin.wbia_orientation_test_ibs(species, dataset_url=url)
         >>> aid_list = ibs.get_valid_aids()
         >>> aid_list = aid_list[:10]
@@ -115,7 +119,7 @@ def wbia_plugin_detect_oriented_box(
         >>> import wbia_orientation
         >>> species = 'seadragon'
         >>> select_cats = [1,3]
-        >>> url = 'https://cthulhu.dyn.wildme.io/public/datasets/orientation.seadragon.coco.tar.gz'
+        >>> url = 'https://wildbookiarepository.azureedge.net/datasets/orientation.seadragon.coco.tar.gz'
         >>> ibs = wbia_orientation._plugin.wbia_orientation_test_ibs(species, select_cats=select_cats, dataset_url=url)
         >>> aid_list = ibs.get_valid_aids()
         >>> aid_list = aid_list[:10]
@@ -169,7 +173,6 @@ def wbia_plugin_detect_oriented_box(
             outputs,
             theta,
             species,
-            output_dir='./examples',
             nrows=3,
             ncols=4,
         )
@@ -252,7 +255,13 @@ def _load_config(species, use_gpu):
     r"""
     Load a configuration file for species
     """
-    config_file = CONFIGS[species]
+    config_url = CONFIGS[species]
+
+    config_fname = config_url.split('/')[-1]
+    config_file = ut.grab_file_url(
+        config_url, appname='wbia_orientation', check_hash=True, fname=config_fname
+    )
+
     cfg.defrost()
     cfg.merge_from_file(config_file)
     cfg.USE_GPU = use_gpu
@@ -268,10 +277,11 @@ def _load_model(cfg, model_url=None):
 
     # Download the model and put it in the models folder
     if model_url is not None:
-        os.makedirs('models', exist_ok=True)
+        # os.makedirs('models', exist_ok=True)  # Note: Use system-specific cache folder
         model_fname = model_url.split('/')[-1]
-        ut.grab_file_url(model_url, download_dir='models', fname=model_fname)
-        model_path = os.path.join('models', model_fname)
+        model_path = ut.grab_file_url(
+            model_url, appname='wbia_orientation', check_hash=True, fname=model_fname
+        )
     else:
         model_path = cfg.TEST.MODEL_FILE
 
@@ -355,11 +365,13 @@ def wbia_orientation_test_ibs(
 
 
 def wbia_orientation_plot(
-    ibs, aid_list, bboxes, output, theta, prefix, output_dir='./', nrows=4, ncols=4
+    ibs, aid_list, bboxes, output, theta, prefix, output_dir=None, nrows=4, ncols=4
 ):
     r"""
     Plot random examples
     """
+    if output_dir is None:
+        output_dir = os.path.abspath(os.path.join(PROJECT_PATH, 'examples'))
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols, figsize=(ncols * 4, nrows * 4))

@@ -7,11 +7,11 @@ import logging
 import torch
 import numpy as np
 
-from core.evaluate import evaluate_orientaion_coords, compute_theta
-from utils.vis import plot_boxes_gt_preds, plot_rotated_gt_preds
-from utils.vis import plot_theta_err_hist, plot_rotated_preds
-from utils.utils import AverageMeterSet
-from utils.utils import save_object
+from wbia_orientation.core.evaluate import evaluate_orientaion_coords, compute_theta
+from wbia_orientation.utils.vis import plot_boxes_gt_preds, plot_rotated_gt_preds
+from wbia_orientation.utils.vis import plot_theta_err_hist, plot_rotated_preds
+from wbia_orientation.utils.utils import AverageMeterSet
+from wbia_orientation.utils.utils import save_object
 
 torch.autograd.set_detect_anomaly(True)
 logger = logging.getLogger(__name__)
