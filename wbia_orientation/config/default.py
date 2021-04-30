@@ -2,6 +2,7 @@
 # Written by Olga Moskvyak (olga.moskvyak@hdr.qut.edu.au)
 
 from yacs.config import CfgNode as CN  # NOQA
+from datetime import datetime
 import os
 
 
@@ -78,9 +79,11 @@ _C.LOSS = CN()
 _C.DATASET = CN()
 _C.DATASET.NAME = ''
 _C.DATASET.CLASS = 'animal'
-_C.DATASET.TRAIN_SET = 'train2020'
-_C.DATASET.VALID_SET = 'val2020'
-_C.DATASET.TEST_SET = 'test2020'
+
+today = datetime.today()
+_C.DATASET.TRAIN_SET = 'train%d' % (today.year,)
+_C.DATASET.VALID_SET = 'val%d' % (today.year,)
+_C.DATASET.TEST_SET = 'test%d' % (today.year,)
 _C.DATASET.DATA_FORMAT = 'jpg'
 _C.DATASET.SELECT_CATS_LIST = []
 _C.DATASET.SUFFIX = ''
