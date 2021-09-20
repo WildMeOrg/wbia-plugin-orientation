@@ -48,6 +48,7 @@ MODEL_URLS = {
     'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.20201120.pth',
     'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.pth',
     'beluga_whale_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.beluga.20210429.pth',
+    'whale_sperm_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_sperm.v0.pth',
 }
 
 CONFIGS = {
@@ -59,6 +60,7 @@ CONFIGS = {
     'hammerhead': 'https://wildbookiarepository.azureedge.net/models/orientation.hammerhead.20201120.yaml',
     'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.yaml',
     'beluga_whale_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.beluga.20210429.yaml',
+    'whale_sperm_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_sperm.v0.yaml',
 }
 
 DATA_ARCHIVES = {
@@ -70,6 +72,7 @@ DATA_ARCHIVES = {
     'hammerhead': 'https://wildbookiarepository.azureedge.net/datasets/orientation.hammerhead.coco.tar.gz',
     'rightwhale': 'https://wildbookiarepository.azureedge.net/datasets/orientation.rightwhale.coco.tar.gz',
     'beluga_whale_v0': None,
+    'whale_sperm_v0': None,
 }
 
 SPECIES_MODEL_TAG_MAPPING = {
@@ -87,6 +90,10 @@ SPECIES_MODEL_TAG_MAPPING = {
     'dolphin_spotted': 'spotteddolphin',
     'whale_shark': 'whaleshark',
     'whale_beluga': 'beluga_whale_v0',
+    'whale_sperm': 'whale_sperm_v0',
+    'whale_sperm+fluke': 'whale_sperm_v0',
+    'physeter_macrocephalus': 'whale_sperm_v0',
+    'physeter_macrocephalus+fluke': 'whale_sperm_v0',
 }
 
 register_preproc_image = controller_inject.register_preprocs['image']
