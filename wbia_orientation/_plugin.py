@@ -49,6 +49,7 @@ MODEL_URLS = {
     'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.pth',
     'beluga_whale_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.beluga.20210429.pth',
     'whale_sperm_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_sperm.v0.pth',
+    'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.20201120.pth',
 }
 
 CONFIGS = {
@@ -61,6 +62,7 @@ CONFIGS = {
     'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.yaml',
     'beluga_whale_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.beluga.20210429.yaml',
     'whale_sperm_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_sperm.v0.yaml',
+    'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.20201120.pth',
 }
 
 DATA_ARCHIVES = {
@@ -73,14 +75,19 @@ DATA_ARCHIVES = {
     'rightwhale': 'https://wildbookiarepository.azureedge.net/datasets/orientation.rightwhale.coco.tar.gz',
     'beluga_whale_v0': None,
     'whale_sperm_v0': None,
+    'sea_turtle_v4': None,
 }
 
 SPECIES_MODEL_TAG_MAPPING = {
     'right_whale_head': 'rightwhale',
-    'turtle_green+head': 'seaturtle',
-    'turtle_hawksbill+head': 'seaturtle',
-    'turtle_oliveridley+head': 'seaturtle',
-    'turtle_sea+head': 'seaturtle',
+    'turtle_green': 'sea_turtle_v4',
+    'turtle_green+head': 'sea_turtle_v4',
+    'turtle_hawksbill': 'sea_turtle_v4',
+    'turtle_hawksbill+head': 'sea_turtle_v4',
+    'turtle_oliveridley': 'sea_turtle_v4',
+    'turtle_oliveridley+head': 'sea_turtle_v4',
+    'turtle_asian': 'sea_turtle_v4',
+    'turtle_sea+head': 'sea_turtle_v4',
     'seadragon_leafy+head': 'seadragon',
     'seadragon_weedy+head': 'seadragon',
     'shark_hammerhead': 'hammerhead',
