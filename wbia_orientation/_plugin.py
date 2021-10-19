@@ -49,7 +49,7 @@ MODEL_URLS = {
     'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.pth',
     'beluga_whale_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.beluga.20210429.pth',
     'whale_sperm_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_sperm.v0.pth',
-    'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.20201120.pth',
+    'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle.v4.pth',
 }
 
 CONFIGS = {
@@ -62,7 +62,7 @@ CONFIGS = {
     'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.yaml',
     'beluga_whale_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.beluga.20210429.yaml',
     'whale_sperm_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_sperm.v0.yaml',
-    'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.seaturtle.20201120.pth',
+    'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle.v4.pth',
 }
 
 DATA_ARCHIVES = {
