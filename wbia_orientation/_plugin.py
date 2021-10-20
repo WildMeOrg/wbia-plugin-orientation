@@ -62,7 +62,7 @@ CONFIGS = {
     'rightwhale': 'https://wildbookiarepository.azureedge.net/models/orientation.rightwhale.20201120.yaml',
     'beluga_whale_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.beluga.20210429.yaml',
     'whale_sperm_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_sperm.v0.yaml',
-    'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle.v4.pth',
+    'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle.v4.yaml',
 }
 
 DATA_ARCHIVES = {
