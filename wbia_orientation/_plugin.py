@@ -50,6 +50,7 @@ MODEL_URLS = {
     'beluga_whale_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.beluga.20210429.pth',
     'whale_sperm_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_sperm.v0.pth',
     'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle.v4.pth',
+    'spotted_eagle_ray_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.spotted_eagle_ray.v0.pth',
 }
 
 CONFIGS = {
@@ -63,6 +64,7 @@ CONFIGS = {
     'beluga_whale_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.beluga.20210429.yaml',
     'whale_sperm_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_sperm.v0.yaml',
     'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle.v4.yaml',
+    'spotted_eagle_ray_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.spotted_eagle_ray.v0.yaml',
 }
 
 DATA_ARCHIVES = {
@@ -76,6 +78,7 @@ DATA_ARCHIVES = {
     'beluga_whale_v0': None,
     'whale_sperm_v0': None,
     'sea_turtle_v4': None,
+    'spotted_eagle_ray_v0': None,
 }
 
 SPECIES_MODEL_TAG_MAPPING = {
@@ -101,6 +104,8 @@ SPECIES_MODEL_TAG_MAPPING = {
     'whale_sperm+fluke': 'whale_sperm_v0',
     'physeter_macrocephalus': 'whale_sperm_v0',
     'physeter_macrocephalus+fluke': 'whale_sperm_v0',
+    'aetobatus_narinari': 'spotted_eagle_ray_v0',
+    'spotted_eagle_ray': 'spotted_eagle_ray_v0',
 }
 
 register_preproc_image = controller_inject.register_preprocs['image']
