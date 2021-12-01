@@ -51,6 +51,7 @@ MODEL_URLS = {
     'whale_sperm_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_sperm.v0.pth',
     'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle.v4.pth',
     'spotted_eagle_ray_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.spotted_eagle_ray.v0.pth',
+    'yellow_bellied_toad_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.yellow_bellied_toad.v0.pth',
 }
 
 CONFIGS = {
@@ -65,6 +66,7 @@ CONFIGS = {
     'whale_sperm_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_sperm.v0.yaml',
     'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle.v4.yaml',
     'spotted_eagle_ray_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.spotted_eagle_ray.v0.yaml',
+    'yellow_bellied_toad_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.yellow_bellied_toad.v0.yaml',
 }
 
 DATA_ARCHIVES = {
@@ -79,6 +81,7 @@ DATA_ARCHIVES = {
     'whale_sperm_v0': None,
     'sea_turtle_v4': None,
     'spotted_eagle_ray_v0': None,
+    'yellow_bellied_toad_v0': None,
 }
 
 SPECIES_MODEL_TAG_MAPPING = {
@@ -106,6 +109,8 @@ SPECIES_MODEL_TAG_MAPPING = {
     'physeter_macrocephalus+fluke': 'whale_sperm_v0',
     'aetobatus_narinari': 'spotted_eagle_ray_v0',
     'spotted_eagle_ray': 'spotted_eagle_ray_v0',
+    'yellow_bellied_toad': 'yellow_bellied_toad_v0',
+    'bombina_variegata': 'yellow_bellied_toad_v0',
 }
 
 register_preproc_image = controller_inject.register_preprocs['image']
