@@ -8,7 +8,7 @@ class AnimalWbiaDataset(Dataset):
     def __init__(self, image_paths, bboxes, target_imsize, transform):
         self.image_paths = image_paths
         self.bboxes = bboxes
-        self.target_imsize = target_imsize
+        self.target_imsize = tuple(target_imsize)
         self.transform = transform
 
     def __len__(self):
