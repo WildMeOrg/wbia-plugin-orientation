@@ -2,6 +2,8 @@
 Wildbook IA - wbia_orientation
 ===============================
 
+|Build| |Pypi| |ReadTheDocs|
+
 Orientation Plug-in - Part of the WildMe / Wildbook IA Project.
 
 A plugin for automatic detection of object-oriented bounding box based on axis-aligned box
@@ -33,9 +35,9 @@ the `@register_api decorator`.
 .. TODO update Rest API
 .. Navigate in a browser to http://127.0.0.1:5000/api/plugin/example/helloworld/ where this returns a formatted JSON response, including the serialized returned valuefrom the `wbia_plugin_identification_example_hello_world()` function
 
-.. code:: text
+.. code:: json
 
-..     {"status": {"cache": -1, "message": "", "code": 200, "success": true}, "response": "[wbia_plugin_identification_example] hello world with WBIA controller <WBIAController(testdb1) at 0x11e776e90>"}
+    {"status": {"cache": -1, "message": "", "code": 200, "success": true}, "response": "[wbia_plugin_identification_example] hello world with WBIA controller <WBIAController(testdb1) at 0x11e776e90>"}
 
 Python API
 ----------
@@ -212,3 +214,19 @@ Pass a different value as a command line parameter to evaluate with another thre
 .. code:: bash
 
   python wbia_orientation/test.py --cfg wbia_orientation/config/mantaray.yaml TEST.THETA_THR 15.
+
+.. code:: bash
+
+    pytest
+
+.. |Build| image:: https://img.shields.io/github/workflow/status/WildMeOrg/wbia-plugin-orientation/Build%20and%20upload%20to%20PyPI/main
+    :target: https://github.com/WildMeOrg/wbia-plugin-orientation/actions?query=branch%3Amain+workflow%3A%22Build+and+upload+to+PyPI%22
+    :alt: Build and upload to PyPI (main)
+
+.. |Pypi| image:: https://img.shields.io/pypi/v/wbia-orientation.svg
+   :target: https://pypi.python.org/pypi/wbia-orientation
+   :alt: Latest PyPI version
+
+.. |ReadTheDocs| image:: https://readthedocs.org/projects/wbia-plugin-orientation/badge/?version=latest
+    :target: https://wbia-plugin-orientation.readthedocs.io/en/latest/
+    :alt: Documentation on ReadTheDocs
