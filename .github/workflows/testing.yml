@@ -56,6 +56,8 @@ jobs:
       - name: Install project
         run: |
           pip install -e .[tests]
+          mkdir -p /tmp/work
+          python -m wbia --set-workdir /tmp/work --preload-exit
 
       - name: Test project
         run: |
