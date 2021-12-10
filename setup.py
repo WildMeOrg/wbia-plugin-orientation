@@ -176,6 +176,7 @@ MB_PYTHON_TAG = native_mb_python_tag()  # NOQA
 
 AUTHORS = [
     'Olga Moskvyak',
+    'Jason Parham',
 ]
 AUTHOR_EMAIL = 'olgamoskvyak@gmail.com'
 URL = 'https://github.com/WildbookOrg/wbia-plugin-orientation'
