@@ -151,11 +151,11 @@ def wbia_plugin_detect_oriented_box(
         >>> aid_list = ibs.get_valid_aids()
         >>> aid_list = aid_list[:10]
         >>> output, theta = ibs.wbia_plugin_detect_oriented_box(aid_list, species, False, False)
-        >>> expected_theta = [-0.3071622848510742, 1.2332571744918823,
-                              1.6512340307235718, 1.6928660869598389,
-                              1.3716390132904053, 4.61941385269165,
-                              1.1511050462722778, 1.093467116355896,
-                              1.1569938659667969, 0.7397593855857849]
+        >>> expected_theta = [-0.3056759834289551, 1.233485221862793,
+        >>>                   1.6543128490447998, 1.6988674402236938,
+        >>>                   1.3621141910552979, 4.619465351104736,
+        >>>                   1.1531386375427246, 1.0984195470809937,
+        >>>                   1.1462645530700684, 0.7284082174301147]
         >>> import numpy as np
         >>> diff = np.abs(np.array(theta) - np.array(expected_theta))
         >>> assert diff.all() < 1e-6
@@ -171,11 +171,11 @@ def wbia_plugin_detect_oriented_box(
         >>> aid_list = ibs.get_valid_aids()
         >>> aid_list = aid_list[:10]
         >>> output, theta = ibs.wbia_plugin_detect_oriented_box(aid_list, species, False, False)
-        >>> expected_theta = [2.2275471687316895, 4.496161937713623,
-                              3.693049430847168, 3.4513893127441406,
-                              3.496103525161743, 4.1899213790893555,
-                              4.020716190338135, 2.2543320655822754,
-                              3.9189162254333496, 2.3440582752227783]
+        >>> expected_theta = [2.2356255054473877, 4.496645450592041,
+        >>>                   3.700617790222168, 3.453754425048828,
+        >>>                   3.4828782081604004, 4.188936710357666,
+        >>>                   4.021256923675537, 2.254979133605957,
+        >>>                   3.9100823402404785, 2.3402907848358154]
         >>> import numpy as np
         >>> diff = np.abs(np.array(theta) - np.array(expected_theta))
         >>> assert diff.all() < 1e-6
@@ -531,8 +531,8 @@ def wbia_plugin_orientation_render_examples(
     CommandLine:
         python -m wbia_orientation._plugin --test-wbia_plugin_orientation_render_examples
 
-    Example0:
-        >>> # ENABLE_DOCTEST
+    Example:
+        >>> # DISABLE_DOCTEST
         >>> import wbia
         >>> import random
         >>> from wbia.init import sysres
@@ -681,8 +681,8 @@ def wbia_plugin_orientation_render_feasability(
     CommandLine:
         python -m wbia_orientation._plugin --test-wbia_plugin_orientation_render_feasability
 
-    Example0:
-        >>> # ENABLE_DOCTEST
+    Example:
+        >>> # DISABLE_DOCTEST
         >>> import wbia
         >>> import random
         >>> from wbia.init import sysres

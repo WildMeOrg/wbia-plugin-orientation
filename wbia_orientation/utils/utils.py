@@ -59,7 +59,7 @@ def create_logger(cfg, cfg_path, phase='train', create_tb=True):
 
 
 def get_optimizer(cfg, model):
-    """ Create simple optimizer for model based on config """
+    """Create simple optimizer for model based on config"""
     optimizer = None
     if cfg.TRAIN.OPTIMIZER == 'sgd':
         optimizer = optim.SGD(
@@ -120,7 +120,7 @@ def vflip_back(output_flipped, image_h_w):
 def unnormalize(
     batch_image, mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225], use_gpu=False
 ):
-    """Reverse normalization applied to batch of images """
+    """Reverse normalization applied to batch of images"""
     B = batch_image.shape[0]
     H = batch_image.shape[2]
     W = batch_image.shape[3]
@@ -144,7 +144,7 @@ def unnormalize(
 
 
 def load_partial_weights(model, model_path, pretrained_state=None, cuda_avail=True):
-    """ Load partial weights for model """
+    """Load partial weights for model"""
     if pretrained_state is None:
         if cuda_avail:
             pretrained_state = torch.load(model_path)

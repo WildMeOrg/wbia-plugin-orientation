@@ -3,7 +3,7 @@ matplotlib
 numpy
 scikit-image
 tensorboardX
-torch==1.6
+torch
 torchvision
 tqdm
 wbia-utool
