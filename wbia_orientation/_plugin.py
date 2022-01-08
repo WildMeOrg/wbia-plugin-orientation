@@ -52,6 +52,7 @@ MODEL_URLS = {
     'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle.v4.pth',
     'spotted_eagle_ray_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.spotted_eagle_ray.v0.pth',
     'yellow_bellied_toad_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.yellow_bellied_toad.v0.pth',
+    'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.pth',
 }
 
 CONFIGS = {
@@ -67,6 +68,7 @@ CONFIGS = {
     'sea_turtle_v4': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle.v4.yaml',
     'spotted_eagle_ray_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.spotted_eagle_ray.v0.yaml',
     'yellow_bellied_toad_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.yellow_bellied_toad.v0.yaml',
+    'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.yaml',
 }
 
 DATA_ARCHIVES = {
@@ -82,6 +84,7 @@ DATA_ARCHIVES = {
     'sea_turtle_v4': None,
     'spotted_eagle_ray_v0': None,
     'yellow_bellied_toad_v0': None,
+    'salamander_fire_adult_v2': None,
 }
 
 SPECIES_MODEL_TAG_MAPPING = {
@@ -111,6 +114,9 @@ SPECIES_MODEL_TAG_MAPPING = {
     'spotted_eagle_ray': 'spotted_eagle_ray_v0',
     'yellow_bellied_toad': 'yellow_bellied_toad_v0',
     'bombina_variegata': 'yellow_bellied_toad_v0',
+    'salamandra_salamandra_adult': 'salamander_fire_adult_v2',
+    'salanader_fire_adult': 'salamander_fire_adult_v2',
+    'salamander_fire_adult': 'salamander_fire_adult_v2',
 }
 
 register_preproc_image = controller_inject.register_preprocs['image']
