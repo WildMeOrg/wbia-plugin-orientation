@@ -53,6 +53,7 @@ MODEL_URLS = {
     'spotted_eagle_ray_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.spotted_eagle_ray.v0.pth',
     'yellow_bellied_toad_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.yellow_bellied_toad.v0.pth',
     'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.pth',
+    'whale_fin_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_fin.v0.pth',
 }
 
 CONFIGS = {
@@ -69,6 +70,7 @@ CONFIGS = {
     'spotted_eagle_ray_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.spotted_eagle_ray.v0.yaml',
     'yellow_bellied_toad_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.yellow_bellied_toad.v0.yaml',
     'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.yaml',
+    'whale_fin_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_fin.v0.yaml',
 }
 
 DATA_ARCHIVES = {
@@ -85,6 +87,7 @@ DATA_ARCHIVES = {
     'spotted_eagle_ray_v0': None,
     'yellow_bellied_toad_v0': None,
     'salamander_fire_adult_v2': None,
+    'whale_fin_v0': None,
 }
 
 SPECIES_MODEL_TAG_MAPPING = {
@@ -117,6 +120,8 @@ SPECIES_MODEL_TAG_MAPPING = {
     'salamandra_salamandra_adult': 'salamander_fire_adult_v2',
     'salanader_fire_adult': 'salamander_fire_adult_v2',
     'salamander_fire_adult': 'salamander_fire_adult_v2',
+    'balaenoptera_physalus+fin_dorsal': 'whale_fin_v0',
+    'whale_fin+fin_dorsal': 'whale_fin_v0',
 }
 
 register_preproc_image = controller_inject.register_preprocs['image']
