@@ -54,6 +54,7 @@ MODEL_URLS = {
     'yellow_bellied_toad_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.yellow_bellied_toad.v0.pth',
     'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.pth',
     'whale_fin_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_fin.v0.pth',
+    'seals_v1': 'https://wildbookiarepository.azureedge.net/models/orientation.seals.v1.pth',
 }
 
 CONFIGS = {
@@ -71,6 +72,7 @@ CONFIGS = {
     'yellow_bellied_toad_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.yellow_bellied_toad.v0.yaml',
     'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.yaml',
     'whale_fin_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_fin.v0.yaml',
+    'seals_v1': 'https://wildbookiarepository.azureedge.net/models/orientation.seals.v1.yaml',
 }
 
 DATA_ARCHIVES = {
@@ -88,6 +90,7 @@ DATA_ARCHIVES = {
     'yellow_bellied_toad_v0': None,
     'salamander_fire_adult_v2': None,
     'whale_fin_v0': None,
+    'seals_v1': None,
 }
 
 SPECIES_MODEL_TAG_MAPPING = {
@@ -122,6 +125,34 @@ SPECIES_MODEL_TAG_MAPPING = {
     'salamander_fire_adult': 'salamander_fire_adult_v2',
     'balaenoptera_physalus+fin_dorsal': 'whale_fin_v0',
     'whale_fin+fin_dorsal': 'whale_fin_v0',
+    'mediterranean_monk_seal': 'seals_v1',
+    'grey_seal': 'seals_v1',
+    'grey_seal_unknown': 'seals_v1',
+    'grey_seal_male': 'seals_v1',
+    'grey_seal_femaleyoung': 'seals_v1',
+    'grey_seal_pup': 'seals_v1',
+    'harbour_seal': 'seals_v1',
+    'hawaiian_monk_seal': 'seals_v1',
+    'monachus_monachus': 'seals_v1',
+    'phoca_vitulina': 'seals_v1',
+    'halichoerus_grypus': 'seals_v1',
+    'monachus_schauinslandi': 'seals_v1',
+    'seal': 'seals_v1',
+    'seal_ringed': 'seals_v1',
+    'mediterranean_monk_seal+head': 'seals_v1',
+    'grey_seal+head': 'seals_v1',
+    'grey_seal_unknown+head': 'seals_v1',
+    'grey_seal_male+head': 'seals_v1',
+    'grey_seal_femaleyoung+head': 'seals_v1',
+    'grey_seal_pup+head': 'seals_v1',
+    'harbour_seal+head': 'seals_v1',
+    'hawaiian_monk_seal+head': 'seals_v1',
+    'monachus_monachus+head': 'seals_v1',
+    'phoca_vitulina+head': 'seals_v1',
+    'halichoerus_grypus+head': 'seals_v1',
+    'monachus_schauinslandi+head': 'seals_v1',
+    'seal+head': 'seals_v1',
+    'seal_ringed+head': 'seals_v1',
 }
 
 register_preproc_image = controller_inject.register_preprocs['image']
