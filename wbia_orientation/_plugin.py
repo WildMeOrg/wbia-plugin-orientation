@@ -55,6 +55,7 @@ MODEL_URLS = {
     'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.pth',
     'whale_fin_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_fin.v0.pth',
     'seals_v1': 'https://wildbookiarepository.azureedge.net/models/orientation.seals.v1.pth',
+    'leopard_shark_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.leopard_shark.v0.pth',
 }
 
 CONFIGS = {
@@ -73,6 +74,7 @@ CONFIGS = {
     'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.yaml',
     'whale_fin_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_fin.v0.yaml',
     'seals_v1': 'https://wildbookiarepository.azureedge.net/models/orientation.seals.v1.yaml',
+    'leopard_shark_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.leopard_shark.v0.yaml',
 }
 
 DATA_ARCHIVES = {
@@ -91,6 +93,7 @@ DATA_ARCHIVES = {
     'salamander_fire_adult_v2': None,
     'whale_fin_v0': None,
     'seals_v1': None,
+    'leopard_shark_v0': None,
 }
 
 SPECIES_MODEL_TAG_MAPPING = {
@@ -153,6 +156,7 @@ SPECIES_MODEL_TAG_MAPPING = {
     'monachus_schauinslandi+head': 'seals_v1',
     'seal+head': 'seals_v1',
     'seal_ringed+head': 'seals_v1',
+    'leopard_shark': 'leopard_shark_v0',
 }
 
 register_preproc_image = controller_inject.register_preprocs['image']
