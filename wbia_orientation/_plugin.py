@@ -55,7 +55,7 @@ MODEL_URLS = {
     'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.pth',
     'whale_fin_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_fin.v0.pth',
     'seals_v1': 'https://wildbookiarepository.azureedge.net/models/orientation.seals.v1.pth',
-    'leopard_shark_v0': 'https://cthulhu.dyn.wildme.io/public/models/orientation.leopard_shark.v0.pth',
+    'leopard_shark_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.leopard_shark.v0.pth'
 }
 
 CONFIGS = {
@@ -74,7 +74,8 @@ CONFIGS = {
     'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.yaml',
     'whale_fin_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_fin.v0.yaml',
     'seals_v1': 'https://wildbookiarepository.azureedge.net/models/orientation.seals.v1.yaml',
-    'leopard_shark_v0': 'https://cthulhu.dyn.wildme.io/public/models/orientation.leopard_shark.v0.yaml',
+    'leopard_shark_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.leopard_shark.v0.yaml'
+
 }
 
 DATA_ARCHIVES = {
