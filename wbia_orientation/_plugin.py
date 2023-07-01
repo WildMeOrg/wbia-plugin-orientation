@@ -55,7 +55,8 @@ MODEL_URLS = {
     'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.pth',
     'whale_fin_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_fin.v0.pth',
     'seals_v1': 'https://wildbookiarepository.azureedge.net/models/orientation.seals.v1.pth',
-    'leopard_shark_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.leopard_shark.v0.pth'
+    'leopard_shark_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.leopard_shark.v0.pth',
+    'sea_turtle_new_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle_new.v0.pth'
 }
 
 CONFIGS = {
@@ -74,7 +75,8 @@ CONFIGS = {
     'salamander_fire_adult_v2': 'https://wildbookiarepository.azureedge.net/models/orientation.salamander_fire_adult.v2.yaml',
     'whale_fin_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.whale_fin.v0.yaml',
     'seals_v1': 'https://wildbookiarepository.azureedge.net/models/orientation.seals.v1.yaml',
-    'leopard_shark_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.leopard_shark.v0.yaml'
+    'leopard_shark_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.leopard_shark.v0.yaml',
+    'sea_turtle_new_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle_new.v0.yaml'
 
 }
 
@@ -99,14 +101,17 @@ DATA_ARCHIVES = {
 
 SPECIES_MODEL_TAG_MAPPING = {
     'right_whale_head': 'rightwhale',
-    'turtle_green': 'sea_turtle_v4',
-    'turtle_green+head': 'sea_turtle_v4',
-    'turtle_hawksbill': 'sea_turtle_v4',
-    'turtle_hawksbill+head': 'sea_turtle_v4',
-    'turtle_oliveridley': 'sea_turtle_v4',
-    'turtle_oliveridley+head': 'sea_turtle_v4',
-    'turtle_asian': 'sea_turtle_v4',
-    'turtle_sea+head': 'sea_turtle_v4',
+    'turtle_green': 'sea_turtle_new_v0',
+    'turtle_green+head': 'sea_turtle_new_v0',
+    'turtle_hawksbill': 'sea_turtle_new_v0',
+    'turtle_hawksbill+head': 'sea_turtle_new_v0',
+    'turtle_oliveridley': 'sea_turtle_new_v0',
+    'turtle_oliveridley+head': 'sea_turtle_new_v0',
+    'turtle_asian': 'sea_turtle_new_v0',
+    'turtle_sea': 'sea_turtle_new_v0', 
+    'turtle_sea+head': 'sea_turtle_new_v0',
+    'turtle_leatherback': 'sea_turtle_new_v0',
+    'turtle_leatherback+head': 'sea_turtle_new_v0',
     'seadragon_leafy+head': 'seadragon',
     'seadragon_weedy+head': 'seadragon',
     'shark_hammerhead': 'hammerhead',
