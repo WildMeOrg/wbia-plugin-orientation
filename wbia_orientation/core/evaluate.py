@@ -47,11 +47,11 @@ def evaluate_orientaion_coords(
             'err_w': mean distance in pixels between gt and predictions for w
     """
     # Convert to numpy arrays if tensors
-    if type(pred_coords) == torch.Tensor:
+    if type(pred_coords) is torch.Tensor:
         pred_coords = pred_coords.numpy()
-    if type(target_coords) == torch.Tensor:
+    if type(target_coords) is torch.Tensor:
         target_coords = target_coords.numpy()
-    if type(target_theta) == torch.Tensor:
+    if type(target_theta) is torch.Tensor:
         target_theta = target_theta.numpy()
 
     # Compute predicted theta (np.arctan2(yt-yc, xt-xc))
