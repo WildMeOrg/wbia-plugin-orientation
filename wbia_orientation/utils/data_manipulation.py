@@ -174,7 +174,7 @@ def resize_coords(coords, original_size, target_size):
     assert len(original_size) == 2
     assert len(target_size) == 2
 
-    if type(coords) == tuple:
+    if type(coords) is tuple:
         coords = list(coords)
 
     for i in range(0, len(coords), 2):
