@@ -111,7 +111,7 @@ SPECIES_MODEL_TAG_MAPPING = {
     'turtle_oliveridley': 'sea_turtle_new_v0',
     'turtle_oliveridley+head': 'sea_turtle_new_v0',
     'turtle_asian': 'sea_turtle_new_v0',
-    'turtle_sea': 'sea_turtle_new_v0', 
+    'turtle_sea': 'sea_turtle_new_v0',
     'turtle_sea+head': 'sea_turtle_new_v0',
     'turtle_leatherback': 'sea_turtle_new_v0',
     'turtle_leatherback+head': 'sea_turtle_new_v0',
