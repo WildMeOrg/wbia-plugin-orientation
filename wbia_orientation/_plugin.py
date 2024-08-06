@@ -57,7 +57,9 @@ MODEL_URLS = {
     'seals_v1': 'https://wildbookiarepository.azureedge.net/models/orientation.seals.v1.pth',
     'leopard_shark_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.leopard_shark.v0.pth',
     'sea_turtle_new_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle_new.v0.pth',
-    'grouper_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.grouper.v0.pth'
+    'grouper_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.grouper.v0.pth',
+    'whaleshark_v3': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.v3.pth'
+
 }
 
 CONFIGS = {
@@ -78,7 +80,8 @@ CONFIGS = {
     'seals_v1': 'https://wildbookiarepository.azureedge.net/models/orientation.seals.v1.yaml',
     'leopard_shark_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.leopard_shark.v0.yaml',
     'sea_turtle_new_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.sea_turtle_new.v0.yaml',
-    'grouper_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.grouper.v0.yaml'
+    'grouper_v0': 'https://wildbookiarepository.azureedge.net/models/orientation.grouper.v0.yaml',
+    'whaleshark_v3': 'https://wildbookiarepository.azureedge.net/models/orientation.whaleshark.v3.yaml'
 
 }
 
@@ -99,7 +102,8 @@ DATA_ARCHIVES = {
     'whale_fin_v0': None,
     'seals_v1': None,
     'leopard_shark_v0': None,
-    'grouper_v0': None
+    'grouper_v0': None,
+    'whaleshark_v3': None
 }
 
 SPECIES_MODEL_TAG_MAPPING = {
@@ -168,7 +172,8 @@ SPECIES_MODEL_TAG_MAPPING = {
     'leopard_shark': 'leopard_shark_v0',
     'camouflage_grouper': 'grouper_v0',
     'goliath_grouper': 'grouper_v0',
-    'potato_cod': 'grouper_v0'
+    'potato_cod': 'grouper_v0',
+    'whaleshark': 'whaleshark_v3'
 }
 
 register_preproc_image = controller_inject.register_preprocs['image']
